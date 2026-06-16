@@ -1,75 +1,48 @@
-# React + TypeScript + Vite
+# AXIS — Vitrina comercial B2B
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Landing de una página para **AXIS**, gafas con inteligencia artificial. Su objetivo es que
+**ópticas, retailers y distribuidores** soliciten catálogo / precios mayoristas y se conviertan
+en **punto de venta oficial**. Sin backend: la conversión es por **WhatsApp Business**.
 
-Currently, two official plugins are available:
+> Estrategia, diseño y especificación completa: **[PLAN-AXIS.md](PLAN-AXIS.md)**.
+> Guía para desarrollo asistido: **[CLAUDE.md](CLAUDE.md)**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+- **Vite 8 + React 19 + TypeScript** (React Compiler activo)
+- **Tailwind CSS v4** (tokens de marca en `src/index.css` → `@theme`)
+- **Framer Motion** (animaciones) + **Lenis** (smooth scroll)
+- **i18next / react-i18next** (ES por defecto · EN) — diccionarios en `src/i18n`
+- Fuentes self-host (**Inter Tight · Cormorant Garamond · DM Sans · DM Mono**)
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Comandos
 
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install
+pnpm dev       # desarrollo (HMR)
+pnpm build     # type-check + build de producción
+pnpm preview   # servir el build
+pnpm lint      # ESLint
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Estructura
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/
+  components/ui/   TreeLogo (árbol filogenético), GlassesArt, Icon, Reveal, CountUp, SectionHeading
+  sections/        Nav, Hero, WhatIsAxis, ProductShowcase, Capabilities, Clinical,
+                   BusinessOpportunity, PartnerProgram, TrustSignals, Editions,
+                   ConsumerStrip, FaqCommercial, ContactCommercial, Footer
+  i18n/            es.ts, en.ts, useDict, init i18next
+  lib/             SmoothScroll (Lenis), scrollContext, motion (variants)
+  config/          brand.ts  ← WhatsApp, catálogo, mensajes por tipo de comprador
+```
+
+## Pendiente del cliente (marcado con `TODO[AXIS]`)
+
+1. **WhatsApp Business** → `src/config/brand.ts` (`WHATSAPP_NUMBER`).
+2. **Catálogo PDF** → colocar en `public/` y ajustar `CATALOG_URL`.
+3. **Fotografía de producto** → reemplazar `GlassesArt` (placeholder line-art) por fotos reales en `src/assets/product/`.
+4. **Logo árbol en SVG** real (si se desea sustituir el reconstruido) en `src/assets/brand/`.
+5. **Imagen Open Graph** → `public/og-image.jpg` (referenciada en `index.html`).
+6. Datos reales de **garantía, aliado clínico y registro de marca** en `src/i18n/*.ts`.
