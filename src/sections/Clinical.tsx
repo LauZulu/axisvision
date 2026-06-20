@@ -32,8 +32,8 @@ export function Clinical() {
           <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-carbon-850">
             <ImageCarousel
               slides={SLIDES.map((s) => ({ pic: s.pic, alt: t.alt.lifestyle[s.alt] }))}
-              sizes="(min-width: 1024px) 46vw, 92vw"
-              className="mx-auto aspect-[3/4] w-full max-w-md lg:max-w-none"
+              sizes="(min-width: 1024px) 50vh, 80vw"
+              className="mx-auto aspect-[3/4] h-[68svh] max-h-[560px] w-auto max-w-full"
             />
             {/* Degradados para legibilidad del sello (arriba) y los puntos (abajo) */}
             <div
