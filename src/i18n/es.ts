@@ -4,6 +4,36 @@ export const es = {
     switchTo: 'EN',
   },
 
+  alt: {
+    heroProduct:
+      'Gafas AXIS con inteligencia artificial flotando con un halo dorado sobre fondo negro carbón',
+    productShowcase:
+      'Gafas AXIS de lente transparente sobre su estuche de cuero, con iluminación dorada',
+    capabilities: 'Gafas AXIS junto a su estuche de cuero premium sobre fondo claro',
+    packaging: 'Estuche de cuero AXIS abierto: presentación premium lista para vitrina',
+    frontBanner: 'Vista frontal de las gafas AXIS sobre una superficie clara',
+    lifestyle: [
+      'Mujer con gafas de sol AXIS frente a un árbol en flor',
+      'Mujer usando gafas AXIS de lente transparente en una cafetería',
+      'Estuche de cuero AXIS junto a dos capuchinos y un croissant',
+      'Hombre con gafas de sol AXIS al aire libre',
+      'Hombre con chaqueta y gafas de sol AXIS en un balcón',
+      'Estuche de cuero AXIS Smart Glasses junto a una taza de café',
+      'Mujer con gafas de sol AXIS entre la vegetación',
+      'Ciclista con gafas deportivas AXIS en carretera',
+      'Estuche AXIS junto a un portátil mostrando la web de AXIS',
+      'Hombre ajustándose las gafas de sol AXIS en un restaurante',
+      'Gafas deportivas AXIS de lente iridiscente sobre una mesa de café',
+    ],
+  },
+
+  lifestyle: {
+    eyebrow: 'En el mundo real',
+    title: 'Así se ve AXIS en el día a día.',
+    intro:
+      'Personas reales llevando AXIS. La prueba de que tu cliente lo va a querer puesto.',
+  },
+
   nav: {
     product: 'Producto',
     capabilities: 'Capacidades',

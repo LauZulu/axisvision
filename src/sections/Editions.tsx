@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion'
 import { GlassesArt } from '../components/ui/GlassesArt'
+import { Img } from '../components/ui/Img'
+import packagingImg from '../assets/packaging/empaque-cerrado.jpeg?picture'
 import { SectionHeading } from '../components/ui/SectionHeading'
+import { Reveal } from '../components/ui/Reveal'
 import { Icon } from '../components/ui/Icon'
 import { useDict } from '../i18n/useDict'
 import { CATALOG_URL } from '../config/brand'
@@ -15,6 +18,18 @@ export function Editions() {
     <section id="editions" className="border-t border-white/5 py-24 md:py-36">
       <div className="container-axis">
         <SectionHeading eyebrow={t.editions.eyebrow} title={t.editions.title} intro={t.editions.intro} />
+
+        {/* Empaque premium — señal de producto serio para revender */}
+        <Reveal className="mt-12">
+          <div className="group relative mx-auto max-w-3xl overflow-hidden rounded-2xl border border-gold/20">
+            <Img
+              picture={packagingImg}
+              alt={t.alt.packaging}
+              sizes="(min-width: 768px) 768px, 92vw"
+              className="aspect-[2/1] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+            />
+          </div>
+        </Reveal>
 
         <motion.ul
           variants={stagger}

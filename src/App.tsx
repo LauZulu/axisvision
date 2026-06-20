@@ -9,7 +9,9 @@ import { Clinical } from './sections/Clinical'
 import { BusinessOpportunity } from './sections/BusinessOpportunity'
 import { PartnerProgram } from './sections/PartnerProgram'
 import { TrustSignals } from './sections/TrustSignals'
+import { ShowcaseBanner } from './sections/ShowcaseBanner'
 import { Editions } from './sections/Editions'
+import { Lifestyle } from './sections/Lifestyle'
 import { ConsumerStrip } from './sections/ConsumerStrip'
 import { FaqCommercial } from './sections/FaqCommercial'
 import { ContactCommercial } from './sections/ContactCommercial'
@@ -29,7 +31,9 @@ function App() {
         <BusinessOpportunity />
         <PartnerProgram />
         <TrustSignals />
+        <ShowcaseBanner />
         <Editions />
+        <Lifestyle />
         <ConsumerStrip />
         <FaqCommercial />
         <ContactCommercial />

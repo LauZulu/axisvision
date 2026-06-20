@@ -4,6 +4,33 @@ export const en = {
     switchTo: 'ES',
   },
 
+  alt: {
+    heroProduct: 'AXIS AI glasses floating with a golden halo on a carbon-black background',
+    productShowcase: 'AXIS clear-lens glasses resting on their leather case, lit with warm gold',
+    capabilities: 'AXIS glasses next to their premium leather case on a light background',
+    packaging: 'Open AXIS leather case: premium, shelf-ready presentation',
+    frontBanner: 'Front view of the AXIS glasses on a light surface',
+    lifestyle: [
+      'Woman wearing AXIS sunglasses in front of a blossoming tree',
+      'Woman using clear-lens AXIS glasses at a café',
+      'AXIS leather case next to two cappuccinos and a croissant',
+      'Man wearing AXIS sunglasses outdoors',
+      'Man in a jacket wearing AXIS sunglasses on a balcony',
+      'AXIS Smart Glasses leather case next to a cup of coffee',
+      'Woman wearing AXIS sunglasses among greenery',
+      'Cyclist wearing AXIS sport glasses on the road',
+      'AXIS case next to a laptop showing the AXIS website',
+      'Man adjusting his AXIS sunglasses at a restaurant',
+      'AXIS sport glasses with an iridescent lens on a café table',
+    ],
+  },
+
+  lifestyle: {
+    eyebrow: 'In the real world',
+    title: 'AXIS, out in everyday life.',
+    intro: 'Real people wearing AXIS — proof your customer will want a pair.',
+  },
+
   nav: {
     product: 'Product',
     capabilities: 'Capabilities',

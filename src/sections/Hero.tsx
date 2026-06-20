@@ -1,6 +1,8 @@
-import { motion } from 'framer-motion'
+import { useRef } from 'react'
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import { TreeLogo } from '../components/ui/TreeLogo'
-import { GlassesArt } from '../components/ui/GlassesArt'
+import { Img } from '../components/ui/Img'
+import heroProduct from '../assets/hero/hero-producto-02.jpeg?picture'
 import { useDict } from '../i18n/useDict'
 import { useScrollTo } from '../lib/scrollContext'
 import { whatsappLink } from '../config/brand'
@@ -15,12 +17,21 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: EASE_OUT_EXPO } },
 }
 
+// Difumina los bordes del render rectangular para fundirlo con el carbón.
+const FEATHER = 'radial-gradient(125% 125% at 50% 45%, #000 56%, transparent 100%)'
+
 export function Hero() {
   const { t } = useDict()
   const scrollTo = useScrollTo()
+  const reduce = useReducedMotion()
+
+  const ref = useRef<HTMLElement>(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  const parallaxY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, -90])
 
   return (
     <section
+      ref={ref}
       id="top"
       className="relative isolate flex min-h-[100svh] items-center overflow-hidden pt-28 pb-20"
     >
@@ -90,13 +101,41 @@ export function Hero() {
           </motion.ul>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.94 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, ease: EASE_OUT_EXPO, delay: 0.5 }}
-          className="relative"
-        >
-          <GlassesArt className="w-full" glow={0.2} />
+        {/* Producto: parallax al scroll + entrada + flotación + destello Morpho */}
+        <motion.div style={{ y: parallaxY }} className="relative">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.3, ease: EASE_OUT_EXPO, delay: 0.35 }}
+          >
+            <motion.div
+              animate={reduce ? undefined : { y: [0, -14, 0] }}
+              transition={
+                reduce ? undefined : { duration: 7, ease: 'easeInOut', repeat: Infinity }
+              }
+              className="relative"
+              style={{ maskImage: FEATHER, WebkitMaskImage: FEATHER }}
+            >
+              <Img
+                picture={heroProduct}
+                alt={t.alt.heroProduct}
+                priority
+                sizes="(min-width: 768px) 48vw, 92vw"
+                className="w-full drop-shadow-[0_40px_80px_rgba(0,0,0,0.55)]"
+              />
+
+              {/* Destello iridiscente Morpho que cruza el producto una sola vez */}
+              {!reduce && (
+                <motion.div
+                  aria-hidden
+                  initial={{ x: '-140%', opacity: 0 }}
+                  animate={{ x: '160%', opacity: [0, 0.55, 0] }}
+                  transition={{ duration: 1.9, ease: EASE_OUT_EXPO, delay: 1.1 }}
+                  className="bg-morpho pointer-events-none absolute inset-y-0 left-0 w-1/2 -skew-x-12 blur-2xl mix-blend-screen"
+                />
+              )}
+            </motion.div>
+          </motion.div>
         </motion.div>
       </div>
 

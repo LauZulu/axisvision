@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Icon, type IconKey } from '../components/ui/Icon'
 import { TreeLogo } from '../components/ui/TreeLogo'
+import { Img } from '../components/ui/Img'
+import capabilitiesImg from '../assets/packaging/empaque-abierto-con-gafas.jpeg?picture'
 import { SectionHeading } from '../components/ui/SectionHeading'
 import { useDict } from '../i18n/useDict'
 import { whatsappLink } from '../config/brand'
@@ -72,35 +74,54 @@ export function Capabilities() {
             })}
           </ul>
 
-          {/* Panel visual con crossfade */}
-          <div className="relative min-h-[360px] overflow-hidden rounded-2xl bg-carbon-900 p-8 md:p-12">
-            <div
-              aria-hidden
-              className="bg-morpho pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full opacity-25 blur-[90px]"
-            />
-            <TreeLogo className="pointer-events-none absolute bottom-[-10%] right-[-6%] h-[80%] text-gold/10" />
+          {/* Panel visual: banner de producto + info con crossfade */}
+          <div className="relative grid min-h-[440px] grid-rows-[auto_1fr] overflow-hidden rounded-2xl bg-carbon-900">
+            {/* Banner de producto (foto real, fundida al panel) */}
+            <div className="relative">
+              <Img
+                picture={capabilitiesImg}
+                alt={t.alt.capabilities}
+                sizes="(min-width: 1024px) 52vw, 90vw"
+                className="aspect-[16/10] w-full object-cover object-center"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-carbon-900 via-carbon-900/25 to-transparent"
+              />
+            </div>
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={current.key}
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.45, ease: EASE_OUT_EXPO }}
-                className="relative flex h-full flex-col"
-              >
-                <span className="text-gold">
-                  <Icon name={ICONS[current.key]} size={56} strokeWidth={1.2} />
-                </span>
-                <span className="eyebrow mt-8 block">
-                  {String(active + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}
-                </span>
-                <h3 className="font-display mt-3 text-3xl text-warm-white md:text-4xl">
-                  {current.title}
-                </h3>
-                <p className="mt-4 max-w-[42ch] text-lg text-warm-gray/80">{current.desc}</p>
-              </motion.div>
-            </AnimatePresence>
+            {/* Info de la capacidad activa */}
+            <div className="relative p-8 md:p-10">
+              <div
+                aria-hidden
+                className="bg-morpho pointer-events-none absolute -right-16 -top-10 h-56 w-56 rounded-full opacity-25 blur-[90px]"
+              />
+              <TreeLogo className="pointer-events-none absolute bottom-[-12%] right-[-6%] h-[78%] text-gold/10" />
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={current.key}
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.45, ease: EASE_OUT_EXPO }}
+                  className="relative flex flex-col"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-gold">
+                      <Icon name={ICONS[current.key]} size={40} strokeWidth={1.3} />
+                    </span>
+                    <span className="eyebrow block">
+                      {String(active + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <h3 className="font-display mt-4 text-3xl text-warm-white md:text-4xl">
+                    {current.title}
+                  </h3>
+                  <p className="mt-3 max-w-[42ch] text-lg text-warm-gray/80">{current.desc}</p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
         </div>
 
