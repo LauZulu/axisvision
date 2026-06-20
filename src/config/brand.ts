@@ -7,13 +7,13 @@
  *  - SALES_EMAIL / CALENDLY_URL: opcionales (respaldo de contacto).
  */
 
-// TODO[AXIS]: poner el número real de WhatsApp Business (ej. 573001112233)
-export const WHATSAPP_NUMBER = '0000000000'
+// WhatsApp Business del equipo AXIS (formato internacional sin "+" ni espacios).
+export const WHATSAPP_NUMBER = '573123727253'
 
 // TODO[AXIS]: subir el catálogo a /public y ajustar la ruta
 export const CATALOG_URL = '/catalogo-axis.pdf'
 
-export const SALES_EMAIL = 'ventas@axis.example'
+export const SALES_EMAIL = 'contacto@axisvision.co'
 export const CALENDLY_URL = '' // opcional: link de Calendly/Cal.com
 
 export type BuyerType = 'optica' | 'retail' | 'distribuidor' | 'b2c' | 'general'
