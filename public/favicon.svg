@@ -1,33 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
   <rect width="64" height="64" rx="14" fill="#0A0A0A"/>
-  <g fill="none" stroke="#C8A96E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" transform="translate(7 4) scale(0.5)">
-    <path d="M50 120 V96"/>
-    <path d="M28 96 H72"/>
-    <path d="M28 96 V78"/>
-    <path d="M72 96 V78"/>
-    <path d="M16 78 H40"/>
-    <path d="M60 78 H84"/>
-    <path d="M16 78 V60"/>
-    <path d="M40 78 V60"/>
-    <path d="M60 78 V60"/>
-    <path d="M84 78 V60"/>
-    <path d="M10 60 H22"/>
-    <path d="M34 60 H46"/>
-    <path d="M54 60 H66"/>
-    <path d="M78 60 H90"/>
-    <path d="M10 60 V46"/>
-    <path d="M22 60 V46"/>
-    <path d="M34 60 V46"/>
-    <path d="M46 60 V46"/>
-    <path d="M54 60 V46"/>
-    <path d="M66 60 V46"/>
-    <path d="M78 60 V46"/>
-    <path d="M90 60 V46"/>
-  </g>
-  <g fill="#C8A96E" transform="translate(7 4) scale(0.5)">
-    <circle cx="50" cy="120" r="2.4"/>
-    <circle cx="50" cy="96" r="2"/>
-    <circle cx="28" cy="78" r="1.8"/>
-    <circle cx="72" cy="78" r="1.8"/>
+  <g fill="none" stroke="#C8A96E" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="miter"
+     transform="translate(6.8 7) scale(0.49)">
+    <path d="M50 98 V57"/>
+    <path d="M50 57 L13 21"/>
+    <path d="M50 57 L88 12"/>
+    <path d="M50 57 L64 34"/>
+    <path d="M54 16 L64 34 L77 16"/>
+    <path d="M60 20 L66 31 L73 20"/>
   </g>
 </svg>
