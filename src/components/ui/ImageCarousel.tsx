@@ -9,6 +9,10 @@ type Props = {
   slides: Slide[]
   /** Milisegundos entre cambios automáticos. */
   interval?: number
+  /** Segundos que dura el fundido entre imágenes. */
+  fade?: number
+  /** `contain` muestra la imagen completa (sin recortar); `cover` la recorta para llenar. */
+  fit?: 'cover' | 'contain'
   /** Hint de tamaño para el srcset responsive. */
   sizes?: string
   /** Clases del contenedor (define el aspect-ratio responsive). */
@@ -18,10 +22,17 @@ type Props = {
 /**
  * Carrusel con disolver suave color-a-color (sin pasar por negro): la imagen
  * nueva aparece ENCIMA de la anterior, que permanece opaca como base, así nunca
- * se ve el fondo oscuro durante la transición. Responsive (object-cover) y
- * accesible: con `prefers-reduced-motion` no auto-rota ni anima.
+ * se ve el fondo oscuro durante la transición. Responsive y accesible: con
+ * `prefers-reduced-motion` no auto-rota ni anima.
  */
-export function ImageCarousel({ slides, interval = 4000, sizes = '50vw', className }: Props) {
+export function ImageCarousel({
+  slides,
+  interval = 5000,
+  fade = 2.2,
+  fit = 'cover',
+  sizes = '50vw',
+  className,
+}: Props) {
   const reduce = useReducedMotion()
   const [index, setIndex] = useState(0)
   const [base, setBase] = useState(0) // imagen de fondo (la anterior ya asentada)
@@ -36,12 +47,13 @@ export function ImageCarousel({ slides, interval = 4000, sizes = '50vw', classNa
 
   const current = slides[index]
   const baseSlide = slides[base]
+  const imgClass = `h-full w-full object-center ${fit === 'contain' ? 'object-contain' : 'object-cover'}`
 
   return (
     <div className={`relative overflow-hidden ${className ?? ''}`} aria-roledescription="carrusel">
       {/* Capa base: imagen anterior, siempre opaca → evita el destello oscuro */}
       <div className="absolute inset-0">
-        <Img picture={baseSlide.pic} alt="" sizes={sizes} className="h-full w-full object-cover object-center" />
+        <Img picture={baseSlide.pic} alt="" sizes={sizes} className={imgClass} />
       </div>
 
       {/* Capa superior: la imagen actual se funde sobre la base */}
@@ -49,11 +61,11 @@ export function ImageCarousel({ slides, interval = 4000, sizes = '50vw', classNa
         key={index}
         initial={reduce ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1.6, ease: EASE_OUT_EXPO }}
+        transition={{ duration: fade, ease: EASE_OUT_EXPO }}
         onAnimationComplete={() => setBase(index)}
         className="absolute inset-0"
       >
-        <Img picture={current.pic} alt={current.alt} sizes={sizes} className="h-full w-full object-cover object-center" />
+        <Img picture={current.pic} alt={current.alt} sizes={sizes} className={imgClass} />
       </motion.div>
 
       {slides.length > 1 && (

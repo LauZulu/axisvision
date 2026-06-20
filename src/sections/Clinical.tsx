@@ -29,11 +29,12 @@ export function Clinical() {
     <section id="clinical" className="border-t border-white/5 py-24 md:py-36">
       <div className="container-axis grid items-center gap-14 lg:grid-cols-2">
         <Reveal className="order-2 lg:order-1">
-          <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-carbon-850">
+          <div className="relative mx-auto aspect-[3/4] w-full max-w-sm max-h-[78svh] overflow-hidden rounded-2xl border border-white/8 bg-carbon-900 lg:max-w-md">
             <ImageCarousel
               slides={SLIDES.map((s) => ({ pic: s.pic, alt: t.alt.lifestyle[s.alt] }))}
-              sizes="(min-width: 1024px) 50vh, 80vw"
-              className="mx-auto aspect-[3/4] h-[68svh] max-h-[560px] w-auto max-w-full"
+              fit="contain"
+              sizes="(min-width: 1024px) 28rem, 90vw"
+              className="h-full w-full"
             />
             {/* Degradados para legibilidad del sello (arriba) y los puntos (abajo) */}
             <div
