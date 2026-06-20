@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Img } from './Img'
 import { EASE_OUT_EXPO } from '../../lib/motion'
 
@@ -16,13 +16,15 @@ type Props = {
 }
 
 /**
- * Carrusel de imágenes con crossfade automático. Responsive (las slides van
- * en object-cover sobre el contenedor) y accesible: con `prefers-reduced-motion`
- * no auto-rota y muestra una sola imagen estática.
+ * Carrusel con disolver suave color-a-color (sin pasar por negro): la imagen
+ * nueva aparece ENCIMA de la anterior, que permanece opaca como base, así nunca
+ * se ve el fondo oscuro durante la transición. Responsive (object-cover) y
+ * accesible: con `prefers-reduced-motion` no auto-rota ni anima.
  */
-export function ImageCarousel({ slides, interval = 3000, sizes = '50vw', className }: Props) {
+export function ImageCarousel({ slides, interval = 4000, sizes = '50vw', className }: Props) {
   const reduce = useReducedMotion()
   const [index, setIndex] = useState(0)
+  const [base, setBase] = useState(0) // imagen de fondo (la anterior ya asentada)
 
   useEffect(() => {
     if (reduce || slides.length <= 1) return
@@ -33,21 +35,26 @@ export function ImageCarousel({ slides, interval = 3000, sizes = '50vw', classNa
   }, [reduce, slides.length, interval])
 
   const current = slides[index]
+  const baseSlide = slides[base]
 
   return (
     <div className={`relative overflow-hidden ${className ?? ''}`} aria-roledescription="carrusel">
-      <AnimatePresence>
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1, ease: EASE_OUT_EXPO }}
-          className="absolute inset-0"
-        >
-          <Img picture={current.pic} alt={current.alt} sizes={sizes} className="h-full w-full object-cover object-center" />
-        </motion.div>
-      </AnimatePresence>
+      {/* Capa base: imagen anterior, siempre opaca → evita el destello oscuro */}
+      <div className="absolute inset-0">
+        <Img picture={baseSlide.pic} alt="" sizes={sizes} className="h-full w-full object-cover object-center" />
+      </div>
+
+      {/* Capa superior: la imagen actual se funde sobre la base */}
+      <motion.div
+        key={index}
+        initial={reduce ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.6, ease: EASE_OUT_EXPO }}
+        onAnimationComplete={() => setBase(index)}
+        className="absolute inset-0"
+      >
+        <Img picture={current.pic} alt={current.alt} sizes={sizes} className="h-full w-full object-cover object-center" />
+      </motion.div>
 
       {slides.length > 1 && (
         <div className="absolute bottom-3.5 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">

@@ -33,7 +33,7 @@ export function Clinical() {
             <ImageCarousel
               slides={SLIDES.map((s) => ({ pic: s.pic, alt: t.alt.lifestyle[s.alt] }))}
               sizes="(min-width: 1024px) 46vw, 92vw"
-              className="aspect-[4/5] w-full md:aspect-[5/4]"
+              className="mx-auto aspect-[3/4] w-full max-w-md lg:max-w-none"
             />
             {/* Degradados para legibilidad del sello (arriba) y los puntos (abajo) */}
             <div
