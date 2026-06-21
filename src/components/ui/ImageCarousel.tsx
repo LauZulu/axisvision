@@ -5,6 +5,40 @@ import { EASE_OUT_EXPO } from '../../lib/motion'
 
 export type Slide = { pic: ResponsivePicture; alt: string }
 
+/**
+ * Una imagen que llena toda la caja: si va en `contain`, los márgenes se
+ * rellenan con una versión borrosa de la MISMA foto (no de otra), para que
+ * cada slide sea autónoma y no se superponga con la anterior en la transición.
+ */
+function Layer({
+  slide,
+  fit,
+  sizes,
+  withAlt,
+}: {
+  slide: Slide
+  fit: 'cover' | 'contain'
+  sizes: string
+  withAlt: boolean
+}) {
+  const fg = `relative z-[1] h-full w-full object-center ${
+    fit === 'contain' ? 'object-contain' : 'object-cover'
+  }`
+  return (
+    <>
+      {fit === 'contain' && (
+        <Img
+          picture={slide.pic}
+          alt=""
+          sizes="40vw"
+          className="absolute inset-0 h-full w-full scale-110 object-cover opacity-45 blur-2xl"
+        />
+      )}
+      <Img picture={slide.pic} alt={withAlt ? slide.alt : ''} sizes={sizes} className={fg} />
+    </>
+  )
+}
+
 type Props = {
   slides: Slide[]
   /** Milisegundos entre cambios automáticos. */
@@ -21,9 +55,9 @@ type Props = {
 
 /**
  * Carrusel con disolver suave color-a-color (sin pasar por negro): la imagen
- * nueva aparece ENCIMA de la anterior, que permanece opaca como base, así nunca
- * se ve el fondo oscuro durante la transición. Responsive y accesible: con
- * `prefers-reduced-motion` no auto-rota ni anima.
+ * nueva aparece ENCIMA de la anterior, que permanece opaca como base. Cada
+ * slide llena toda la caja (ver Layer), así no hay superposición entre fotos de
+ * distinta proporción. Accesible: con `prefers-reduced-motion` no auto-rota.
  */
 export function ImageCarousel({
   slides,
@@ -45,15 +79,11 @@ export function ImageCarousel({
     return () => clearInterval(id)
   }, [reduce, slides.length, interval])
 
-  const current = slides[index]
-  const baseSlide = slides[base]
-  const imgClass = `h-full w-full object-center ${fit === 'contain' ? 'object-contain' : 'object-cover'}`
-
   return (
     <div className={`relative overflow-hidden ${className ?? ''}`} aria-roledescription="carrusel">
-      {/* Capa base: imagen anterior, siempre opaca → evita el destello oscuro */}
+      {/* Capa base: imagen anterior, llena y opaca → sin destello ni superposición */}
       <div className="absolute inset-0">
-        <Img picture={baseSlide.pic} alt="" sizes={sizes} className={imgClass} />
+        <Layer slide={slides[base]} fit={fit} sizes={sizes} withAlt={false} />
       </div>
 
       {/* Capa superior: la imagen actual se funde sobre la base */}
@@ -65,7 +95,7 @@ export function ImageCarousel({
         onAnimationComplete={() => setBase(index)}
         className="absolute inset-0"
       >
-        <Img picture={current.pic} alt={current.alt} sizes={sizes} className={imgClass} />
+        <Layer slide={slides[index]} fit={fit} sizes={sizes} withAlt />
       </motion.div>
 
       {slides.length > 1 && (
