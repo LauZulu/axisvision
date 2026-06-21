@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Img } from './Img'
-import { EASE_OUT_EXPO } from '../../lib/motion'
 
 export type Slide = { pic: ResponsivePicture; alt: string }
 
@@ -86,12 +85,13 @@ export function ImageCarousel({
         <Layer slide={slides[base]} fit={fit} sizes={sizes} withAlt={false} />
       </div>
 
-      {/* Capa superior: la imagen actual se funde sobre la base */}
+      {/* Capa superior: la imagen actual se funde sobre la base, entrando con un
+          leve desenfoque que se aclara (focus-in) para una transición más suave */}
       <motion.div
         key={index}
-        initial={reduce ? false : { opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: fade, ease: EASE_OUT_EXPO }}
+        initial={reduce ? false : { opacity: 0, filter: 'blur(12px)' }}
+        animate={{ opacity: 1, filter: 'blur(0px)' }}
+        transition={{ duration: fade, ease: 'easeInOut' }}
         onAnimationComplete={() => setBase(index)}
         className="absolute inset-0"
       >
