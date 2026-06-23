@@ -435,3 +435,7 @@ Lo que falte, lo cubro con **placeholders claramente marcados** para no frenar l
 
 ### Próximo paso
 **Revisa y aprueba (o ajusta) este plan.** Al aprobar, ejecuto la Fase 0 y avanzo por fases con calidad Apple/Whoop/Ray-Ban×Meta. Construyo solo cuando des luz verde.
+
+
+
+
