@@ -16,7 +16,7 @@ const GROUP_ICONS: Record<string, IconKey> = {
 export function Specs() {
   const { t } = useDict()
   return (
-    <section id="specs" className="border-t border-white/5 py-24 md:py-36">
+    <section id="specs" className="border-t border-line py-24 md:py-36">
       <div className="container-axis">
         <SectionHeading eyebrow={t.specs.eyebrow} title={t.specs.title} intro={t.specs.intro} />
 
@@ -31,7 +31,7 @@ export function Specs() {
             <motion.li
               key={g.key}
               variants={fadeUp}
-              className="group rounded-xl border border-white/8 bg-carbon-850 p-7 transition-colors duration-500 hover:border-gold/25"
+              className="group rounded-xl border border-line bg-carbon-850 p-7 transition-colors duration-500 hover:border-gold/25"
             >
               <div className="flex items-center gap-3">
                 <span className="inline-grid h-10 w-10 place-items-center rounded-lg border border-gold/25 text-gold">
@@ -45,7 +45,7 @@ export function Specs() {
                 {g.items.map((item) => (
                   <li
                     key={item}
-                    className="flex items-baseline gap-3 border-t border-white/8 py-2.5 text-[0.95rem] text-warm-gray/80 first:border-t-0"
+                    className="flex items-baseline gap-3 border-t border-line py-2.5 text-[0.95rem] text-warm-gray/80 first:border-t-0"
                   >
                     <span className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full bg-gold/70" />
                     {item}

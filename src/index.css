@@ -15,8 +15,11 @@
   --color-gold-deep: #8b6b35;
 
   /* Luz cálida */
-  --color-warm-white: #f5f3ee; /* la ÚNICA sección de "luz" */
+  --color-warm-white: #f5f3ee; /* titulares (se invierte a carbón en tema claro) */
   --color-warm-gray: #d8d6cf; /* texto cuerpo */
+
+  /* Hairline / separadores — se adapta al tema (blanco translúcido en oscuro) */
+  --color-line: rgba(255, 255, 255, 0.08);
 
   /* Iridiscencia Morpho — firma cromática (uso raro = magia) */
   --color-morpho-1: #1a3a8a;
@@ -47,6 +50,25 @@
 }
 
 /* ============================================================
+   Tema claro — se activa con <html data-theme="light">.
+   Oscuro es el default (sin atributo o data-theme="dark").
+   Solo se re-mapean los NEUTROS: el dorado y el Morpho —la firma
+   de marca— son idénticos en ambos temas. Como las utilidades de
+   Tailwind v4 leen estas variables con var(), todo el sitio cambia
+   sin tocar clases. La sección de "luz" (Capabilities) mantiene su
+   propio color fijo y no se invierte.
+   ============================================================ */
+:root[data-theme='light'] {
+  --color-carbon-900: #f5f3ee; /* fondo base claro (blanco cálido) */
+  --color-carbon-850: #ffffff; /* tarjetas */
+  --color-carbon-800: #efece4; /* elevación sutil */
+  --color-carbon-700: #e4dfd3; /* bordes suaves */
+  --color-warm-white: #0a0a0a; /* titulares → carbón */
+  --color-warm-gray: #3f3d38; /* texto cuerpo → gris cálido oscuro */
+  --color-line: rgba(10, 10, 10, 0.12);
+}
+
+/* ============================================================
    Base
    ============================================================ */
 @layer base {
@@ -65,6 +87,9 @@
     font-size: 19px;
     line-height: 1.6;
     font-synthesis: none;
+    transition:
+      background-color 0.4s var(--ease-out-expo),
+      color 0.4s var(--ease-out-expo);
   }
 
   ::selection {

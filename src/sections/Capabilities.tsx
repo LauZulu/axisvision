@@ -6,7 +6,7 @@ import { Img } from '../components/ui/Img'
 import capabilitiesImg from '../assets/packaging/empaque-abierto-con-gafas.jpeg?picture'
 import { SectionHeading } from '../components/ui/SectionHeading'
 import { useDict } from '../i18n/useDict'
-import { whatsappLink } from '../config/brand'
+import { useScrollTo } from '../lib/scrollContext'
 import { EASE_OUT_EXPO } from '../lib/motion'
 
 const ICONS: Record<string, IconKey> = {
@@ -20,14 +20,16 @@ const ICONS: Record<string, IconKey> = {
   privacy: 'privacy',
 }
 
+// Sección de "luz": colores fijos que NO siguen el tema (siempre clara).
 export function Capabilities() {
   const { t } = useDict()
+  const scrollTo = useScrollTo()
   const [active, setActive] = useState(0)
   const items = t.capabilities.items
   const current = items[active]
 
   return (
-    <section id="capabilities" className="bg-warm-white py-24 text-carbon-900 md:py-36">
+    <section id="capabilities" className="bg-[#f5f3ee] py-24 text-[#0a0a0a] md:py-36">
       <div className="container-axis">
         <SectionHeading
           light
@@ -48,15 +50,15 @@ export function Capabilities() {
                     onFocus={() => setActive(i)}
                     onClick={() => setActive(i)}
                     aria-pressed={isActive}
-                    className={`group flex w-full items-center gap-4 border-b border-carbon-900/10 py-4 text-left transition-colors ${
-                      isActive ? 'text-carbon-900' : 'text-carbon-900/45 hover:text-carbon-900/80'
+                    className={`group flex w-full items-center gap-4 border-b border-[#0a0a0a]/10 py-4 text-left transition-colors ${
+                      isActive ? 'text-[#0a0a0a]' : 'text-[#0a0a0a]/45 hover:text-[#0a0a0a]/80'
                     }`}
                   >
                     <span
                       className={`relative grid h-11 w-11 shrink-0 place-items-center rounded-full border transition-colors ${
                         isActive
                           ? 'border-gold-deep/50 text-gold-deep'
-                          : 'border-carbon-900/15 text-carbon-900/40'
+                          : 'border-[#0a0a0a]/15 text-[#0a0a0a]/40'
                       }`}
                     >
                       <Icon name={ICONS[it.key]} size={20} strokeWidth={1.5} />
@@ -74,8 +76,8 @@ export function Capabilities() {
             })}
           </ul>
 
-          {/* Panel visual: banner de producto + info con crossfade */}
-          <div className="relative grid min-h-[440px] grid-rows-[auto_1fr] overflow-hidden rounded-2xl bg-carbon-900">
+          {/* Panel visual: banner de producto + info con crossfade (siempre oscuro) */}
+          <div className="relative grid min-h-[440px] grid-rows-[auto_1fr] overflow-hidden rounded-2xl bg-[#0a0a0a]">
             {/* Banner de producto (foto real, fundida al panel) */}
             <div className="relative">
               <Img
@@ -86,7 +88,7 @@ export function Capabilities() {
               />
               <div
                 aria-hidden
-                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-carbon-900 via-carbon-900/25 to-transparent"
+                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/25 to-transparent"
               />
             </div>
 
@@ -115,10 +117,10 @@ export function Capabilities() {
                       {String(active + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}
                     </span>
                   </div>
-                  <h3 className="font-display mt-4 text-3xl text-warm-white md:text-4xl">
+                  <h3 className="font-display mt-4 text-3xl text-[#f5f3ee] md:text-4xl">
                     {current.title}
                   </h3>
-                  <p className="mt-3 max-w-[42ch] text-lg text-warm-gray/80">{current.desc}</p>
+                  <p className="mt-3 max-w-[42ch] text-lg text-white/70">{current.desc}</p>
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -126,15 +128,13 @@ export function Capabilities() {
         </div>
 
         <div className="mt-12">
-          <a
-            href={whatsappLink('general')}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-axis !border-carbon-900/30 !text-carbon-900 hover:!text-warm-white"
+          <button
+            onClick={() => scrollTo('#specs')}
+            className="btn-axis !border-[#0a0a0a]/30 !text-[#0a0a0a] hover:!text-[#f5f3ee]"
           >
             {t.capabilities.cta}
             <Icon name="arrow" size={18} />
-          </a>
+          </button>
         </div>
       </div>
     </section>

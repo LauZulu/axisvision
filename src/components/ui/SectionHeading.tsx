@@ -20,8 +20,9 @@ export function SectionHeading({
   className = '',
 }: Props) {
   const alignCls = align === 'center' ? 'text-center mx-auto items-center' : 'text-left items-start'
-  const titleColor = light ? 'text-carbon-900' : 'text-warm-white'
-  const introColor = light ? 'text-carbon-900/70' : 'text-warm-gray/80'
+  // `light` = la sección de "luz" (Capabilities): color fijo, no sigue el tema.
+  const titleColor = light ? 'text-[#0a0a0a]' : 'text-warm-white'
+  const introColor = light ? 'text-[#0a0a0a]/70' : 'text-warm-gray/80'
 
   return (
     <div className={`flex flex-col ${alignCls} ${className}`}>

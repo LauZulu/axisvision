@@ -6,7 +6,7 @@ import { SectionHeading } from '../components/ui/SectionHeading'
 import { Reveal } from '../components/ui/Reveal'
 import { Icon } from '../components/ui/Icon'
 import { useDict } from '../i18n/useDict'
-import { CATALOG_URL } from '../config/brand'
+import { useScrollTo } from '../lib/scrollContext'
 import { fadeUp, inView, stagger } from '../lib/motion'
 
 // Reflejo Morpho creciente por edición (Onyx → Aurum → Morpho)
@@ -14,12 +14,13 @@ const GLOW = [0.06, 0.14, 0.32]
 
 export function Editions() {
   const { t } = useDict()
+  const scrollTo = useScrollTo()
   return (
-    <section id="editions" className="border-t border-white/5 py-24 md:py-36">
+    <section id="editions" className="border-t border-line py-24 md:py-36">
       <div className="container-axis">
         <SectionHeading eyebrow={t.editions.eyebrow} title={t.editions.title} intro={t.editions.intro} />
 
-        {/* Empaque premium — señal de producto serio para revender */}
+        {/* Empaque premium — la experiencia de unboxing */}
         <Reveal className="mt-12">
           <div className="group relative mx-auto max-w-3xl overflow-hidden rounded-2xl border border-gold/20">
             <Img
@@ -42,7 +43,7 @@ export function Editions() {
             <motion.li
               key={f.name}
               variants={fadeUp}
-              className="group overflow-hidden rounded-2xl border border-white/8 bg-carbon-850"
+              className="group overflow-hidden rounded-2xl border border-line bg-carbon-850"
             >
               <div className="relative grid place-items-center bg-carbon-900 p-10 transition-transform duration-700 group-hover:scale-[1.02]">
                 <GlassesArt className="w-full" glow={GLOW[i]} />
@@ -56,10 +57,10 @@ export function Editions() {
         </motion.ul>
 
         <div className="mt-12">
-          <a href={CATALOG_URL} download className="btn-axis">
-            <Icon name="download" size={18} />
+          <button onClick={() => scrollTo('#contact')} className="btn-axis">
             {t.editions.cta}
-          </a>
+            <Icon name="arrow" size={18} />
+          </button>
         </div>
       </div>
     </section>

@@ -10,7 +10,7 @@ export const es = {
     productShowcase:
       'Gafas AXIS de lente transparente sobre su estuche de cuero, con iluminación dorada',
     capabilities: 'Gafas AXIS junto a su estuche de cuero premium sobre fondo claro',
-    packaging: 'Estuche de cuero AXIS abierto: presentación premium lista para vitrina',
+    packaging: 'Estuche de cuero AXIS abierto: presentación premium',
     frontBanner: 'Vista frontal de las gafas AXIS sobre una superficie clara',
     lifestyle: [
       'Mujer con gafas de sol AXIS frente a un árbol en flor',
@@ -29,17 +29,17 @@ export const es = {
 
   lifestyle: {
     eyebrow: 'En el mundo real',
-    title: 'Así se ve AXIS en el día a día.',
-    intro:
-      'Personas reales llevando AXIS. La prueba de que tu cliente lo va a querer puesto.',
+    title: 'Así se ve AXIS en tu día a día.',
+    intro: 'Personas reales llevando AXIS. Así se verá contigo.',
   },
 
   nav: {
     product: 'Producto',
     capabilities: 'Capacidades',
-    business: 'Negocio',
+    editions: 'Ediciones',
     contact: 'Contacto',
-    cta: 'Ser punto de venta',
+    cta: 'Reservar AXIS',
+    theme: 'Cambiar tema',
   },
 
   hero: {
@@ -47,10 +47,10 @@ export const es = {
     titleLead: 'Una nueva forma',
     titleAccent: 'de ver el mundo.',
     subtitle:
-      'Gafas con inteligencia artificial: vídeo, foto, traducción en vivo y lentes con tu fórmula. Diseñadas para venderse.',
-    ctaPrimary: 'Conviértete en punto de venta',
+      'Gafas con inteligencia artificial: vídeo, foto, traducción en vivo y lentes con tu fórmula. Hechas para llevarse puestas todo el día.',
+    ctaPrimary: 'Reservar AXIS',
     ctaSecondary: 'Descubre AXIS',
-    trust: ['Garantía internacional', 'Respaldo clínico', 'Marca registrada'],
+    trust: ['6 meses de garantía', 'Respaldo clínico', 'Marca registrada'],
   },
 
   what: {
@@ -69,7 +69,7 @@ export const es = {
     eyebrow: 'Diseño',
     title: 'Ingeniería que no se nota. Presencia que sí.',
     intro:
-      'Materiales premium, líneas atemporales y el árbol de la vida grabado en la patilla. Una gafa que tu cliente quiere llevar puesta.',
+      'Materiales premium, líneas atemporales y el árbol de la vida grabado en la patilla. Una gafa que quieres llevar puesta.',
     annotations: [
       { label: 'Cámara', value: 'Captura en primera persona' },
       { label: 'Audio open-ear', value: 'Sonido sin tapar el oído' },
@@ -80,25 +80,25 @@ export const es = {
 
   capabilities: {
     eyebrow: 'Inteligencia',
-    title: 'Todo lo que AXIS hace por tu cliente.',
-    intro: 'Explora cada capacidad. Mientras más sabe hacer, más fácil de vender.',
+    title: 'Todo lo que AXIS hace por ti.',
+    intro: 'Explora cada capacidad. Toca para descubrir lo que vas a poder hacer.',
     items: [
       { key: 'video', title: 'Vídeo manos libres', desc: 'Graba lo que ves, en primera persona, sin usar las manos.' },
       { key: 'photo', title: 'Foto instantánea', desc: 'Captura el momento sin sacar el teléfono del bolsillo.' },
       { key: 'ai', title: 'Asistente con IA', desc: 'Pregunta, identifica objetos, resume y traduce contexto en vivo.' },
       { key: 'translate', title: 'Traducción en vivo', desc: 'Entiende y responde conversaciones en otro idioma, en tiempo real.' },
       { key: 'audio', title: 'Audio open-ear', desc: 'Llamadas y música sin aislarte del mundo a tu alrededor.' },
-      { key: 'lens', title: 'Lentes con tu fórmula', desc: 'Graduación a medida de cada cliente. Producto óptico legítimo.' },
+      { key: 'lens', title: 'Lentes con tu fórmula', desc: 'Graduación a tu medida. Producto óptico legítimo.' },
       { key: 'battery', title: 'Autonomía real', desc: 'Todo el día de uso, con estuche de carga incluido.' },
-      { key: 'privacy', title: 'Privacidad por diseño', desc: 'Indicador de grabación y control total en manos del usuario.' },
+      { key: 'privacy', title: 'Privacidad por diseño', desc: 'Indicador de grabación y control total en tus manos.' },
     ],
-    cta: 'Solicitar ficha técnica completa',
+    cta: 'Ver especificaciones',
   },
 
   specs: {
     eyebrow: 'Especificaciones',
     title: 'Ficha técnica.',
-    intro: 'Todo lo que tu cliente quiere saber, en un vistazo.',
+    intro: 'Todo lo que quieres saber, en un vistazo.',
     groups: [
       {
         key: 'capture',
@@ -151,78 +151,34 @@ export const es = {
     eyebrow: 'Respaldo clínico',
     title: 'No es un gadget. Es óptica de verdad.',
     body:
-      'Los lentes de AXIS se gradúan a la fórmula de cada cliente y se validan junto a ópticas y profesionales aliados. AXIS entra en tu terreno con aval profesional — el producto se siente tuyo.',
+      'Los lentes de AXIS se gradúan a tu fórmula y se validan junto a ópticas y profesionales aliados. No es un accesorio: es óptica real que puedes usar todo el día.',
     badge: 'Validado con óptica profesional aliada',
     points: [
-      'Lentes graduados a medida',
+      'Lentes graduados a tu medida',
       'Compatibilidad con monturas ópticas',
       'Aval de profesionales de la visión',
     ],
-    cta: 'Conoce el respaldo clínico',
-  },
-
-  business: {
-    eyebrow: 'La oportunidad',
-    title: 'Un producto que te deja margen y no tiene riesgo.',
-    intro:
-      'AXIS no es solo una gafa deseable: es una línea de negocio rentable para tu óptica o tu red.',
-    cards: [
-      { title: 'Margen que defiende tu negocio', desc: 'PVP recomendado y protegido. Vendes premium, ganas premium.' },
-      { title: 'Categoría con demanda', desc: 'Las gafas con IA ya son deseadas. AXIS te da el producto para capturarla.' },
-      { title: 'Sin riesgo de inventario', desc: 'Pedido inicial flexible y reposición ágil. Sin stock muerto.' },
-      { title: 'Punto de venta listo', desc: 'Display, unidades demo y formación de tu equipo incluidos.' },
-      { title: 'Exclusividad de territorio', desc: 'Eres el AXIS de tu zona. Protegemos tu mercado.' },
-      { title: 'Marca seria, no improvisada', desc: 'Registro, garantía, soporte y continuidad de producto.' },
-    ],
-    stats: [
-      { value: '24', suffix: ' meses', label: 'Garantía internacional' },
-      { value: '2', suffix: 'x', label: 'Categoría en crecimiento de doble dígito' },
-      { value: '100', suffix: '%', label: 'PVP recomendado y defendido' },
-      { value: '1', suffix: '', label: 'Punto de venta oficial por zona' },
-    ],
-    cta: 'Solicitar precios mayoristas',
-    disclaimer: 'Precios y condiciones en el catálogo · Sin compromiso',
-  },
-
-  program: {
-    eyebrow: 'Programa de punto de venta',
-    title: 'Aliarte con AXIS es claro, rápido y sin riesgo.',
-    steps: [
-      { n: '01', title: 'Solicita el catálogo y condiciones', desc: 'Cuéntanos sobre tu negocio y te enviamos precios y disponibilidad de tu zona.' },
-      { n: '02', title: 'Recibe tu kit y formación', desc: 'Display, unidades demo, material gráfico y formación para tu equipo de venta.' },
-      { n: '03', title: 'Vende AXIS con respaldo total', desc: 'Soporte postventa, garantía y reposición. Nunca te quedas solo.' },
-    ],
-    includesTitle: 'Lo que recibes como punto de venta oficial',
-    includes: [
-      'Kit de exhibición de mostrador',
-      'Unidades demo para tu tienda',
-      'Material gráfico y de marca',
-      'Formación de tu equipo',
-      'Sello "Punto de Venta Oficial AXIS"',
-      'Soporte y reposición postventa',
-      'Territorio protegido',
-    ],
-    cta: 'Quiero ser punto de venta',
+    cta: 'Reservar AXIS',
   },
 
   trust: {
     eyebrow: 'Respaldo',
-    title: 'Detrás de cada AXIS hay una empresa que responde.',
+    title: 'Detrás de cada AXIS, una marca que responde.',
     signals: [
-      { title: 'Garantía internacional', desc: '24 meses de cobertura formal para tus clientes.' },
+      { title: '6 meses de garantía', desc: 'Cobertura formal para ti desde el día uno.' },
       { title: 'Marca registrada', desc: 'Una marca protegida y seria, no un producto improvisado.' },
       { title: 'Respaldo clínico', desc: 'Lentes validados con profesionales de la visión.' },
-      { title: 'Soporte postventa', desc: 'Atención y reemplazo dedicados. Cubrimos a tu cliente.' },
-      { title: 'Capacidad de suministro', desc: 'Producción para volumen y reposición garantizada.' },
+      { title: 'Soporte dedicado', desc: 'Atención y reemplazo cuando lo necesites.' },
+      { title: 'Envíos y cambios', desc: 'Lo recibes en casa; cambios sin complicaciones.' },
       { title: 'Continuidad de producto', desc: 'Ediciones y hoja de ruta. AXIS llegó para quedarse.' },
     ],
   },
 
   editions: {
     eyebrow: 'Ediciones',
-    title: 'Una familia AXIS para cada cliente.',
-    intro: 'Acabados premium y presentación lista para tu vitrina. Surtido para vender más.',
-    cta: 'Descargar catálogo',
+    title: 'Una edición AXIS para cada estilo.',
+    intro: 'Acabados premium y presentación de lujo. Elige el que va contigo.',
+    cta: 'Elegir mi AXIS',
     finishes: [
       { name: 'AXIS Onyx', desc: 'Negro carbón mate. El clásico atemporal.' },
       { name: 'AXIS Aurum', desc: 'Detalles en dorado antiguo. La edición insignia.' },
@@ -230,50 +186,36 @@ export const es = {
     ],
   },
 
-  consumer: {
-    eyebrow: 'Para el consumidor',
-    title: '¿No tienes una óptica? También puedes ser de los primeros.',
-    body: 'AXIS llega primero a sus puntos de venta oficiales. Únete a la lista de espera y te avisamos.',
-    cta: 'Unirme a la lista de espera',
-  },
-
   faq: {
-    eyebrow: 'Preguntas comerciales',
-    title: 'Lo que toda óptica nos pregunta.',
+    eyebrow: 'Preguntas frecuentes',
+    title: 'Lo que quizá te estás preguntando.',
     items: [
-      { q: '¿Qué margen ofrece AXIS?', a: 'Un margen premium con PVP recomendado y protegido. Las condiciones completas van en el catálogo: solicítalo y te las enviamos.' },
-      { q: '¿Hay exclusividad de territorio?', a: 'Sí. Protegemos tu zona como punto de venta oficial. Disponibilidad según región.' },
-      { q: '¿Cómo es la garantía y la postventa?', a: 'Garantía internacional de 24 meses, con soporte y reposición dedicados para ti y tu cliente.' },
-      { q: '¿Hay pedido mínimo?', a: 'Trabajamos con pedidos iniciales flexibles para reducir tu riesgo. Te damos el detalle en el catálogo.' },
-      { q: '¿Entregan material de exhibición?', a: 'Sí: display de mostrador, unidades demo, material gráfico y formación de tu equipo.' },
-      { q: '¿Los lentes se gradúan?', a: 'Sí. AXIS admite lentes con fórmula, validados con ópticas profesionales aliadas.' },
-      { q: '¿Cómo me convierto en punto de venta?', a: 'Escríbenos por WhatsApp o solicita el catálogo. En menos de 24 h te enviamos precios y disponibilidad.' },
+      { q: '¿Cómo compro AXIS?', a: 'Escríbenos por WhatsApp y te guiamos con el modelo, la graduación y el envío. Respondemos en menos de 24 h.' },
+      { q: '¿Los lentes se gradúan a mi fórmula?', a: 'Sí. AXIS admite lentes con tu fórmula, validados con ópticas profesionales aliadas.' },
+      { q: '¿Cómo es la garantía?', a: 'Garantía de 6 meses, con soporte y reemplazo dedicados.' },
+      { q: '¿Cuánto dura la batería?', a: 'Todo el día de uso, con estuche de carga incluido que también carga tu teléfono.' },
+      { q: '¿AXIS respeta mi privacidad?', a: 'Sí. Una luz indicadora avisa cuando grabas y tú tienes el control en todo momento.' },
+      { q: '¿Hacen envíos?', a: 'Sí. Coordinamos el envío contigo por WhatsApp al confirmar tu pedido.' },
+      { q: '¿Puedo elegir el acabado?', a: 'Sí: Onyx, Aurum y la edición Morpho. Elige el que va contigo.' },
     ],
   },
 
   contact: {
-    eyebrow: 'Contacto comercial',
-    title: 'Lleva AXIS a tu vitrina.',
+    eyebrow: 'Reserva',
+    title: 'Lleva AXIS contigo.',
     body:
-      'Solicita el catálogo, los precios mayoristas y tu zona disponible. Te respondemos en menos de 24 horas.',
-    typeLabel: 'Soy:',
-    types: [
-      { key: 'optica', label: 'Óptica' },
-      { key: 'retail', label: 'Retailer' },
-      { key: 'distribuidor', label: 'Distribuidor' },
-    ],
-    ctaWhatsapp: 'Escribir por WhatsApp',
-    ctaCatalog: 'Descargar catálogo',
+      'Escríbenos por WhatsApp y te ayudamos a elegir modelo, graduación y envío. Te respondemos en menos de 24 horas.',
+    ctaWhatsapp: 'Reservar por WhatsApp',
     note: 'Respuesta en menos de 24 h · Sin compromiso',
   },
 
   footer: {
     tagline: 'La evolución de cómo ves el mundo.',
     colProduct: 'Producto',
-    colBusiness: 'Negocio',
+    colSupport: 'Ayuda',
     colContact: 'Contacto',
     linksProduct: ['Capacidades', 'Diseño', 'Ediciones'],
-    linksBusiness: ['Oportunidad', 'Programa de punto de venta', 'Preguntas comerciales'],
+    linksSupport: ['Garantía', 'Preguntas', 'Contacto'],
     rights: 'AXIS. Todos los derechos reservados.',
     registered: 'Marca registrada ®',
   },

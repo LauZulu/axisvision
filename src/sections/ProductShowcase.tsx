@@ -21,7 +21,7 @@ export function ProductShowcase() {
   const scale = useTransform(scrollYProgress, [0, 0.5, 1], reduce ? [1, 1, 1] : [0.96, 1.02, 0.96])
 
   return (
-    <section id="product" className="border-t border-white/5 py-24 md:py-36">
+    <section id="product" className="border-t border-line py-24 md:py-36">
       <div className="container-axis grid items-center gap-16 lg:grid-cols-2">
         <SectionHeading eyebrow={t.product.eyebrow} title={t.product.title} intro={t.product.intro} />
 

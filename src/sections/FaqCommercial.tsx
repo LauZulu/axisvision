@@ -9,7 +9,7 @@ export function FaqCommercial() {
   const [open, setOpen] = useState<number | null>(0)
 
   return (
-    <section id="faq" className="border-t border-white/5 py-24 md:py-36">
+    <section id="faq" className="border-t border-line py-24 md:py-36">
       <div className="container-axis grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
         <SectionHeading eyebrow={t.faq.eyebrow} title={t.faq.title} />
 
@@ -17,7 +17,7 @@ export function FaqCommercial() {
           {t.faq.items.map((item, i) => {
             const isOpen = open === i
             return (
-              <li key={item.q} className="border-b border-white/10">
+              <li key={item.q} className="border-b border-line">
                 <button
                   onClick={() => setOpen(isOpen ? null : i)}
                   aria-expanded={isOpen}

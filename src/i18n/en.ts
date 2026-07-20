@@ -8,7 +8,7 @@ export const en = {
     heroProduct: 'AXIS AI glasses floating with a golden halo on a carbon-black background',
     productShowcase: 'AXIS clear-lens glasses resting on their leather case, lit with warm gold',
     capabilities: 'AXIS glasses next to their premium leather case on a light background',
-    packaging: 'Open AXIS leather case: premium, shelf-ready presentation',
+    packaging: 'Open AXIS leather case: premium presentation',
     frontBanner: 'Front view of the AXIS glasses on a light surface',
     lifestyle: [
       'Woman wearing AXIS sunglasses in front of a blossoming tree',
@@ -27,16 +27,17 @@ export const en = {
 
   lifestyle: {
     eyebrow: 'In the real world',
-    title: 'AXIS, out in everyday life.',
-    intro: 'Real people wearing AXIS — proof your customer will want a pair.',
+    title: 'AXIS, in your everyday life.',
+    intro: 'Real people wearing AXIS — this is how it will look on you.',
   },
 
   nav: {
     product: 'Product',
     capabilities: 'Capabilities',
-    business: 'Business',
+    editions: 'Editions',
     contact: 'Contact',
-    cta: 'Become a reseller',
+    cta: 'Reserve AXIS',
+    theme: 'Switch theme',
   },
 
   hero: {
@@ -44,10 +45,10 @@ export const en = {
     titleLead: 'A new way',
     titleAccent: 'to see the world.',
     subtitle:
-      'AI-powered glasses: video, photo, live translation and prescription lenses. Designed to sell.',
-    ctaPrimary: 'Become an AXIS reseller',
+      'AI-powered glasses: video, photo, live translation and lenses made to your prescription. Built to wear all day.',
+    ctaPrimary: 'Reserve AXIS',
     ctaSecondary: 'Discover AXIS',
-    trust: ['International warranty', 'Clinical backing', 'Registered trademark'],
+    trust: ['6-month warranty', 'Clinical backing', 'Registered trademark'],
   },
 
   what: {
@@ -66,7 +67,7 @@ export const en = {
     eyebrow: 'Design',
     title: 'Engineering you don’t notice. Presence you do.',
     intro:
-      'Premium materials, timeless lines and the tree of life engraved on the temple. Glasses your customer wants to wear.',
+      'Premium materials, timeless lines and the tree of life engraved on the temple. Glasses you want to wear.',
     annotations: [
       { label: 'Camera', value: 'First-person capture' },
       { label: 'Open-ear audio', value: 'Sound without blocking your ears' },
@@ -77,25 +78,25 @@ export const en = {
 
   capabilities: {
     eyebrow: 'Intelligence',
-    title: 'Everything AXIS does for your customer.',
-    intro: 'Explore each capability. The more it does, the easier it sells.',
+    title: 'Everything AXIS does for you.',
+    intro: 'Explore each capability. Tap to discover what you’ll be able to do.',
     items: [
       { key: 'video', title: 'Hands-free video', desc: 'Record what you see, first-person, without using your hands.' },
       { key: 'photo', title: 'Instant photo', desc: 'Capture the moment without reaching for your phone.' },
       { key: 'ai', title: 'AI assistant', desc: 'Ask, identify objects, summarize and translate context live.' },
       { key: 'translate', title: 'Live translation', desc: 'Understand and reply across languages, in real time.' },
       { key: 'audio', title: 'Open-ear audio', desc: 'Calls and music without shutting out the world around you.' },
-      { key: 'lens', title: 'Prescription lenses', desc: 'Tailored to each customer. A legitimate optical product.' },
+      { key: 'lens', title: 'Prescription lenses', desc: 'Tailored to your prescription. A legitimate optical product.' },
       { key: 'battery', title: 'Real battery life', desc: 'All-day use, with charging case included.' },
-      { key: 'privacy', title: 'Privacy by design', desc: 'Recording indicator and full control in the user’s hands.' },
+      { key: 'privacy', title: 'Privacy by design', desc: 'Recording indicator and full control in your hands.' },
     ],
-    cta: 'Request full technical sheet',
+    cta: 'See specifications',
   },
 
   specs: {
     eyebrow: 'Specifications',
     title: 'Technical sheet.',
-    intro: 'Everything your customer wants to know, at a glance.',
+    intro: 'Everything you want to know, at a glance.',
     groups: [
       {
         key: 'capture',
@@ -148,78 +149,34 @@ export const en = {
     eyebrow: 'Clinical backing',
     title: 'Not a gadget. Real optics.',
     body:
-      'AXIS lenses are made to each customer’s prescription and validated alongside partner opticians and professionals. AXIS enters your field with professional endorsement — the product feels yours.',
+      'AXIS lenses are made to your prescription and validated alongside partner opticians and professionals. Not an accessory: real optics you can wear all day.',
     badge: 'Validated with partner optical professionals',
     points: [
-      'Custom prescription lenses',
+      'Lenses made to your prescription',
       'Compatible with optical frames',
       'Endorsed by vision professionals',
     ],
-    cta: 'See the clinical backing',
-  },
-
-  business: {
-    eyebrow: 'The opportunity',
-    title: 'A product with real margin and no risk.',
-    intro:
-      'AXIS isn’t just a desirable pair of glasses: it’s a profitable line of business for your store or network.',
-    cards: [
-      { title: 'Margin that protects your business', desc: 'Recommended, protected retail price. Sell premium, earn premium.' },
-      { title: 'A category in demand', desc: 'AI glasses are already wanted. AXIS gives you the product to capture it.' },
-      { title: 'No inventory risk', desc: 'Flexible initial order and fast restock. No dead stock.' },
-      { title: 'Point of sale, ready', desc: 'Display, demo units and team training included.' },
-      { title: 'Territory exclusivity', desc: 'You are the AXIS of your area. We protect your market.' },
-      { title: 'A serious brand', desc: 'Trademark, warranty, support and product continuity.' },
-    ],
-    stats: [
-      { value: '24', suffix: ' months', label: 'International warranty' },
-      { value: '2', suffix: 'x', label: 'Double-digit growth category' },
-      { value: '100', suffix: '%', label: 'Recommended, defended retail price' },
-      { value: '1', suffix: '', label: 'Official reseller per area' },
-    ],
-    cta: 'Request wholesale pricing',
-    disclaimer: 'Pricing and terms in the catalog · No commitment',
-  },
-
-  program: {
-    eyebrow: 'Reseller program',
-    title: 'Partnering with AXIS is clear, fast and risk-free.',
-    steps: [
-      { n: '01', title: 'Request the catalog and terms', desc: 'Tell us about your business and we’ll send pricing and availability for your area.' },
-      { n: '02', title: 'Receive your kit and training', desc: 'Display, demo units, graphic materials and training for your sales team.' },
-      { n: '03', title: 'Sell AXIS with full backing', desc: 'After-sales support, warranty and restock. You’re never on your own.' },
-    ],
-    includesTitle: 'What you get as an official reseller',
-    includes: [
-      'Countertop display kit',
-      'Demo units for your store',
-      'Graphic and brand materials',
-      'Sales team training',
-      '“Official AXIS Reseller” seal',
-      'After-sales support and restock',
-      'Protected territory',
-    ],
-    cta: 'I want to become a reseller',
+    cta: 'Reserve AXIS',
   },
 
   trust: {
     eyebrow: 'Backing',
-    title: 'Behind every AXIS is a company that answers.',
+    title: 'Behind every AXIS, a brand that answers.',
     signals: [
-      { title: 'International warranty', desc: '24 months of formal coverage for your customers.' },
+      { title: '6-month warranty', desc: 'Formal coverage for you from day one.' },
       { title: 'Registered trademark', desc: 'A protected, serious brand — not an improvised product.' },
       { title: 'Clinical backing', desc: 'Lenses validated with vision professionals.' },
-      { title: 'After-sales support', desc: 'Dedicated service and replacement. We cover your customer.' },
-      { title: 'Supply capacity', desc: 'Production for volume and guaranteed restock.' },
+      { title: 'Dedicated support', desc: 'Service and replacement whenever you need it.' },
+      { title: 'Shipping & returns', desc: 'Delivered to your door; hassle-free returns.' },
       { title: 'Product continuity', desc: 'Editions and roadmap. AXIS is here to stay.' },
     ],
   },
 
   editions: {
     eyebrow: 'Editions',
-    title: 'An AXIS family for every customer.',
-    intro: 'Premium finishes and shelf-ready presentation. A range that sells more.',
-    cta: 'Download catalog',
+    title: 'An AXIS edition for every style.',
+    intro: 'Premium finishes and luxury presentation. Choose the one that fits you.',
+    cta: 'Choose my AXIS',
     finishes: [
       { name: 'AXIS Onyx', desc: 'Matte carbon black. The timeless classic.' },
       { name: 'AXIS Aurum', desc: 'Antique gold accents. The flagship edition.' },
@@ -227,50 +184,36 @@ export const en = {
     ],
   },
 
-  consumer: {
-    eyebrow: 'For the consumer',
-    title: 'No optical store? You can still be among the first.',
-    body: 'AXIS reaches its official resellers first. Join the waitlist and we’ll let you know.',
-    cta: 'Join the waitlist',
-  },
-
   faq: {
-    eyebrow: 'Commercial questions',
-    title: 'What every store asks us.',
+    eyebrow: 'Frequently asked',
+    title: 'What you might be wondering.',
     items: [
-      { q: 'What margin does AXIS offer?', a: 'A premium margin with a recommended, protected retail price. Full terms are in the catalog — request it and we’ll send them.' },
-      { q: 'Is there territory exclusivity?', a: 'Yes. We protect your area as an official reseller. Availability depends on region.' },
-      { q: 'What about warranty and after-sales?', a: 'A 24-month international warranty, with dedicated support and restock for you and your customer.' },
-      { q: 'Is there a minimum order?', a: 'We work with flexible initial orders to reduce your risk. Details are in the catalog.' },
-      { q: 'Do you provide display materials?', a: 'Yes: countertop display, demo units, graphic materials and team training.' },
-      { q: 'Are the lenses prescription-ready?', a: 'Yes. AXIS supports prescription lenses, validated with partner optical professionals.' },
-      { q: 'How do I become a reseller?', a: 'Message us on WhatsApp or request the catalog. We’ll send pricing and availability within 24 h.' },
+      { q: 'How do I buy AXIS?', a: 'Message us on WhatsApp and we’ll guide you through the model, prescription and shipping. We reply within 24 h.' },
+      { q: 'Are the lenses made to my prescription?', a: 'Yes. AXIS supports prescription lenses, validated with partner optical professionals.' },
+      { q: 'What about the warranty?', a: 'A 6-month warranty, with dedicated support and replacement.' },
+      { q: 'How long does the battery last?', a: 'All-day use, with a charging case included that also charges your phone.' },
+      { q: 'Does AXIS respect my privacy?', a: 'Yes. An indicator light shows when you’re recording, and you stay in control at all times.' },
+      { q: 'Do you ship?', a: 'Yes. We arrange shipping with you over WhatsApp once your order is confirmed.' },
+      { q: 'Can I choose the finish?', a: 'Yes: Onyx, Aurum and the Morpho edition. Choose the one that fits you.' },
     ],
   },
 
   contact: {
-    eyebrow: 'Commercial contact',
-    title: 'Bring AXIS to your shelves.',
+    eyebrow: 'Reserve',
+    title: 'Take AXIS with you.',
     body:
-      'Request the catalog, wholesale pricing and your available area. We reply within 24 hours.',
-    typeLabel: 'I am a:',
-    types: [
-      { key: 'optica', label: 'Optical store' },
-      { key: 'retail', label: 'Retailer' },
-      { key: 'distribuidor', label: 'Distributor' },
-    ],
-    ctaWhatsapp: 'Message us on WhatsApp',
-    ctaCatalog: 'Download catalog',
+      'Message us on WhatsApp and we’ll help you choose model, prescription and shipping. We reply within 24 hours.',
+    ctaWhatsapp: 'Reserve on WhatsApp',
     note: 'Reply within 24 h · No commitment',
   },
 
   footer: {
     tagline: 'The evolution of how you see the world.',
     colProduct: 'Product',
-    colBusiness: 'Business',
+    colSupport: 'Help',
     colContact: 'Contact',
     linksProduct: ['Capabilities', 'Design', 'Editions'],
-    linksBusiness: ['Opportunity', 'Reseller program', 'Commercial questions'],
+    linksSupport: ['Warranty', 'FAQ', 'Contact'],
     rights: 'AXIS. All rights reserved.',
     registered: 'Registered trademark ®',
   },

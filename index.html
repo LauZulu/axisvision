@@ -1,23 +1,37 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0A0A0A" />
 
-    <title>AXIS — Gafas con inteligencia artificial | Punto de venta oficial</title>
+    <!-- Tema (oscuro por defecto) aplicado antes del render para evitar parpadeo -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('axis-theme')
+          if (t === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light')
+            var m = document.querySelector('meta[name="theme-color"]')
+            if (m) m.setAttribute('content', '#f5f3ee')
+          }
+        } catch (e) {}
+      })()
+    </script>
+
+    <title>AXIS Vision — Gafas con inteligencia artificial</title>
     <meta
       name="description"
-      content="AXIS: gafas con inteligencia artificial. Vídeo, foto, traducción en vivo y lentes con fórmula. Conviértete en punto de venta oficial — solicita catálogo y precios mayoristas."
+      content="AXIS Vision: gafas con inteligencia artificial. Vídeo, foto, traducción en vivo y lentes con tu fórmula. Reserva las tuyas por WhatsApp."
     />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="AXIS — Una nueva forma de ver el mundo" />
+    <meta property="og:title" content="AXIS Vision — Una nueva forma de ver el mundo" />
     <meta
       property="og:description"
-      content="Gafas con inteligencia artificial, diseñadas para venderse. Conviértete en punto de venta oficial AXIS."
+      content="Gafas con inteligencia artificial, hechas para llevarse puestas todo el día. Reserva las tuyas."
     />
     <meta property="og:image" content="/og-image.jpg" />
     <meta property="og:locale" content="es_ES" />

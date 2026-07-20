@@ -4,13 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Qué es este proyecto
 
-**AXIS** es una marca de **gafas con inteligencia artificial**. Este repo es su **vitrina comercial B2B** (landing de una sola página, en español con interruptor a inglés).
+**AXIS Vision** es una marca de **gafas con inteligencia artificial**. Este repo es su **vitrina B2C** (landing de una sola página, en español con interruptor a inglés).
 
-**Objetivo #1:** convencer a **ópticas, retailers y distribuidores** de que compren y **revendan** AXIS, y llevarlos a un **contacto comercial** (solicitar catálogo / precios mayoristas / ser punto de venta oficial). El B2C (consumidor final) coexiste pero **nunca** resta fuerza al mensaje mayorista.
+**Objetivo #1:** convencer al **usuario final (persona natural)** de que quiere AXIS y llevarlo a **reservar/comprar por WhatsApp**. NO hay mensaje mayorista (ópticas/retailers/distribuidores) — el sitio dejó de ser B2B.
 
-**Es vitrina:** SIN backend, SIN base de datos, SIN checkout. La conversión es lead generation, no venta directa.
+**Es vitrina:** SIN backend, SIN base de datos, SIN checkout. La conversión es el contacto por WhatsApp.
 
-> **`PLAN-AXIS.md` es la fuente de verdad.** Antes de construir o cambiar cualquier sección, lee `PLAN-AXIS.md`: contiene la estrategia B2B, el mapa de sitio (14 secciones), el inventario de assets, el plan de animación, la especificación sección por sección, el sistema de diseño con tokens exactos y las decisiones confirmadas. Este CLAUDE.md resume las restricciones; el plan tiene el detalle.
+**Tema:** oscuro por defecto + claro, con interruptor en el Nav (sol/luna). El tema se aplica con `<html data-theme>` y se persiste en `localStorage` (`axis-theme`); el script anti-FOUC vive en `index.html`. El cambio se hace a nivel de variables CSS en `src/index.css` (`:root[data-theme='light']` re-mapea solo los neutros carbón/blanco; el dorado y el Morpho no cambian). La sección Capabilities usa color fijo (siempre clara) y no sigue el tema.
+
+> **`PLAN-AXIS.md`** contiene el detalle histórico de diseño (sistema visual, tokens, animación). **Ojo:** su estrategia y mapa de sitio describen la etapa **B2B anterior** y están desactualizados tras el giro a B2C — usa el código y este CLAUDE.md como fuente de verdad para copy/estructura.
 
 Barra de calidad visual y de animación: **Apple · Whoop · Ray-Ban × Meta**. Minimalista, premium, multinacional, serio y confiable.
 
@@ -52,9 +54,8 @@ src/
   components/ui/   Reutilizables: TreeLogo, GlassesArt, Icon, Reveal, CountUp,
                    SectionHeading, Img, ImageCarousel
   sections/        Una por sección (Nav, Hero, WhatIsAxis, ProductShowcase,
-                   Capabilities, Specs, Clinical, BusinessOpportunity,
-                   PartnerProgram, TrustSignals, ShowcaseBanner, Editions,
-                   Lifestyle, ConsumerStrip, FaqCommercial, ContactCommercial, Footer)
+                   Capabilities, Specs, Clinical, ShowcaseBanner, Editions,
+                   Lifestyle, TrustSignals, FaqCommercial, ContactCommercial, Footer)
   i18n/            es.ts, en.ts, index.ts (init i18next), useDict.ts
   lib/             SmoothScroll (Lenis), scrollContext, motion (variants/easings)
   config/          brand.ts (WhatsApp, correo, catálogo)
@@ -113,7 +114,7 @@ Identidad visual no negociable (detalle y reglas de uso en `PLAN-AXIS.md` §7):
 ## Restricciones que no se deben romper
 
 - **Sin backend / sin base de datos / sin checkout.** Todo es estático; la conversión es el contacto comercial.
-- **Prioridad B2B** sobre B2C en jerarquía visual y de copy.
+- **Enfoque B2C:** todo el copy le habla al usuario final; nada de lenguaje mayorista.
 - **Bilingüe ES/EN** con español por defecto; nada de texto hardcodeado.
 - **Mobile-first** y 60fps; el lujo no puede costar rendimiento (imágenes responsive AVIF/WebP + lazy, LCP < 2.5s).
 - **Imágenes SIEMPRE por el pipeline:** importar con `?picture` y renderizar con `<Img>` (o `<ImageCarousel>`), con `alt` desde i18n. No usar `<img src>` crudo de un asset pesado ni `background-image` para fotos. Respetar la organización y nomenclatura de `src/assets/README.md`.

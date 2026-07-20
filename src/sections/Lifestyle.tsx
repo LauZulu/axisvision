@@ -45,7 +45,7 @@ export function Lifestyle() {
   const speeds = [yA, yB, yC]
 
   return (
-    <section id="lifestyle" className="border-t border-white/5 py-24 md:py-36">
+    <section id="lifestyle" className="border-t border-line py-24 md:py-36">
       <div className="container-axis">
         <SectionHeading
           eyebrow={t.lifestyle.eyebrow}
@@ -67,7 +67,7 @@ export function Lifestyle() {
             <motion.figure key={i} variants={fadeUp} className="mb-4 break-inside-avoid">
               <motion.div
                 style={{ y: speeds[i % 3] }}
-                className="group relative overflow-hidden rounded-xl border border-white/8"
+                className="group relative overflow-hidden rounded-xl border border-line"
               >
                 <Img
                   picture={pic}

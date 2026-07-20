@@ -3,10 +3,12 @@ import { TreeLogo } from '../components/ui/TreeLogo'
 import { Icon } from '../components/ui/Icon'
 import { useDict } from '../i18n/useDict'
 import { useScrollTo } from '../lib/scrollContext'
+import { useTheme } from '../lib/useTheme'
 import { whatsappLink } from '../config/brand'
 
 export function Nav() {
   const { t, lang, setLang } = useDict()
+  const { theme, toggle } = useTheme()
   const scrollTo = useScrollTo()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -21,7 +23,7 @@ export function Nav() {
   const links: Array<[string, string]> = [
     ['#product', t.nav.product],
     ['#capabilities', t.nav.capabilities],
-    ['#business', t.nav.business],
+    ['#editions', t.nav.editions],
     ['#contact', t.nav.contact],
   ]
 
@@ -34,7 +36,7 @@ export function Nav() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-colors duration-500 ${
         scrolled || menuOpen
-          ? 'border-b border-white/5 bg-carbon-900/85 backdrop-blur-xl'
+          ? 'border-b border-line bg-carbon-900/85 backdrop-blur-xl'
           : 'border-b border-transparent bg-transparent'
       }`}
     >
@@ -77,6 +79,15 @@ export function Nav() {
             </button>
           </div>
 
+          <button
+            onClick={toggle}
+            aria-label={t.nav.theme}
+            title={t.nav.theme}
+            className="text-warm-gray/60 transition-colors hover:text-gold"
+          >
+            <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={18} strokeWidth={1.5} />
+          </button>
+
           <a
             href={whatsappLink('general')}
             target="_blank"
@@ -103,7 +114,7 @@ export function Nav() {
             <button
               key={href}
               onClick={() => go(href)}
-              className="border-b border-white/5 py-3 text-left font-head text-warm-gray"
+              className="border-b border-line py-3 text-left font-head text-warm-gray"
             >
               {label}
             </button>

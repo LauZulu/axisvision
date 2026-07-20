@@ -16,7 +16,7 @@ const SIGNAL_ICONS: IconKey[] = [
 export function TrustSignals() {
   const { t } = useDict()
   return (
-    <section id="trust" className="border-t border-white/5 py-24 md:py-36">
+    <section id="trust" className="border-t border-line py-24 md:py-36">
       <div className="container-axis">
         <SectionHeading
           eyebrow={t.trust.eyebrow}

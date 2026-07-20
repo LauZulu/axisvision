@@ -8,10 +8,10 @@ export function Footer() {
   const scrollTo = useScrollTo()
 
   const productAnchors = ['#capabilities', '#product', '#editions']
-  const businessAnchors = ['#business', '#program', '#faq']
+  const supportAnchors = ['#trust', '#faq', '#contact']
 
   return (
-    <footer className="border-t border-white/8 py-16">
+    <footer className="border-t border-line py-16">
       <div className="container-axis">
         <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
@@ -30,8 +30,8 @@ export function Footer() {
             onClick={scrollTo}
           />
           <FooterCol
-            title={t.footer.colBusiness}
-            links={t.footer.linksBusiness.map((l, i) => ({ label: l, href: businessAnchors[i] }))}
+            title={t.footer.colSupport}
+            links={t.footer.linksSupport.map((l, i) => ({ label: l, href: supportAnchors[i] }))}
             onClick={scrollTo}
           />
 
@@ -62,7 +62,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-white/8 pt-7 text-xs text-warm-gray/50 sm:flex-row sm:items-center">
+        <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-line pt-7 text-xs text-warm-gray/50 sm:flex-row sm:items-center">
           <p>
             © {new Date().getFullYear()} {t.footer.rights} · {t.footer.registered}
           </p>

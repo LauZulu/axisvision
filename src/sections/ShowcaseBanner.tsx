@@ -13,7 +13,7 @@ export function ShowcaseBanner() {
   const y = useTransform(scrollYProgress, [0, 1], reduce ? ['0%', '0%'] : ['-8%', '8%'])
 
   return (
-    <section className="border-y border-white/5">
+    <section className="border-y border-line">
       <div ref={ref} className="relative h-[42vh] min-h-[300px] w-full overflow-hidden">
         <motion.div style={{ y }} className="absolute inset-x-0 -top-[15%] h-[130%]">
           <Img

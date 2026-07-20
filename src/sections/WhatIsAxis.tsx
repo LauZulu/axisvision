@@ -9,7 +9,7 @@ const PILLAR_ICONS: IconKey[] = ['ai', 'photo', 'translate', 'lens']
 export function WhatIsAxis() {
   const { t } = useDict()
   return (
-    <section id="what" className="border-t border-white/5 py-24 md:py-36">
+    <section id="what" className="border-t border-line py-24 md:py-36">
       <div className="container-axis">
         <Reveal className="mx-auto max-w-[24ch] text-center">
           <span className="eyebrow">{t.what.eyebrow}</span>
@@ -25,7 +25,7 @@ export function WhatIsAxis() {
           initial="hidden"
           whileInView="show"
           viewport={inView}
-          className="mt-16 grid gap-px overflow-hidden rounded-xl border border-white/8 bg-white/5 sm:grid-cols-2 lg:grid-cols-4"
+          className="mt-16 grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4"
         >
           {t.what.pillars.map((p, i) => (
             <motion.li
