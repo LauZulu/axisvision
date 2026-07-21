@@ -6,24 +6,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >
 > El repo dejó de ser una app Vite de una sola carpeta. Ahora es un **monorepo pnpm**
 > con **Next.js** (App Router). El plan y las fases viven en **`PLAN-PLATAFORMA.md`**
-> (fuente de verdad para la evolución). Estado: **Fases 0-4 + admin hechas** (monorepo +
-> migración a Next con paridad + tienda DB-driven + auth JWT/roles + middleware + panel admin).
-> **Código listo pero SIN correr contra la RDS todavía** (falta el túnel; ver DB abajo).
-> Pendiente: cuenta de cliente (UI), carrito/favoritos/historial, analítica y **Wompi (Fase 7)**.
+> (fuente de verdad para la evolución). Estado: **Fases 0-6 hechas y verificadas contra RDS+S3
+> reales** (monorepo + Next con paridad + tienda DB-driven + auth JWT/roles + middleware + panel
+> admin + S3/CloudFront por presigned URLs + checkout invitado). Enfoque **guest checkout** (sin
+> cuentas de cliente; solo admin tiene login). Pendiente: **Wompi (Fase 7, lo último)**.
 >
 > - **Estructura:** `apps/web/` (`app/` rutas, `src/` código portado + `src/server/` backend:
 >   `db/` TypeORM, `auth/`, `products.ts`, `admin.ts`; `scripts/` migración/seed). `packages/*` placeholders.
 > - **Comandos (raíz):** `pnpm dev`, `pnpm build` (incluye type-check), `pnpm start`, `pnpm lint`.
 >   DB (desde `apps/web`): `pnpm db:check`, `pnpm db:migrate`, `pnpm db:seed`.
 > - **DB:** Postgres/RDS vía TypeORM, `synchronize:false` SIEMPRE (solo migraciones), tablas `axis_*`.
->   El `.env` de producción vive en **`apps/web/.env`** (NO leerlo). El host directo de la RDS es
->   privado: en local se llega por **túnel a `localhost:5433`** (override en `apps/web/.env.local`
->   con `POSTGRES_HOST=localhost POSTGRES_PORT=5433`). Auth: `JWT_SECRET_MANAGMENT` (HS256 vía `jose`).
-> - **Imágenes:** `?picture`/`vite-imagetools` → **`next/image`** (`<Img>`/`<ImageCarousel>`). Las fotos
->   de producto se guardan como CLAVE en la DB y se resuelven a imagen local en `src/lib/productImages.ts`
->   (futuro: S3, ya hay `AWS_PRODUCTS_BUCKET` en el `.env`). El seed de prueba vive en `apps/web/scripts/seed.ts`.
+>   El `.env` vive en **`apps/web/.env`** (NO leerlo) y es la única config. Conexión **DIRECTA** a la
+>   RDS (`db-axis-optica...:5432`, accesible públicamente) — sin túnel ni `.env.local`. Auth:
+>   `JWT_SECRET_MANAGMENT` (HS256 vía `jose`). Nota Next+TypeORM: en dev el HMR invalida la metadata
+>   de entidades; `getDb()` (src/server/db/index.ts) detecta y reconstruye el DataSource — no quitar.
+> - **Imágenes/S3:** bucket **privado** (`AWS_PRODUCTS_BUCKET`), lectura pública solo por **CloudFront**
+>   (`NEXT_PUBLIC_CDN_URL`, falta definirlo). El admin sube/borra **directo a S3 con presigned URLs**
+>   (`POST /api/admin/uploads/presign`, `src/server/s3.ts`) — el backend NUNCA procesa binarios.
+>   En la DB `axis_product_image.imageKey` guarda la **clave S3** (`products/...`); el frontend usa la
+>   URL de CloudFront (`src/lib/cdn.ts`, `resolveProductSrc`). Las 4 imágenes locales de prueba siguen
+>   funcionando (clave sin `/`). Verifica acceso con `pnpm s3:check`. **Falta CORS** en el bucket para
+>   que el navegador del admin haga PUT/DELETE (ver PLAN/README).
+> - **Checkout:** `POST /api/checkout` (invitado, `src/server/checkout.ts`): valida stock, crea `axis_order`
+>   `pending` (no descuenta stock — eso al confirmar pago). Listo para enganchar Wompi.
 > - **Rutas:** landing `app/page.tsx`; tienda `app/tienda/**` (server, lee DB); admin `app/admin/**`
->   (login + panel guardado por rol); API en `app/api/**` (auth, products, admin).
+>   (login + panel guardado por rol); API en `app/api/**` (auth, products, admin, uploads/presign, checkout).
 > - Buena parte de lo de abajo (Vite, `index.html`, `src/index.css`) describe la etapa
 >   **anterior a la migración**; para rutas/estructura usa esta nota y `PLAN-PLATAFORMA.md`.
 

@@ -1,12 +1,18 @@
 import { getDb } from './db'
 import { AxisProduct } from './db/entities/Product'
 import type { ProductDTO } from '../lib/products'
+import { cdnUrl, isRemoteImage } from '../lib/cdn'
 
 function toDTO(p: AxisProduct): ProductDTO {
   const images = (p.images ?? [])
     .slice()
     .sort((a, b) => a.position - b.position)
-    .map((img) => ({ key: img.imageKey, position: img.position }))
+    .map((img) => ({
+      key: img.imageKey,
+      // S3/CloudFront → URL pública; imagen local de prueba → null (se resuelve en el cliente).
+      url: isRemoteImage(img.imageKey) ? cdnUrl(img.imageKey) : null,
+      position: img.position,
+    }))
   return {
     id: p.id,
     slug: p.slug,

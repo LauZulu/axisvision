@@ -1,8 +1,6 @@
 import { getDb } from './db'
 import { AxisProduct } from './db/entities/Product'
 import { AxisProductImage } from './db/entities/ProductImage'
-import { AxisUser } from './db/entities/User'
-import { AxisOrder } from './db/entities/Order'
 import type { ProductDTO } from '../lib/products'
 
 export type AdminStats = {
@@ -10,37 +8,56 @@ export type AdminStats = {
   productsActive: number
   lowStock: number
   totalStock: number
-  users: number
-  orders: number
+  inventoryValueCop: number
 }
 
-const LOW_STOCK_THRESHOLD = 3
+export const LOW_STOCK_THRESHOLD = 3
 
 export async function getAdminStats(): Promise<AdminStats> {
   const db = await getDb()
   const productRepo = db.getRepository(AxisProduct)
-  const [productsTotal, productsActive, lowStock, users, orders] = await Promise.all([
+  const [productsTotal, productsActive, lowStock] = await Promise.all([
     productRepo.count(),
     productRepo.count({ where: { active: true } }),
     productRepo
       .createQueryBuilder('p')
       .where('p.stock <= :n', { n: LOW_STOCK_THRESHOLD })
       .getCount(),
-    db.getRepository(AxisUser).count(),
-    db.getRepository(AxisOrder).count(),
   ])
-  const sum = await productRepo
+  const agg = await productRepo
     .createQueryBuilder('p')
-    .select('COALESCE(SUM(p.stock), 0)', 'total')
-    .getRawOne<{ total: string }>()
+    .select('COALESCE(SUM(p.stock), 0)', 'units')
+    .addSelect('COALESCE(SUM(p.stock * p."priceCop"), 0)', 'value')
+    .getRawOne<{ units: string; value: string }>()
   return {
     productsTotal,
     productsActive,
     lowStock,
-    totalStock: Number(sum?.total ?? 0),
-    users,
-    orders,
+    totalStock: Number(agg?.units ?? 0),
+    inventoryValueCop: Number(agg?.value ?? 0),
   }
+}
+
+export type LowStockProduct = {
+  id: string
+  slug: string
+  name: string
+  stock: number
+  priceCop: number
+}
+
+/** Productos con stock igual o por debajo del umbral (para reponer). */
+export async function getLowStockProducts(
+  threshold = LOW_STOCK_THRESHOLD,
+): Promise<LowStockProduct[]> {
+  const db = await getDb()
+  const rows = await db
+    .getRepository(AxisProduct)
+    .createQueryBuilder('p')
+    .where('p.stock <= :n', { n: threshold })
+    .orderBy('p.stock', 'ASC')
+    .getMany()
+  return rows.map((p) => ({ id: p.id, slug: p.slug, name: p.name, stock: p.stock, priceCop: p.priceCop }))
 }
 
 export type ProductInput = {
@@ -112,6 +129,21 @@ export async function softDeleteProduct(id: string): Promise<boolean> {
   const repo = db.getRepository(AxisProduct)
   const result = await repo.update({ id }, { active: false })
   return (result.affected ?? 0) > 0
+}
+
+/**
+ * Borrado definitivo. Elimina el producto y sus fotos/favoritos (FK cascade).
+ * Las líneas de pedidos conservan su snapshot (nombre/precio), así el historial
+ * de ventas no se altera. Devuelve las claves S3 de sus fotos para limpiarlas.
+ */
+export async function hardDeleteProduct(id: string): Promise<{ deleted: boolean; imageKeys: string[] }> {
+  const db = await getDb()
+  const productRepo = db.getRepository(AxisProduct)
+  const product = await productRepo.findOne({ where: { id }, relations: { images: true } })
+  if (!product) return { deleted: false, imageKeys: [] }
+  const imageKeys = (product.images ?? []).map((img) => img.imageKey)
+  await productRepo.delete({ id })
+  return { deleted: true, imageKeys }
 }
 
 export type { ProductDTO }

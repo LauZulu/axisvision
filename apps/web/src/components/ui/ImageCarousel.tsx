@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import type { StaticImageData } from 'next/image'
-import { Img } from './Img'
+import Image, { type StaticImageData } from 'next/image'
 
-export type Slide = { pic: StaticImageData; alt: string }
+// `src` admite imagen local (StaticImageData) o URL remota de CloudFront (string).
+export type Slide = { src: StaticImageData | string; alt: string }
 
 /**
- * Una imagen que llena toda la caja: si va en `contain`, los márgenes se
- * rellenan con una versión borrosa de la MISMA foto (no de otra), para que
- * cada slide sea autónoma y no se superponga con la anterior.
+ * Una imagen que llena toda la caja (next/image `fill`): si va en `contain`, los
+ * márgenes se rellenan con una versión borrosa de la MISMA foto, para que cada
+ * slide sea autónoma y no se superponga con la anterior.
  */
 function Layer({
   slide,
@@ -21,23 +21,26 @@ function Layer({
   sizes: string
   withAlt: boolean
 }) {
-  const fg = `relative z-[1] h-full w-full object-center ${
-    fit === 'contain' ? 'object-contain' : 'object-cover'
-  }`
   return (
     <>
       {fit === 'contain' && (
         // Relleno de márgenes: misma foto, borrosa y oscurecida con `brightness`
-        // (NO con opacity) y opaca, para que se desvanezca a la par de la imagen.
-        // Mismo `sizes` que la foto → reutiliza la misma imagen (sin recarga).
-        <Img
-          picture={slide.pic}
+        // (NO con opacity), para que se desvanezca a la par de la imagen.
+        <Image
+          src={slide.src}
           alt=""
+          fill
           sizes={sizes}
-          className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl brightness-[0.5]"
+          className="scale-110 object-cover blur-2xl brightness-[0.5]"
         />
       )}
-      <Img picture={slide.pic} alt={withAlt ? slide.alt : ''} sizes={sizes} className={fg} />
+      <Image
+        src={slide.src}
+        alt={withAlt ? slide.alt : ''}
+        fill
+        sizes={sizes}
+        className={`z-[1] object-center ${fit === 'contain' ? 'object-contain' : 'object-cover'}`}
+      />
     </>
   )
 }

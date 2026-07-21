@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { AVAILABLE_IMAGE_KEYS, resolveImage } from '../../lib/productImages'
+import { ImageUploader } from './ImageUploader'
 import type { ProductDTO } from '../../lib/products'
 
 type FormState = {
@@ -62,15 +61,6 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
-
-  function toggleImage(key: string) {
-    setForm((f) => ({
-      ...f,
-      images: f.images.includes(key)
-        ? f.images.filter((k) => k !== key)
-        : [...f.images, key],
-    }))
-  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -202,41 +192,9 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
         Visible en la tienda
       </label>
 
-      {/* Fotos indexadas: clic para seleccionar; el número indica el orden. */}
+      {/* Fotos: se suben directo a S3 (presigned PUT) y se sirven por CloudFront. */}
       <div className="mt-7">
-        <div className="mb-2 text-sm text-warm-gray/80">
-          Fotos <span className="text-warm-gray/45">(clic para añadir/quitar; el número es el orden)</span>
-        </div>
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
-          {AVAILABLE_IMAGE_KEYS.map((key) => {
-            const order = form.images.indexOf(key)
-            const selected = order >= 0
-            return (
-              <button
-                type="button"
-                key={key}
-                onClick={() => toggleImage(key)}
-                className={`relative aspect-square overflow-hidden rounded-lg border transition-colors ${
-                  selected ? 'border-gold' : 'border-line hover:border-warm-gray/40'
-                }`}
-                title={key}
-              >
-                <Image
-                  src={resolveImage(key)}
-                  alt={key}
-                  fill
-                  sizes="120px"
-                  className={`object-cover ${selected ? '' : 'opacity-60'}`}
-                />
-                {selected && (
-                  <span className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-gold text-xs font-medium text-carbon-900">
-                    {order + 1}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
+        <ImageUploader value={form.images} onChange={(imgs) => set('images', imgs)} />
       </div>
 
       {error && <p className="mt-5 text-sm text-red-400">{error}</p>}

@@ -1,24 +1,41 @@
 import type { DataSource } from 'typeorm'
 import { buildDataSource } from './data-source'
+import { AxisUser } from './entities/User'
 
-// Singleton de conexión para Next: una sola pool que sobrevive al HMR de dev y
-// se reutiliza entre requests (evita abrir una conexión por invocación).
+// Singleton de conexión para Next: una sola pool reutilizada entre requests.
 const globalForDb = globalThis as unknown as { __axisDataSource?: DataSource }
 
-/** Devuelve el DataSource ya inicializado (lo inicializa la primera vez). */
+/**
+ * Devuelve el DataSource inicializado.
+ *
+ * Cuidado con el HMR de Next dev: cada Fast Refresh recrea las CLASES de entidad,
+ * pero el DataSource cacheado quedó con las clases viejas y TypeORM falla con
+ * "No metadata for AxisUser". Detectamos ese desajuste (hasMetadata con la clase
+ * ACTUAL) y reconstruimos. En producción (sin HMR) esto nunca se dispara.
+ */
 export async function getDb(): Promise<DataSource> {
-  if (!globalForDb.__axisDataSource) {
-    console.log('[db] creando nuevo DataSource')
-    globalForDb.__axisDataSource = buildDataSource()
+  let ds = globalForDb.__axisDataSource
+
+  // ¿DataSource desincronizado por HMR? Reconstruir con las clases actuales.
+  if (ds?.isInitialized && !ds.hasMetadata(AxisUser)) {
+    try {
+      await ds.destroy()
+    } catch {
+      /* ignora errores al cerrar la conexión vieja */
+    }
+    ds = undefined
+    globalForDb.__axisDataSource = undefined
   }
-  const ds = globalForDb.__axisDataSource
+
+  if (!ds) {
+    ds = buildDataSource()
+    globalForDb.__axisDataSource = ds
+  }
+
   if (!ds.isInitialized) {
     try {
-      console.log('[db] inicializando…')
       await ds.initialize()
-      console.log('[db] inicializado OK')
     } catch (err) {
-      console.error('[db] init FALLÓ:', (err as Error).message)
       // No dejar cacheada una conexión a medio inicializar: el próximo request reintenta limpio.
       globalForDb.__axisDataSource = undefined
       throw err

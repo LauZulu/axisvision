@@ -9,9 +9,12 @@
     "lint": "next lint",
     "db:check": "tsx scripts/db-check.ts",
     "db:migrate": "tsx scripts/migrate.ts",
-    "db:seed": "tsx scripts/seed.ts"
+    "db:seed": "tsx scripts/seed.ts",
+    "s3:check": "tsx scripts/s3-check.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1091.0",
+    "@aws-sdk/s3-request-presigner": "^3.1091.0",
     "@fontsource-variable/dm-sans": "^5.2.8",
     "@fontsource-variable/inter-tight": "^5.2.7",
     "@fontsource/cormorant-garamond": "^5.2.11",

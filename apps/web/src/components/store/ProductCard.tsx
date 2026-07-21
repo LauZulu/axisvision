@@ -1,18 +1,18 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { Img } from '../ui/Img'
 import { Icon } from '../ui/Icon'
 import { useDict } from '../../i18n/useDict'
 import { fadeUp } from '../../lib/motion'
-import { resolveImage } from '../../lib/productImages'
+import { resolveProductSrc } from '../../lib/productImages'
 import { formatCop, productTagline, type ProductDTO } from '../../lib/products'
 
 /** Tarjeta de producto para la rejilla de la tienda. Datos desde la DB (DTO). */
 export function ProductCard({ product }: { product: ProductDTO }) {
   const { t, lang } = useDict()
-  const cover = resolveImage(product.images[0]?.key ?? '')
+  const cover = resolveProductSrc(product.images[0] ?? { key: '', url: null })
   const soldOut = product.stock <= 0
 
   return (
@@ -22,11 +22,12 @@ export function ProductCard({ product }: { product: ProductDTO }) {
         className="group block overflow-hidden rounded-2xl border border-line bg-carbon-850 transition-transform duration-500 hover:-translate-y-1"
       >
         <div className="relative aspect-[4/3] overflow-hidden bg-carbon-900">
-          <Img
-            picture={cover}
+          <Image
+            src={cover}
             alt={product.name}
+            fill
             sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 90vw"
-            className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+            className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.04]"
           />
           {soldOut && (
             <span className="absolute left-3 top-3 rounded-full bg-carbon-900/85 px-3 py-1 font-mono text-[0.65rem] tracking-widest text-warm-gray/80 backdrop-blur">

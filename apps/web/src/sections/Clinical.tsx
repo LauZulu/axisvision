@@ -31,7 +31,7 @@ export function Clinical() {
         <Reveal className="order-2 lg:order-1">
           <div className="relative mx-auto aspect-[3/4] w-full max-w-sm max-h-[78svh] overflow-hidden rounded-2xl border border-line bg-carbon-900 lg:max-w-md">
             <ImageCarousel
-              slides={SLIDES.map((s) => ({ pic: s.pic, alt: t.alt.lifestyle[s.alt] }))}
+              slides={SLIDES.map((s) => ({ src: s.pic, alt: t.alt.lifestyle[s.alt] }))}
               fit="contain"
               sizes="(min-width: 1024px) 28rem, 90vw"
               className="h-full w-full"

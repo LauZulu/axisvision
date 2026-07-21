@@ -42,3 +42,12 @@ const FALLBACK = gafasFrente
 export function resolveImage(key: string): StaticImageData {
   return ASSET_MAP[key] ?? FALLBACK
 }
+
+/**
+ * Fuente de imagen para next/image: si la foto vive en S3/CloudFront usa su URL
+ * pública; si es una imagen local de prueba, la resuelve del repo. Acepta ambos
+ * tipos porque `next/image` admite `StaticImageData | string`.
+ */
+export function resolveProductSrc(image: { key: string; url: string | null }): StaticImageData | string {
+  return image.url ?? resolveImage(image.key)
+}

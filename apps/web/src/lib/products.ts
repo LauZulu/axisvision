@@ -2,7 +2,9 @@
 // consume). Sin imports de servidor → seguro de importar en componentes cliente.
 export type Lang = 'es' | 'en'
 
-export type ProductImageDTO = { key: string; position: number }
+// `url` = ruta pública de CloudFront cuando la imagen vive en S3; `null` para las
+// imágenes locales de prueba (el frontend las resuelve con el asset del repo).
+export type ProductImageDTO = { key: string; url: string | null; position: number }
 
 export type ProductDTO = {
   id: string

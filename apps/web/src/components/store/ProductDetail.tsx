@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ImageCarousel, type Slide } from '../ui/ImageCarousel'
 import { Icon } from '../ui/Icon'
 import { useDict } from '../../i18n/useDict'
-import { resolveImage } from '../../lib/productImages'
+import { resolveProductSrc } from '../../lib/productImages'
 import { formatCop, productDescription, productTagline, type ProductDTO } from '../../lib/products'
 import { whatsappLink } from '../../config/brand'
 
@@ -13,7 +13,7 @@ export function ProductDetail({ product }: { product: ProductDTO }) {
   const { t, lang } = useDict()
   const soldOut = product.stock <= 0
   const slides: Slide[] = product.images.map((img) => ({
-    pic: resolveImage(img.key),
+    src: resolveProductSrc(img),
     alt: product.name,
   }))
   const reserveMsg = t.store.reserveMessage.replace('{model}', product.name)

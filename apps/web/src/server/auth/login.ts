@@ -30,8 +30,7 @@ export async function handleLogin(req: Request, expectedRole: UserRole) {
   let user
   try {
     user = await findByEmailWithPassword(email)
-  } catch (e) {
-    console.error('[login] DB error:', (e as Error).message, '\n', (e as Error).stack)
+  } catch {
     return jsonError('SERVICE_UNAVAILABLE', 'Servicio no disponible. Inténtalo más tarde.', 503)
   }
   const passwordOk =
