@@ -1,0 +1,7 @@
+{
+  "name": "@axis/db",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Capa de datos AXIS (TypeORM + migraciones). Placeholder — se implementa en la Fase 3."
+}

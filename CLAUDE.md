@@ -2,6 +2,25 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> ## ⚠️ Estado actual: migración a plataforma full-stack (en curso)
+>
+> El repo dejó de ser una app Vite de una sola carpeta. Ahora es un **monorepo pnpm**
+> con **Next.js** (App Router). El plan y las fases viven en **`PLAN-PLATAFORMA.md`**
+> (fuente de verdad para la evolución). Estado: **Fases 0-2 hechas** (monorepo + migración
+> a Next con paridad visual + tienda de 4 productos en modo test). Pendiente: auth, DB (RDS),
+> admin, Wompi (Fases 3-7).
+>
+> - **Estructura:** `apps/web/` (la app Next: `app/` para rutas, `src/` para el código portado
+>   —components, sections, i18n, lib, config, assets—), `packages/db` y `packages/types` (placeholders).
+> - **Comandos (desde la raíz):** `pnpm install`, `pnpm dev` (=`next dev`), `pnpm build`
+>   (`next build`, incluye type-check), `pnpm start`, `pnpm lint`. También `pnpm --filter web <script>`.
+> - **Imágenes:** el pipeline Vite `?picture` + `vite-imagetools` fue reemplazado por **`next/image`**
+>   (import estático + `<Img>`/`<ImageCarousel>` sobre `next/image`). Sigue usándose `<Img>` con `alt` i18n.
+> - **Rutas:** landing en `app/page.tsx`; tienda en `app/tienda/page.tsx` y `app/tienda/[slug]/page.tsx`.
+>   El catálogo de prueba (4 productos con imágenes repetidas) está en `apps/web/src/config/catalog.ts`.
+> - Buena parte de lo de abajo (Vite, `index.html`, `src/index.css`, comandos) describe la etapa
+>   **anterior a la migración**; para rutas/estructura usa esta nota y `PLAN-PLATAFORMA.md`.
+
 ## Qué es este proyecto
 
 **AXIS Vision** es una marca de **gafas con inteligencia artificial**. Este repo es su **vitrina B2C** (landing de una sola página, en español con interruptor a inglés).

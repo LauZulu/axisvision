@@ -1,0 +1,7 @@
+{
+  "name": "@axis/types",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Tipos compartidos entre web y API (User, Product, Order…). Placeholder — se puebla en Fases 3-7."
+}
