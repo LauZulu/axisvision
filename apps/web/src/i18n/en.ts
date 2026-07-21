@@ -207,6 +207,9 @@ export const en = {
     ],
     notFoundTitle: 'We couldn’t find that model',
     notFoundBody: 'The product you’re looking for doesn’t exist or was renamed.',
+    unavailableTitle: 'Store unavailable right now',
+    unavailableBody: 'We couldn’t load the catalog at the moment. Please try again in a few minutes.',
+    soldOut: 'Sold out',
     reserveMessage: 'Hi AXIS. I want to reserve the {model}. Can you help me with prescription and shipping?',
     products: {
       onyx: {

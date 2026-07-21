@@ -9,8 +9,8 @@ const nextConfig: NextConfig = {
   experimental: {
     reactCompiler: true,
   },
-  // Fase 3: al añadir TypeORM se declara aquí para no bundlearlo:
-  // serverExternalPackages: ['typeorm'],
+  // TypeORM y el driver pg usan require dinámico / binarios: no los bundlees.
+  serverExternalPackages: ['typeorm', 'pg', 'bcryptjs'],
 }
 
 export default nextConfig

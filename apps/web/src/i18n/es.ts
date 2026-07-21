@@ -209,6 +209,9 @@ export const es = {
     ],
     notFoundTitle: 'No encontramos ese modelo',
     notFoundBody: 'El producto que buscas no existe o cambió de nombre.',
+    unavailableTitle: 'Tienda no disponible por ahora',
+    unavailableBody: 'No pudimos cargar el catálogo en este momento. Vuelve a intentarlo en unos minutos.',
+    soldOut: 'Agotado',
     reserveMessage: 'Hola AXIS. Quiero reservar las {model}. ¿Me ayudan con graduación y envío?',
     products: {
       onyx: {

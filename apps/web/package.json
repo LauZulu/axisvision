@@ -6,31 +6,43 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:check": "tsx scripts/db-check.ts",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.2.8",
     "@fontsource-variable/inter-tight": "^5.2.7",
     "@fontsource/cormorant-garamond": "^5.2.11",
     "@fontsource/dm-mono": "^5.2.7",
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^17.2.3",
     "framer-motion": "^12.40.0",
     "i18next": "^26.3.1",
+    "jose": "^6.1.0",
     "lenis": "^1.3.23",
     "next": "^15.5.4",
+    "pg": "^8.16.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-i18next": "^17.0.8"
+    "react-i18next": "^17.0.8",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.30",
+    "zod": "^4.1.14"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4.3.1",
     "@types/node": "^24.12.3",
+    "@types/pg": "^8.15.6",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9.39.1",
     "eslint-config-next": "^15.5.4",
     "tailwindcss": "^4.3.1",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   }
 }

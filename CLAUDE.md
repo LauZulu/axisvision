@@ -6,19 +6,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >
 > El repo dejó de ser una app Vite de una sola carpeta. Ahora es un **monorepo pnpm**
 > con **Next.js** (App Router). El plan y las fases viven en **`PLAN-PLATAFORMA.md`**
-> (fuente de verdad para la evolución). Estado: **Fases 0-2 hechas** (monorepo + migración
-> a Next con paridad visual + tienda de 4 productos en modo test). Pendiente: auth, DB (RDS),
-> admin, Wompi (Fases 3-7).
+> (fuente de verdad para la evolución). Estado: **Fases 0-4 + admin hechas** (monorepo +
+> migración a Next con paridad + tienda DB-driven + auth JWT/roles + middleware + panel admin).
+> **Código listo pero SIN correr contra la RDS todavía** (falta el túnel; ver DB abajo).
+> Pendiente: cuenta de cliente (UI), carrito/favoritos/historial, analítica y **Wompi (Fase 7)**.
 >
-> - **Estructura:** `apps/web/` (la app Next: `app/` para rutas, `src/` para el código portado
->   —components, sections, i18n, lib, config, assets—), `packages/db` y `packages/types` (placeholders).
-> - **Comandos (desde la raíz):** `pnpm install`, `pnpm dev` (=`next dev`), `pnpm build`
->   (`next build`, incluye type-check), `pnpm start`, `pnpm lint`. También `pnpm --filter web <script>`.
-> - **Imágenes:** el pipeline Vite `?picture` + `vite-imagetools` fue reemplazado por **`next/image`**
->   (import estático + `<Img>`/`<ImageCarousel>` sobre `next/image`). Sigue usándose `<Img>` con `alt` i18n.
-> - **Rutas:** landing en `app/page.tsx`; tienda en `app/tienda/page.tsx` y `app/tienda/[slug]/page.tsx`.
->   El catálogo de prueba (4 productos con imágenes repetidas) está en `apps/web/src/config/catalog.ts`.
-> - Buena parte de lo de abajo (Vite, `index.html`, `src/index.css`, comandos) describe la etapa
+> - **Estructura:** `apps/web/` (`app/` rutas, `src/` código portado + `src/server/` backend:
+>   `db/` TypeORM, `auth/`, `products.ts`, `admin.ts`; `scripts/` migración/seed). `packages/*` placeholders.
+> - **Comandos (raíz):** `pnpm dev`, `pnpm build` (incluye type-check), `pnpm start`, `pnpm lint`.
+>   DB (desde `apps/web`): `pnpm db:check`, `pnpm db:migrate`, `pnpm db:seed`.
+> - **DB:** Postgres/RDS vía TypeORM, `synchronize:false` SIEMPRE (solo migraciones), tablas `axis_*`.
+>   El `.env` de producción vive en **`apps/web/.env`** (NO leerlo). El host directo de la RDS es
+>   privado: en local se llega por **túnel a `localhost:5433`** (override en `apps/web/.env.local`
+>   con `POSTGRES_HOST=localhost POSTGRES_PORT=5433`). Auth: `JWT_SECRET_MANAGMENT` (HS256 vía `jose`).
+> - **Imágenes:** `?picture`/`vite-imagetools` → **`next/image`** (`<Img>`/`<ImageCarousel>`). Las fotos
+>   de producto se guardan como CLAVE en la DB y se resuelven a imagen local en `src/lib/productImages.ts`
+>   (futuro: S3, ya hay `AWS_PRODUCTS_BUCKET` en el `.env`). El seed de prueba vive en `apps/web/scripts/seed.ts`.
+> - **Rutas:** landing `app/page.tsx`; tienda `app/tienda/**` (server, lee DB); admin `app/admin/**`
+>   (login + panel guardado por rol); API en `app/api/**` (auth, products, admin).
+> - Buena parte de lo de abajo (Vite, `index.html`, `src/index.css`) describe la etapa
 >   **anterior a la migración**; para rutas/estructura usa esta nota y `PLAN-PLATAFORMA.md`.
 
 ## Qué es este proyecto
@@ -31,7 +37,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Tema:** oscuro por defecto + claro, con interruptor en el Nav (sol/luna). El tema se aplica con `<html data-theme>` y se persiste en `localStorage` (`axis-theme`); el script anti-FOUC vive en `index.html`. El cambio se hace a nivel de variables CSS en `src/index.css` (`:root[data-theme='light']` re-mapea solo los neutros carbón/blanco; el dorado y el Morpho no cambian). La sección Capabilities usa color fijo (siempre clara) y no sigue el tema.
 
-> **`PLAN-AXIS.md`** contiene el detalle histórico de diseño (sistema visual, tokens, animación). **Ojo:** su estrategia y mapa de sitio describen la etapa **B2B anterior** y están desactualizados tras el giro a B2C — usa el código y este CLAUDE.md como fuente de verdad para copy/estructura.
+> **`PLAN-AXIS.md`** contiene el detalle de estrategia y diseño de la vitrina, ya **100% B2C** (sistema visual, tokens, animación, mapa de sitio, copy por sección orientado al usuario final). Para la evolución a plataforma full-stack (tienda, auth, DB, Wompi) la fuente de verdad es **`PLAN-PLATAFORMA.md`**; para copy/estructura de la vitrina, `PLAN-AXIS.md` y este CLAUDE.md están alineados.
 
 Barra de calidad visual y de animación: **Apple · Whoop · Ray-Ban × Meta**. Minimalista, premium, multinacional, serio y confiable.
 
