@@ -7,9 +7,8 @@ import { cdnUrl, isRemoteImage } from '../../lib/cdn'
 
 /**
  * Gestor de fotos del producto. Sube directo a S3 con presigned PUT (el binario
- * nunca pasa por el backend) y guarda la CLAVE S3 en la lista. Muestra las fotos
- * en orden (el número es la posición). Las imágenes locales de prueba siguen
- * viéndose hasta que se reemplacen por reales.
+ * nunca pasa por el backend). Permite reordenar (la 1ª es la principal) y quitar.
+ * Las fotos quitadas se limpian de S3 al guardar el producto (ver admin.ts).
  */
 export function ImageUploader({
   value,
@@ -22,7 +21,6 @@ export function ImageUploader({
   const [error, setError] = useState<string | null>(null)
 
   async function uploadOne(file: File): Promise<string | null> {
-    // 1) pedir URL prefirmada
     const presign = await fetch('/api/admin/uploads/presign', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -30,12 +28,7 @@ export function ImageUploader({
     })
     if (!presign.ok) return null
     const { key, url } = (await presign.json()) as { key: string; url: string }
-    // 2) subir el archivo DIRECTO a S3
-    const put = await fetch(url, {
-      method: 'PUT',
-      body: file,
-      headers: { 'content-type': file.type },
-    })
+    const put = await fetch(url, { method: 'PUT', body: file, headers: { 'content-type': file.type } })
     return put.ok ? key : null
   }
 
@@ -47,38 +40,43 @@ export function ImageUploader({
     for (const file of Array.from(files)) {
       const key = await uploadOne(file)
       if (key) added.push(key)
-      else setError('Alguna imagen no se pudo subir (revisa CORS del bucket y NEXT_PUBLIC_CDN_URL).')
+      else setError('Alguna imagen no se pudo subir (revisa CORS del bucket).')
     }
     if (added.length) onChange([...value, ...added])
     setBusy(false)
   }
 
-  function remove(key: string) {
-    onChange(value.filter((k) => k !== key))
-    // Nota: el objeto queda en S3; la limpieza (presign delete) se puede hacer aparte.
+  function move(index: number, dir: -1 | 1) {
+    const next = [...value]
+    const target = index + dir
+    if (target < 0 || target >= next.length) return
+    ;[next[index], next[target]] = [next[target], next[index]]
+    onChange(next)
   }
 
-  function thumbSrc(key: string) {
-    return isRemoteImage(key) ? cdnUrl(key) : resolveImage(key)
+  function remove(key: string) {
+    onChange(value.filter((k) => k !== key))
   }
+
+  const thumbSrc = (key: string) => (isRemoteImage(key) ? cdnUrl(key) : resolveImage(key))
 
   return (
     <div>
       <div className="mb-2 text-sm text-warm-gray/80">
-        Fotos <span className="text-warm-gray/45">(se suben a S3; el número es el orden)</span>
+        Fotos <span className="text-warm-gray/45">(se suben a S3; la 1ª es la principal)</span>
       </div>
 
       {value.length > 0 && (
         <div className="mb-4 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
           {value.map((key, i) => (
-            <div
-              key={key}
-              className="relative aspect-square overflow-hidden rounded-lg border border-line"
-            >
+            <div key={key} className="group relative aspect-square overflow-hidden rounded-lg border border-line">
               <Image src={thumbSrc(key)} alt="" fill sizes="120px" className="object-cover" />
-              <span className="absolute left-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-gold text-xs font-medium text-carbon-900">
-                {i + 1}
-              </span>
+
+              {i === 0 && (
+                <span className="absolute left-1 top-1 rounded bg-gold px-1.5 py-0.5 font-mono text-[0.55rem] tracking-wide text-carbon-900">
+                  PRINCIPAL
+                </span>
+              )}
               <button
                 type="button"
                 onClick={() => remove(key)}
@@ -87,6 +85,28 @@ export function ImageUploader({
               >
                 ×
               </button>
+
+              {/* Reordenar */}
+              <div className="absolute inset-x-0 bottom-0 flex justify-between bg-carbon-900/70 opacity-0 transition-opacity group-hover:opacity-100">
+                <button
+                  type="button"
+                  onClick={() => move(i, -1)}
+                  disabled={i === 0}
+                  aria-label="Mover antes"
+                  className="px-2 py-1 text-warm-gray/90 hover:text-gold disabled:opacity-30"
+                >
+                  ◀
+                </button>
+                <button
+                  type="button"
+                  onClick={() => move(i, 1)}
+                  disabled={i === value.length - 1}
+                  aria-label="Mover después"
+                  className="px-2 py-1 text-warm-gray/90 hover:text-gold disabled:opacity-30"
+                >
+                  ▶
+                </button>
+              </div>
             </div>
           ))}
         </div>

@@ -2,20 +2,11 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { formatCop, type ProductDTO } from '../../lib/products'
-
-function StockBadge({ stock }: { stock: number }) {
-  const tone =
-    stock <= 0
-      ? 'text-red-400 border-red-400/30'
-      : stock <= 3
-        ? 'text-gold border-gold/40'
-        : 'text-warm-gray/70 border-line'
-  return (
-    <span className={`rounded-md border px-2 py-0.5 font-mono text-xs ${tone}`}>{stock}</span>
-  )
-}
+import { resolveProductSrc } from '../../lib/productImages'
+import { StockStepper } from './StockStepper'
 
 export function ProductTable({ products }: { products: ProductDTO[] }) {
   const router = useRouter()
@@ -32,17 +23,17 @@ export function ProductTable({ products }: { products: ProductDTO[] }) {
     router.refresh()
   }
 
-  async function remove(p: ProductDTO) {
-    if (!confirm(`¿Dar de baja "${p.name}"? Dejará de verse en la tienda.`)) return
+  async function hardDelete(p: ProductDTO) {
+    if (!confirm(`¿ELIMINAR "${p.name}" definitivamente? Se borran sus fotos de S3. Esta acción no se puede deshacer.`)) return
     setBusy(p.id)
-    await fetch(`/api/admin/products/${p.id}`, { method: 'DELETE' })
+    await fetch(`/api/admin/products/${p.id}?mode=hard`, { method: 'DELETE' })
     setBusy(null)
     router.refresh()
   }
 
   return (
     <div className="overflow-x-auto rounded-2xl border border-line">
-      <table className="w-full min-w-[640px] text-left text-sm">
+      <table className="w-full min-w-[720px] text-left text-sm">
         <thead className="border-b border-line bg-carbon-850 text-warm-gray/55">
           <tr>
             <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">Producto</th>
@@ -56,12 +47,25 @@ export function ProductTable({ products }: { products: ProductDTO[] }) {
           {products.map((p) => (
             <tr key={p.id} className="border-b border-line/60 last:border-0">
               <td className="px-4 py-3">
-                <div className="font-head text-warm-white">{p.name}</div>
-                <div className="font-mono text-xs text-warm-gray/45">{p.slug}</div>
+                <div className="flex items-center gap-3">
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-line bg-carbon-900">
+                    <Image
+                      src={resolveProductSrc(p.images[0] ?? { key: '', url: null })}
+                      alt=""
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate font-head text-warm-white">{p.name}</div>
+                    <div className="font-mono text-xs text-warm-gray/45">{p.slug}</div>
+                  </div>
+                </div>
               </td>
-              <td className="px-4 py-3 text-warm-gray/80">{formatCop(p.priceCop)}</td>
+              <td className="px-4 py-3 whitespace-nowrap text-warm-gray/80">{formatCop(p.priceCop)}</td>
               <td className="px-4 py-3">
-                <StockBadge stock={p.stock} />
+                <StockStepper productId={p.id} stock={p.stock} size="sm" />
               </td>
               <td className="px-4 py-3">
                 <button
@@ -84,11 +88,11 @@ export function ProductTable({ products }: { products: ProductDTO[] }) {
                   Editar
                 </Link>
                 <button
-                  onClick={() => remove(p)}
+                  onClick={() => hardDelete(p)}
                   disabled={busy === p.id}
                   className="ml-4 text-sm text-warm-gray/50 transition-colors hover:text-red-400 disabled:opacity-50"
                 >
-                  Baja
+                  Eliminar
                 </button>
               </td>
             </tr>

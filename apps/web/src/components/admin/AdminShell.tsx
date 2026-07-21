@@ -9,6 +9,7 @@ import { Icon } from '../ui/Icon'
 const NAV = [
   { href: '/admin', label: 'Dashboard' },
   { href: '/admin/productos', label: 'Productos' },
+  { href: '/admin/pedidos', label: 'Pedidos' },
 ]
 
 export function AdminShell({ email, children }: { email: string; children: ReactNode }) {

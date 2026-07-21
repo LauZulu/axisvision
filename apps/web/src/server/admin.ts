@@ -1,6 +1,7 @@
 import { getDb } from './db'
 import { AxisProduct } from './db/entities/Product'
 import { AxisProductImage } from './db/entities/ProductImage'
+import { deleteObjects } from './s3'
 import type { ProductDTO } from '../lib/products'
 
 export type AdminStats = {
@@ -77,12 +78,19 @@ export type ProductInput = {
 async function replaceImages(productId: string, keys: string[]) {
   const db = await getDb()
   const imageRepo = db.getRepository(AxisProductImage)
+  const old = await imageRepo.find({ where: { productId } })
+  const oldKeys = old.map((i) => i.imageKey)
+
   await imageRepo.delete({ productId })
   if (keys.length > 0) {
     await imageRepo.save(
       keys.map((imageKey, position) => imageRepo.create({ productId, imageKey, position })),
     )
   }
+
+  // Limpia de S3 las fotos que se quitaron (best-effort; ignora claves locales).
+  const removed = oldKeys.filter((k) => !keys.includes(k))
+  if (removed.length) await deleteObjects(removed)
 }
 
 export async function createProduct(input: ProductInput): Promise<string> {
