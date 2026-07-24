@@ -6,12 +6,14 @@ import { useDict } from '../i18n/useDict'
 import { useScrollTo } from '../lib/scrollContext'
 
 // Ejemplos reales de personas usando AXIS (el índice de alt es el de t.alt.lifestyle).
-import modelo01 from '../assets/lifestyle/modelo-01.jpg'
-import modelo06 from '../assets/lifestyle/modelo-06.jpg'
-import modelo03 from '../assets/lifestyle/modelo-03.jpg'
-import modelo02 from '../assets/lifestyle/modelo-02.jpg'
-import modelo05 from '../assets/lifestyle/modelo-05.jpeg'
-import modelo04 from '../assets/lifestyle/modelo-04.jpg'
+import {
+  modelo01,
+  modelo06,
+  modelo03,
+  modelo02,
+  modelo05,
+  modelo04,
+} from '../lib/siteImages'
 
 const SLIDES = [
   { pic: modelo01, alt: 1 },

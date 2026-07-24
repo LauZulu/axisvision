@@ -48,10 +48,11 @@ export function presignDelete(key: string): Promise<string> {
 
 /**
  * Borra objetos del bucket desde el servidor (limpieza al eliminar un producto).
- * Best-effort: ignora las claves locales/vacías y no rompe si alguna falla.
+ * Best-effort y SOLO dentro de `products/`: las claves `site/...` son las fotos
+ * del sitio (compartidas con la landing y el seed) y nunca se limpian desde aquí.
  */
 export async function deleteObjects(keys: string[]): Promise<void> {
-  const remote = keys.filter((k) => k && k.includes('/') && !/^https?:\/\//.test(k))
+  const remote = keys.filter((k) => k && k.startsWith('products/'))
   await Promise.allSettled(
     remote.map((Key) => s3().send(new DeleteObjectCommand({ Bucket: bucket(), Key }))),
   )

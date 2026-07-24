@@ -21,12 +21,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   `JWT_SECRET_MANAGMENT` (HS256 vía `jose`). Nota Next+TypeORM: en dev el HMR invalida la metadata
 >   de entidades; `getDb()` (src/server/db/index.ts) detecta y reconstruye el DataSource — no quitar.
 > - **Imágenes/S3:** bucket **privado** (`AWS_PRODUCTS_BUCKET`), lectura pública solo por **CloudFront**
->   (`NEXT_PUBLIC_CDN_URL`, falta definirlo). El admin sube/borra **directo a S3 con presigned URLs**
+>   (`NEXT_PUBLIC_CDN_URL`, ya definido). El admin sube/borra **directo a S3 con presigned URLs**
 >   (`POST /api/admin/uploads/presign`, `src/server/s3.ts`) — el backend NUNCA procesa binarios.
->   En la DB `axis_product_image.imageKey` guarda la **clave S3** (`products/...`); el frontend usa la
->   URL de CloudFront (`src/lib/cdn.ts`, `resolveProductSrc`). Las 4 imágenes locales de prueba siguen
->   funcionando (clave sin `/`). Verifica acceso con `pnpm s3:check`. **Falta CORS** en el bucket para
->   que el navegador del admin haga PUT/DELETE (ver PLAN/README).
+>   **Ya NO hay imágenes en el repo**: todas viven en S3 y se sirven por CloudFront. Dos namespaces:
+>   `products/...` (fotos subidas por el admin; únicas que el admin puede borrar de S3) y `site/...`
+>   (fotos del sitio/landing y del seed; protegidas contra borrado en `deleteObjects` y el presign).
+>   La landing usa el manifiesto `src/lib/siteImages.ts` (URL CDN + dimensiones intrínsecas, cero CLS);
+>   subir/actualizar originales: `scripts/migrate-images-to-s3.mts` (medía dimensiones con `identify`).
+>   En la DB `axis_product_image.imageKey` guarda la **clave S3**; el frontend usa la URL de CloudFront
+>   (`src/lib/cdn.ts`, `resolveProductSrc`). Verifica acceso con `pnpm s3:check`. **Falta CORS** en el
+>   bucket para que el navegador del admin haga PUT/DELETE (ver PLAN/README).
 > - **Checkout + Wompi (Fase 7, implementada — faltan llaves):** compra invitado con carrito
 >   localStorage (`src/lib/cart.ts`) o "Comprar ahora"; `POST /api/checkout` valida stock, crea
 >   `axis_order` `pending` con precios DESDE LA DB y responde parámetros FIRMADOS del Web Checkout

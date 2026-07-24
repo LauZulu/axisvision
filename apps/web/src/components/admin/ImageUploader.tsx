@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { resolveImage } from '../../lib/productImages'
-import { cdnUrl, isRemoteImage } from '../../lib/cdn'
+import { cdnUrl } from '../../lib/cdn'
 import { useDict } from '../../i18n/useDict'
 
 /**
@@ -61,7 +60,7 @@ export function ImageUploader({
     onChange(value.filter((k) => k !== key))
   }
 
-  const thumbSrc = (key: string) => (isRemoteImage(key) ? cdnUrl(key) : resolveImage(key))
+  const thumbSrc = (key: string) => cdnUrl(key)
 
   return (
     <div>

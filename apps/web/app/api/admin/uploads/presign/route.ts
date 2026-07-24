@@ -20,7 +20,9 @@ const schema = z.discriminatedUnion('operation', [
   }),
   z.object({
     operation: z.literal('delete'),
-    key: z.string().min(1).max(512),
+    // Solo se firman borrados dentro de `products/`: las claves `site/...`
+    // (fotos del sitio/landing) no se tocan desde el admin.
+    key: z.string().min(1).max(512).startsWith('products/'),
   }),
 ])
 

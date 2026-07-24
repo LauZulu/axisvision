@@ -1,5 +1,13 @@
 # Assets de AXIS — dónde va cada imagen
 
+> **⚠️ Las imágenes YA NO viven en el repo.** Todas están en S3 (claves `site/...`)
+> y se sirven por CloudFront; la landing las consume vía `src/lib/siteImages.ts`.
+> Estas carpetas quedan solo como **buzón temporal**: suelta aquí los originales
+> nuevos con la nomenclatura de abajo y avísame — se suben a S3 con
+> `scripts/migrate-images-to-s3.mts`, se registran en `siteImages.ts` y se borran
+> del repo. Las categorías y nombres de esta guía siguen vigentes como convención
+> de claves S3.
+
 Guía única para depositar imágenes/recursos. Suelta los archivos en la carpeta
 correspondiente con el nombre indicado y avísame: yo los implemento con
 **responsive (AVIF/WebP + `srcset`), `lazy-load`, `alt` bilingüe y sin CLS**.

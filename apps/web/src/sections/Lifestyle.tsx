@@ -6,17 +6,19 @@ import { useDict } from '../i18n/useDict'
 import { fadeUp, inView, stagger } from '../lib/motion'
 
 // Galería de uso real — el orden coincide con t.alt.lifestyle[i].
-import modelo06Mujer from '../assets/lifestyle/modelo-06.jpg'
-import modelo01 from '../assets/lifestyle/modelo-01.jpg'
-import cafeCroissant from '../assets/lifestyle/modelo-07.jpeg'
-import modelo02 from '../assets/lifestyle/modelo-02.jpg'
-import modelo05 from '../assets/lifestyle/modelo-05.jpeg'
-import cafeEstuche from '../assets/retail/axis-en-cafe.jpg'
-import modelo03 from '../assets/lifestyle/modelo-03.jpg'
-import ciclista from '../assets/lifestyle/modelo-06.jpeg'
-import cafeLaptop from '../assets/lifestyle/modelo-08.jpeg'
-import modelo04 from '../assets/lifestyle/modelo-04.jpg'
-import cafeSport from '../assets/retail/axis-en-cafe-02.jpg'
+import {
+  modelo06 as modelo06Mujer,
+  modelo01,
+  modelo07 as cafeCroissant,
+  modelo02,
+  modelo05,
+  axisEnCafe as cafeEstuche,
+  modelo03,
+  modelo06Ciclista as ciclista,
+  modelo08 as cafeLaptop,
+  modelo04,
+  axisEnCafe02 as cafeSport,
+} from '../lib/siteImages'
 
 const GALLERY = [
   modelo06Mujer,

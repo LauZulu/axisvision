@@ -5,7 +5,7 @@ import { Img } from '../components/ui/Img'
 import { Icon } from '../components/ui/Icon'
 import { Magnetic } from '../components/ui/Magnetic'
 import { MorphoSheen } from '../components/ui/MorphoSheen'
-import frontImg from '../assets/packaging/gafas-de-frente.jpeg'
+import { gafasDeFrente as frontImg } from '../lib/siteImages'
 import { useDict } from '../i18n/useDict'
 import { EASE_OUT_EXPO, inView } from '../lib/motion'
 

@@ -1,7 +1,7 @@
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 import { Img } from '../components/ui/Img'
-import productImg from '../assets/hero/hero-producto.jpeg'
+import { heroProducto as productImg } from '../lib/siteImages'
 import { SectionHeading } from '../components/ui/SectionHeading'
 import { Reveal } from '../components/ui/Reveal'
 import { useDict } from '../i18n/useDict'

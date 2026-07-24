@@ -23,7 +23,7 @@ const PRODUCTS = [
     priceCop: 1_190_000,
     stock: 12,
     position: 1,
-    images: ['gafas-de-frente', 'hero-producto', 'modelo-01'],
+    images: ['site/packaging/gafas-de-frente.jpeg', 'site/hero/hero-producto.jpeg', 'site/lifestyle/modelo-01.jpg'],
   },
   {
     slug: 'axis-aurum',
@@ -37,7 +37,7 @@ const PRODUCTS = [
     priceCop: 1_390_000,
     stock: 8,
     position: 2,
-    images: ['hero-producto-02', 'modelo-03', 'cafe'],
+    images: ['site/hero/hero-producto-02.jpeg', 'site/lifestyle/modelo-03.jpg', 'site/retail/axis-en-cafe.jpg'],
   },
   {
     slug: 'axis-morpho',
@@ -51,7 +51,7 @@ const PRODUCTS = [
     priceCop: 1_690_000,
     stock: 4,
     position: 3,
-    images: ['empaque-abierto', 'modelo-05', 'modelo-07'],
+    images: ['site/packaging/empaque-abierto-con-gafas.jpeg', 'site/lifestyle/modelo-05.jpeg', 'site/lifestyle/modelo-07.jpeg'],
   },
   {
     slug: 'axis-clarum',
@@ -65,7 +65,7 @@ const PRODUCTS = [
     priceCop: 1_290_000,
     stock: 10,
     position: 4,
-    images: ['modelo-02', 'modelo-08', 'cafe-02'],
+    images: ['site/lifestyle/modelo-02.jpg', 'site/lifestyle/modelo-08.jpeg', 'site/retail/axis-en-cafe-02.jpg'],
   },
 ]
 
