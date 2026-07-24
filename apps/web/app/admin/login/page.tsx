@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { TreeLogo } from '../../../src/components/ui/TreeLogo'
+import { useDict } from '../../../src/i18n/useDict'
 
 export default function AdminLoginPage() {
+  const { t } = useDict()
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -27,9 +29,9 @@ export default function AdminLoginPage() {
         return
       }
       const data = await res.json().catch(() => null)
-      setError(data?.error?.message ?? 'No se pudo iniciar sesión.')
+      setError(data?.error?.message ?? t.admin.login.error)
     } catch {
-      setError('Error de red. Inténtalo de nuevo.')
+      setError(t.admin.login.netError)
     }
     setLoading(false)
   }
@@ -49,11 +51,11 @@ export default function AdminLoginPage() {
           className="rounded-2xl border border-line bg-carbon-850 p-7"
           noValidate
         >
-          <h1 className="font-head text-xl text-warm-white">Iniciar sesión</h1>
-          <p className="mt-1 text-sm text-warm-gray/60">Acceso restringido al equipo AXIS.</p>
+          <h1 className="font-head text-xl text-warm-white">{t.admin.login.title}</h1>
+          <p className="mt-1 text-sm text-warm-gray/60">{t.admin.login.subtitle}</p>
 
           <label className="mt-6 block text-sm text-warm-gray/80">
-            Correo
+            {t.admin.login.email}
             <input
               type="email"
               required
@@ -65,7 +67,7 @@ export default function AdminLoginPage() {
           </label>
 
           <label className="mt-4 block text-sm text-warm-gray/80">
-            Contraseña
+            {t.admin.login.password}
             <input
               type="password"
               required
@@ -79,7 +81,7 @@ export default function AdminLoginPage() {
           {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
 
           <button type="submit" disabled={loading} className="btn-axis mt-6 w-full disabled:opacity-60">
-            {loading ? 'Entrando…' : 'Entrar'}
+            {loading ? t.admin.login.entering : t.admin.login.enter}
           </button>
         </form>
       </div>

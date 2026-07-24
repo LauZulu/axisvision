@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ImageUploader } from './ImageUploader'
+import { useDict } from '../../i18n/useDict'
 import type { ProductDTO } from '../../lib/products'
 
 type FormState = {
@@ -54,6 +55,8 @@ const inputCls =
   'w-full rounded-md border border-line bg-carbon-900 px-3 py-2.5 text-warm-white outline-none focus:border-gold/60'
 
 export function ProductForm({ product }: { product?: ProductDTO }) {
+  const { t } = useDict()
+  const f = t.admin.form
   const router = useRouter()
   const [form, setForm] = useState<FormState>(() => initial(product))
   const [error, setError] = useState<string | null>(null)
@@ -95,122 +98,131 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
         return
       }
       const data = await res.json().catch(() => null)
-      setError(data?.error?.message ?? 'No se pudo guardar.')
+      setError(data?.error?.message ?? f.saveError)
     } catch {
-      setError('Error de red. Inténtalo de nuevo.')
+      setError(f.netError)
     }
     setSaving(false)
   }
 
   return (
-    <form onSubmit={onSubmit} className="max-w-3xl">
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Slug (url)">
+    <div>
+      <h1 className="font-head text-2xl text-warm-white">{product ? f.editTitle : f.newTitle}</h1>
+      {product ? (
+        <p className="mt-1 font-mono text-xs text-warm-gray/45">{product.slug}</p>
+      ) : (
+        <p className="mt-1 text-warm-gray/60">{f.newSubtitle}</p>
+      )}
+
+      <form onSubmit={onSubmit} className="mt-8 max-w-3xl">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label={f.slug}>
+            <input
+              className={inputCls}
+              value={form.slug}
+              onChange={(e) => set('slug', e.target.value)}
+              placeholder="axis-onyx"
+              required
+            />
+          </Field>
+          <Field label={f.name}>
+            <input
+              className={inputCls}
+              value={form.name}
+              onChange={(e) => set('name', e.target.value)}
+              placeholder="AXIS Onyx"
+              required
+            />
+          </Field>
+          <Field label={f.taglineEs}>
+            <input className={inputCls} value={form.taglineEs} onChange={(e) => set('taglineEs', e.target.value)} required />
+          </Field>
+          <Field label={f.taglineEn}>
+            <input className={inputCls} value={form.taglineEn} onChange={(e) => set('taglineEn', e.target.value)} required />
+          </Field>
+        </div>
+
+        <div className="mt-5 grid gap-5 sm:grid-cols-2">
+          <Field label={f.descriptionEs}>
+            <textarea
+              className={`${inputCls} min-h-24`}
+              value={form.descriptionEs}
+              onChange={(e) => set('descriptionEs', e.target.value)}
+              required
+            />
+          </Field>
+          <Field label={f.descriptionEn}>
+            <textarea
+              className={`${inputCls} min-h-24`}
+              value={form.descriptionEn}
+              onChange={(e) => set('descriptionEn', e.target.value)}
+              required
+            />
+          </Field>
+        </div>
+
+        <div className="mt-5 grid gap-5 sm:grid-cols-3">
+          <Field label={f.price}>
+            <input
+              className={inputCls}
+              type="number"
+              min={0}
+              value={form.priceCop}
+              onChange={(e) => set('priceCop', e.target.value)}
+              required
+            />
+          </Field>
+          <Field label={f.stock}>
+            <input
+              className={inputCls}
+              type="number"
+              min={0}
+              value={form.stock}
+              onChange={(e) => set('stock', e.target.value)}
+              required
+            />
+          </Field>
+          <Field label={f.position}>
+            <input
+              className={inputCls}
+              type="number"
+              min={0}
+              value={form.position}
+              onChange={(e) => set('position', e.target.value)}
+            />
+          </Field>
+        </div>
+
+        <label className="mt-5 flex items-center gap-2.5 text-sm text-warm-gray/80">
           <input
-            className={inputCls}
-            value={form.slug}
-            onChange={(e) => set('slug', e.target.value)}
-            placeholder="axis-onyx"
-            required
+            type="checkbox"
+            checked={form.active}
+            onChange={(e) => set('active', e.target.checked)}
+            className="h-4 w-4 accent-[#c8a96e]"
           />
-        </Field>
-        <Field label="Nombre">
-          <input
-            className={inputCls}
-            value={form.name}
-            onChange={(e) => set('name', e.target.value)}
-            placeholder="AXIS Onyx"
-            required
-          />
-        </Field>
-        <Field label="Tagline (ES)">
-          <input className={inputCls} value={form.taglineEs} onChange={(e) => set('taglineEs', e.target.value)} required />
-        </Field>
-        <Field label="Tagline (EN)">
-          <input className={inputCls} value={form.taglineEn} onChange={(e) => set('taglineEn', e.target.value)} required />
-        </Field>
-      </div>
+          {f.visible}
+        </label>
 
-      <div className="mt-5 grid gap-5 sm:grid-cols-2">
-        <Field label="Descripción (ES)">
-          <textarea
-            className={`${inputCls} min-h-24`}
-            value={form.descriptionEs}
-            onChange={(e) => set('descriptionEs', e.target.value)}
-            required
-          />
-        </Field>
-        <Field label="Descripción (EN)">
-          <textarea
-            className={`${inputCls} min-h-24`}
-            value={form.descriptionEn}
-            onChange={(e) => set('descriptionEn', e.target.value)}
-            required
-          />
-        </Field>
-      </div>
+        {/* Fotos: se suben directo a S3 (presigned PUT) y se sirven por CloudFront. */}
+        <div className="mt-7">
+          <ImageUploader value={form.images} onChange={(imgs) => set('images', imgs)} />
+        </div>
 
-      <div className="mt-5 grid gap-5 sm:grid-cols-3">
-        <Field label="Precio (COP)">
-          <input
-            className={inputCls}
-            type="number"
-            min={0}
-            value={form.priceCop}
-            onChange={(e) => set('priceCop', e.target.value)}
-            required
-          />
-        </Field>
-        <Field label="Stock (unidades)">
-          <input
-            className={inputCls}
-            type="number"
-            min={0}
-            value={form.stock}
-            onChange={(e) => set('stock', e.target.value)}
-            required
-          />
-        </Field>
-        <Field label="Orden en tienda">
-          <input
-            className={inputCls}
-            type="number"
-            min={0}
-            value={form.position}
-            onChange={(e) => set('position', e.target.value)}
-          />
-        </Field>
-      </div>
+        {error && <p className="mt-5 text-sm text-red-400">{error}</p>}
 
-      <label className="mt-5 flex items-center gap-2.5 text-sm text-warm-gray/80">
-        <input
-          type="checkbox"
-          checked={form.active}
-          onChange={(e) => set('active', e.target.checked)}
-          className="h-4 w-4 accent-[#c8a96e]"
-        />
-        Visible en la tienda
-      </label>
-
-      {/* Fotos: se suben directo a S3 (presigned PUT) y se sirven por CloudFront. */}
-      <div className="mt-7">
-        <ImageUploader value={form.images} onChange={(imgs) => set('images', imgs)} />
-      </div>
-
-      {error && <p className="mt-5 text-sm text-red-400">{error}</p>}
-
-      <div className="mt-8 flex items-center gap-3">
-        <button type="submit" disabled={saving} className="btn-axis disabled:opacity-60">
-          {saving ? 'Guardando…' : product ? 'Guardar cambios' : 'Crear producto'}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.push('/admin/productos')}
-          className="text-sm text-warm-gray/60 transition-colors hover:text-gold"
-        >
-          Cancelar
-        </button>
-      </div>
-    </form>
+        <div className="mt-8 flex items-center gap-3">
+          <button type="submit" disabled={saving} className="btn-axis disabled:opacity-60">
+            {saving ? f.saving : product ? f.save : f.create}
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/admin/productos')}
+            className="text-sm text-warm-gray/60 transition-colors hover:text-gold"
+          >
+            {f.cancel}
+          </button>
+        </div>
+      </form>
+    </div>
   )
 }

@@ -6,9 +6,13 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { formatCop, type ProductDTO } from '../../lib/products'
 import { resolveProductSrc } from '../../lib/productImages'
+import { fill } from '../../lib/format'
+import { useDict } from '../../i18n/useDict'
 import { StockStepper } from './StockStepper'
 
 export function ProductTable({ products }: { products: ProductDTO[] }) {
+  const { t } = useDict()
+  const p2 = t.admin.products
   const router = useRouter()
   const [busy, setBusy] = useState<string | null>(null)
 
@@ -24,7 +28,7 @@ export function ProductTable({ products }: { products: ProductDTO[] }) {
   }
 
   async function hardDelete(p: ProductDTO) {
-    if (!confirm(`¿ELIMINAR "${p.name}" definitivamente? Se borran sus fotos de S3. Esta acción no se puede deshacer.`)) return
+    if (!confirm(fill(p2.deleteConfirm, { name: p.name }))) return
     setBusy(p.id)
     await fetch(`/api/admin/products/${p.id}?mode=hard`, { method: 'DELETE' })
     setBusy(null)
@@ -36,10 +40,10 @@ export function ProductTable({ products }: { products: ProductDTO[] }) {
       <table className="w-full min-w-[720px] text-left text-sm">
         <thead className="border-b border-line bg-carbon-850 text-warm-gray/55">
           <tr>
-            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">Producto</th>
-            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">Precio</th>
-            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">Stock</th>
-            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">Estado</th>
+            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{p2.colProduct}</th>
+            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{p2.colPrice}</th>
+            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{p2.colStock}</th>
+            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{p2.colStatus}</th>
             <th className="px-4 py-3" />
           </tr>
         </thead>
@@ -77,7 +81,7 @@ export function ProductTable({ products }: { products: ProductDTO[] }) {
                       : 'bg-carbon-800 text-warm-gray/50 hover:text-warm-gray'
                   }`}
                 >
-                  {p.active ? 'Activo' : 'Oculto'}
+                  {p.active ? p2.active : p2.hidden}
                 </button>
               </td>
               <td className="px-4 py-3 text-right whitespace-nowrap">
@@ -85,14 +89,14 @@ export function ProductTable({ products }: { products: ProductDTO[] }) {
                   href={`/admin/productos/${p.id}`}
                   className="text-sm text-warm-gray/70 transition-colors hover:text-gold"
                 >
-                  Editar
+                  {p2.edit}
                 </Link>
                 <button
                   onClick={() => hardDelete(p)}
                   disabled={busy === p.id}
                   className="ml-4 text-sm text-warm-gray/50 transition-colors hover:text-red-400 disabled:opacity-50"
                 >
-                  Eliminar
+                  {p2.delete}
                 </button>
               </td>
             </tr>

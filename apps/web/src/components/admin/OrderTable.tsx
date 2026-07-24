@@ -4,9 +4,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { formatCop } from '../../lib/products'
 import { formatDateTime } from '../../lib/format'
-import { ORDER_STATUSES, orderStatusLabel, type OrderDTO, type OrderStatus } from '../../lib/orders'
+import { useDict } from '../../i18n/useDict'
+import { ORDER_STATUSES, type OrderDTO, type OrderStatus } from '../../lib/orders'
 
 export function OrderTable({ orders }: { orders: OrderDTO[] }) {
+  const { t } = useDict()
+  const o2 = t.admin.orders
   const router = useRouter()
   const [busy, setBusy] = useState<string | null>(null)
 
@@ -24,7 +27,7 @@ export function OrderTable({ orders }: { orders: OrderDTO[] }) {
   if (orders.length === 0) {
     return (
       <div className="rounded-2xl border border-line bg-carbon-850 p-8 text-warm-gray/60">
-        Aún no hay pedidos. Aparecerán aquí cuando alguien complete el checkout.
+        {o2.empty}
       </div>
     )
   }
@@ -34,11 +37,11 @@ export function OrderTable({ orders }: { orders: OrderDTO[] }) {
       <table className="w-full min-w-[760px] text-left text-sm">
         <thead className="border-b border-line bg-carbon-850 text-warm-gray/55">
           <tr>
-            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">Pedido</th>
-            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">Cliente</th>
-            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">Ítems</th>
-            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">Total</th>
-            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">Estado</th>
+            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{o2.colOrder}</th>
+            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{o2.colCustomer}</th>
+            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{o2.colItems}</th>
+            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{o2.colTotal}</th>
+            <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{o2.colStatus}</th>
           </tr>
         </thead>
         <tbody>
@@ -71,7 +74,7 @@ export function OrderTable({ orders }: { orders: OrderDTO[] }) {
                 >
                   {ORDER_STATUSES.map((s) => (
                     <option key={s} value={s}>
-                      {orderStatusLabel[s]}
+                      {t.admin.orderStatus[s]}
                     </option>
                   ))}
                 </select>

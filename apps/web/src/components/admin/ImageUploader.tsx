@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { resolveImage } from '../../lib/productImages'
 import { cdnUrl, isRemoteImage } from '../../lib/cdn'
+import { useDict } from '../../i18n/useDict'
 
 /**
  * Gestor de fotos del producto. Sube directo a S3 con presigned PUT (el binario
@@ -17,6 +18,8 @@ export function ImageUploader({
   value: string[]
   onChange: (keys: string[]) => void
 }) {
+  const { t } = useDict()
+  const im = t.admin.images
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -40,7 +43,7 @@ export function ImageUploader({
     for (const file of Array.from(files)) {
       const key = await uploadOne(file)
       if (key) added.push(key)
-      else setError('Alguna imagen no se pudo subir (revisa CORS del bucket).')
+      else setError(im.error)
     }
     if (added.length) onChange([...value, ...added])
     setBusy(false)
@@ -63,7 +66,7 @@ export function ImageUploader({
   return (
     <div>
       <div className="mb-2 text-sm text-warm-gray/80">
-        Fotos <span className="text-warm-gray/45">(se suben a S3; la 1ª es la principal)</span>
+        {im.label} <span className="text-warm-gray/45">{im.hint}</span>
       </div>
 
       {value.length > 0 && (
@@ -74,13 +77,13 @@ export function ImageUploader({
 
               {i === 0 && (
                 <span className="absolute left-1 top-1 rounded bg-gold px-1.5 py-0.5 font-mono text-[0.55rem] tracking-wide text-carbon-900">
-                  PRINCIPAL
+                  {im.main}
                 </span>
               )}
               <button
                 type="button"
                 onClick={() => remove(key)}
-                aria-label="Quitar foto"
+                aria-label={im.remove}
                 className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-carbon-900/80 text-warm-gray/90 hover:text-red-400"
               >
                 ×
@@ -92,7 +95,7 @@ export function ImageUploader({
                   type="button"
                   onClick={() => move(i, -1)}
                   disabled={i === 0}
-                  aria-label="Mover antes"
+                  aria-label={im.moveBefore}
                   className="px-2 py-1 text-warm-gray/90 hover:text-gold disabled:opacity-30"
                 >
                   ◀
@@ -101,7 +104,7 @@ export function ImageUploader({
                   type="button"
                   onClick={() => move(i, 1)}
                   disabled={i === value.length - 1}
-                  aria-label="Mover después"
+                  aria-label={im.moveAfter}
                   className="px-2 py-1 text-warm-gray/90 hover:text-gold disabled:opacity-30"
                 >
                   ▶
@@ -113,7 +116,7 @@ export function ImageUploader({
       )}
 
       <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-line px-4 py-2 text-sm text-warm-gray/80 transition-colors hover:border-gold/50 hover:text-gold">
-        {busy ? 'Subiendo…' : 'Subir fotos'}
+        {busy ? im.uploading : im.upload}
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp,image/avif"
