@@ -34,10 +34,9 @@ export const en = {
   nav: {
     product: 'Product',
     capabilities: 'Capabilities',
-    editions: 'Editions',
     contact: 'Contact',
     store: 'Store',
-    cta: 'Reserve AXIS',
+    cta: 'Buy AXIS',
     theme: 'Switch theme',
   },
 
@@ -46,10 +45,26 @@ export const en = {
     titleLead: 'A new way',
     titleAccent: 'to see the world.',
     subtitle:
-      'AI-powered glasses: video, photo, live translation and lenses made to your prescription. Built to wear all day.',
-    ctaPrimary: 'Reserve AXIS',
+      'Video, photo and live translation, in glasses made to your prescription. Buy online, delivered to your door.',
+    ctaPrimary: 'Buy AXIS',
     ctaSecondary: 'Discover AXIS',
-    trust: ['6-month warranty', 'Clinical backing', 'Registered trademark'],
+    trust: ['Secure Wompi checkout', '6-month warranty', 'Home delivery'],
+  },
+
+  banner: {
+    title: 'Yours today.',
+    cta: 'Buy now',
+  },
+
+  storeRail: {
+    eyebrow: 'Available now',
+    title: 'Choose your AXIS.',
+    viewAll: 'View the full store',
+  },
+
+  buyBar: {
+    cta: 'Buy AXIS',
+    note: 'Secure checkout · 6-month warranty · Home delivery',
   },
 
   what: {
@@ -80,7 +95,7 @@ export const en = {
   capabilities: {
     eyebrow: 'Intelligence',
     title: 'Everything AXIS does for you.',
-    intro: 'Explore each capability. Tap to discover what you’ll be able to do.',
+    intro: 'Tap each capability and discover it.',
     items: [
       { key: 'video', title: 'Hands-free video', desc: 'Record what you see, first-person, without using your hands.' },
       { key: 'photo', title: 'Instant photo', desc: 'Capture the moment without reaching for your phone.' },
@@ -91,7 +106,7 @@ export const en = {
       { key: 'battery', title: 'Real battery life', desc: 'All-day use, with charging case included.' },
       { key: 'privacy', title: 'Privacy by design', desc: 'Recording indicator and full control in your hands.' },
     ],
-    cta: 'See specifications',
+    cta: 'Buy AXIS',
   },
 
   specs: {
@@ -173,22 +188,10 @@ export const en = {
     ],
   },
 
-  editions: {
-    eyebrow: 'Editions',
-    title: 'An AXIS edition for every style.',
-    intro: 'Premium finishes and luxury presentation. Choose the one that fits you.',
-    cta: 'Choose my AXIS',
-    finishes: [
-      { name: 'AXIS Onyx', desc: 'Matte carbon black. The timeless classic.' },
-      { name: 'AXIS Aurum', desc: 'Antique gold accents. The flagship edition.' },
-      { name: 'AXIS Morpho', desc: 'Iridescent finish. A limited signature edition.' },
-    ],
-  },
-
   store: {
     eyebrow: 'Store',
     title: 'Choose your AXIS.',
-    intro: 'Four editions, the same on-board intelligence. Pick the finish that fits you.',
+    intro: 'Every model, the same on-board intelligence. Pick the one that fits you.',
     testBadge: 'Test catalog',
     from: 'From',
     viewDetail: 'View detail',
@@ -244,23 +247,23 @@ export const en = {
     eyebrow: 'Frequently asked',
     title: 'What you might be wondering.',
     items: [
-      { q: 'How do I buy AXIS?', a: 'Message us on WhatsApp and we’ll guide you through the model, prescription and shipping. We reply within 24 h.' },
+      { q: 'How do I buy AXIS?', a: 'Straight from our online store: pick your model and pay by card, PSE or Nequi via Wompi. Prefer a human? We can also help you on WhatsApp.' },
       { q: 'Are the lenses made to my prescription?', a: 'Yes. AXIS supports prescription lenses, validated with partner optical professionals.' },
       { q: 'What about the warranty?', a: 'A 6-month warranty, with dedicated support and replacement.' },
       { q: 'How long does the battery last?', a: 'All-day use, with a charging case included that also charges your phone.' },
       { q: 'Does AXIS respect my privacy?', a: 'Yes. An indicator light shows when you’re recording, and you stay in control at all times.' },
-      { q: 'Do you ship?', a: 'Yes. We arrange shipping with you over WhatsApp once your order is confirmed.' },
-      { q: 'Can I choose the finish?', a: 'Yes: Onyx, Aurum and the Morpho edition. Choose the one that fits you.' },
+      { q: 'Do you ship?', a: 'Yes. Once your payment is confirmed we arrange home delivery, anywhere in the country.' },
     ],
   },
 
   contact: {
-    eyebrow: 'Reserve',
+    eyebrow: 'Buy',
     title: 'Take AXIS with you.',
     body:
-      'Message us on WhatsApp and we’ll help you choose model, prescription and shipping. We reply within 24 hours.',
-    ctaWhatsapp: 'Reserve on WhatsApp',
-    note: 'Reply within 24 h · No commitment',
+      'Pick your model and pay online in minutes. Questions about your prescription? We’re on WhatsApp.',
+    ctaStore: 'Buy now',
+    ctaWhatsapp: 'WhatsApp advice',
+    note: 'Secure Wompi checkout · 6-month warranty · Home delivery',
   },
 
   footer: {
@@ -268,7 +271,7 @@ export const en = {
     colProduct: 'Product',
     colSupport: 'Help',
     colContact: 'Contact',
-    linksProduct: ['Capabilities', 'Design', 'Editions'],
+    linksProduct: ['Capabilities', 'Design'],
     linksSupport: ['Warranty', 'FAQ', 'Contact'],
     rights: 'AXIS. All rights reserved.',
     registered: 'Registered trademark ®',

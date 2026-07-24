@@ -7,8 +7,8 @@ export function Footer() {
   const { t, lang, setLang } = useDict()
   const scrollTo = useScrollTo()
 
-  const productAnchors = ['#capabilities', '#product', '#editions']
-  const supportAnchors = ['#trust', '#faq', '#contact']
+  const productAnchors = ['#capabilities', '#product']
+  const supportAnchors = ['#faq', '#faq', '#contact']
 
   return (
     <footer className="border-t border-line py-16">

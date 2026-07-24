@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { usePathname, useRouter } from 'next/navigation'
 import { TreeLogo } from '../components/ui/TreeLogo'
 import { Icon } from '../components/ui/Icon'
 import { useDict } from '../i18n/useDict'
 import { useScrollTo } from '../lib/scrollContext'
 import { useTheme } from '../lib/useTheme'
-import { whatsappLink } from '../config/brand'
 import { useCart, cartCount } from '../lib/cart'
 
 export function Nav() {
@@ -31,7 +31,6 @@ export function Nav() {
   const links: Array<[string, string]> = [
     ['#product', t.nav.product],
     ['#capabilities', t.nav.capabilities],
-    ['#editions', t.nav.editions],
     ['#contact', t.nav.contact],
   ]
 
@@ -113,7 +112,16 @@ export function Nav() {
             title={t.nav.theme}
             className="text-warm-gray/60 transition-colors hover:text-gold"
           >
-            <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={18} strokeWidth={1.5} />
+            {/* El icono gira/aparece al cambiar (key remonta el span) */}
+            <motion.span
+              key={theme}
+              initial={{ rotate: -90, scale: 0.5, opacity: 0 }}
+              animate={{ rotate: 0, scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="block"
+            >
+              <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={18} />
+            </motion.span>
           </button>
 
           <Link
@@ -129,14 +137,9 @@ export function Nav() {
             )}
           </Link>
 
-          <a
-            href={whatsappLink('general')}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-axis hidden md:inline-flex"
-          >
+          <Link href="/tienda" className="btn-axis hidden md:inline-flex">
             {t.nav.cta}
-          </a>
+          </Link>
 
           <button
             className="text-warm-white md:hidden"
@@ -167,14 +170,9 @@ export function Nav() {
           >
             {t.nav.store}
           </Link>
-          <a
-            href={whatsappLink('general')}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-axis mt-3 w-full"
-          >
+          <Link href="/tienda" onClick={() => setMenuOpen(false)} className="btn-axis mt-3 w-full">
             {t.nav.cta}
-          </a>
+          </Link>
         </div>
       )}
     </header>

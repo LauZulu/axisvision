@@ -171,14 +171,14 @@
     align-items: center;
     justify-content: center;
     gap: 0.6rem;
-    padding: 0.95rem 1.6rem;
+    padding: 0.95rem 1.9rem;
     font-family: var(--font-head);
     font-weight: 500;
     font-size: 0.95rem;
     letter-spacing: 0.01em;
     color: var(--color-warm-white);
     border: 1px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
-    border-radius: 6px;
+    border-radius: 999px;
     background: transparent;
     cursor: pointer;
     overflow: hidden;
@@ -238,4 +238,19 @@
   .container-axis {
     padding-inline: 2.5rem;
   }
+}
+
+/* Cambio de tema — revelado circular (View Transitions API).
+   Sin crossfade por defecto: la vista nueva entra recortada por el círculo
+   que anima useTheme desde el punto del clic. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
 }

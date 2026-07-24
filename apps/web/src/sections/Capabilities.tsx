@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Icon, type IconKey } from '../components/ui/Icon'
 import { TreeLogo } from '../components/ui/TreeLogo'
@@ -6,7 +7,6 @@ import { Img } from '../components/ui/Img'
 import capabilitiesImg from '../assets/packaging/empaque-abierto-con-gafas.jpeg'
 import { SectionHeading } from '../components/ui/SectionHeading'
 import { useDict } from '../i18n/useDict'
-import { useScrollTo } from '../lib/scrollContext'
 import { EASE_OUT_EXPO } from '../lib/motion'
 
 const ICONS: Record<string, IconKey> = {
@@ -23,7 +23,6 @@ const ICONS: Record<string, IconKey> = {
 // Sección de "luz": colores fijos que NO siguen el tema (siempre clara).
 export function Capabilities() {
   const { t } = useDict()
-  const scrollTo = useScrollTo()
   const [active, setActive] = useState(0)
   const items = t.capabilities.items
   const current = items[active]
@@ -128,13 +127,13 @@ export function Capabilities() {
         </div>
 
         <div className="mt-12">
-          <button
-            onClick={() => scrollTo('#specs')}
+          <Link
+            href="/tienda"
             className="btn-axis !border-[#0a0a0a]/30 !text-[#0a0a0a] hover:!text-[#f5f3ee]"
           >
             {t.capabilities.cta}
             <Icon name="arrow" size={18} />
-          </button>
+          </Link>
         </div>
       </div>
     </section>

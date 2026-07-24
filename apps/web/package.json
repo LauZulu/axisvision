@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
+    "@material-symbols/svg-300": "^0.45.9",
     "@tailwindcss/postcss": "^4.3.1",
     "@types/node": "^24.12.3",
     "@types/pg": "^8.15.6",

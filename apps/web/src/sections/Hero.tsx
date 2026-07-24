@@ -1,11 +1,14 @@
 import { useRef } from 'react'
+import Link from 'next/link'
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import { TreeLogo } from '../components/ui/TreeLogo'
+import { Icon } from '../components/ui/Icon'
 import { Img } from '../components/ui/Img'
+import { Magnetic } from '../components/ui/Magnetic'
+import { MorphoSheen } from '../components/ui/MorphoSheen'
 import heroProduct from '../assets/hero/hero-producto-02.jpeg'
 import { useDict } from '../i18n/useDict'
 import { useScrollTo } from '../lib/scrollContext'
-import { whatsappLink } from '../config/brand'
 import { EASE_OUT_EXPO } from '../lib/motion'
 
 const container = {
@@ -74,15 +77,17 @@ export function Hero() {
           </motion.p>
 
           <motion.div variants={item} className="mt-9 flex flex-wrap items-center gap-4">
-            <a
-              href={whatsappLink('general')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-axis"
+            <Magnetic>
+              <Link href="/tienda" className="btn-axis">
+                {t.hero.ctaPrimary}
+                <Icon name="arrow" size={18} />
+                <MorphoSheen delay={1.2} />
+              </Link>
+            </Magnetic>
+            <button
+              onClick={() => scrollTo(document.querySelector('#shop') ? '#shop' : '#what')}
+              className="btn-ghost"
             >
-              {t.hero.ctaPrimary}
-            </a>
-            <button onClick={() => scrollTo('#what')} className="btn-ghost">
               {t.hero.ctaSecondary}
               <span aria-hidden>↓</span>
             </button>

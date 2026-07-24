@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, useTransform, type MotionValue } from 'framer-motion'
 import { EASE_OUT_EXPO } from '../../lib/motion'
 
 /**
@@ -6,7 +6,9 @@ import { EASE_OUT_EXPO } from '../../lib/motion'
  * larga y un doble chevron en la rama derecha). El sello central de la marca.
  *
  * - `draw`: anima el dibujado del trazo al entrar en viewport (uso en el hero).
- * - sin `draw`: render estático (nav, footer, sellos, watermark).
+ * - `progress`: dibuja el trazo en función de un MotionValue 0→1 (scroll):
+ *   el avance del usuario "dibuja" la marca. Solo stroke-dashoffset — sin layout.
+ * - sin ambos: render estático (nav, footer, sellos, watermark).
  *
  * Reconstrucción vectorial del logo oficial. Si se dispone del SVG original
  * exacto, puede sustituir estos trazos manteniendo el mismo viewBox.
@@ -26,10 +28,30 @@ type Props = {
   className?: string
   strokeWidth?: number
   draw?: boolean
+  /** Progreso 0→1 (p. ej. scroll de la sección) que dibuja el trazo. Prima sobre `draw`. */
+  progress?: MotionValue<number>
   title?: string
 }
 
-export function TreeLogo({ className, strokeWidth = 4, draw = false, title = 'AXIS' }: Props) {
+/** Un segmento dibujado por un tramo del progreso global (stagger raíz → puntas). */
+function ScrollDrawnPath({
+  d,
+  progress,
+  index,
+  count,
+}: {
+  d: string
+  progress: MotionValue<number>
+  index: number
+  count: number
+}) {
+  // Cada trazo ocupa una ventana solapada del progreso: fluye como un dibujo a mano.
+  const start = (index / count) * 0.55
+  const pathLength = useTransform(progress, [start, start + 0.45], [0, 1])
+  return <motion.path d={d} style={{ pathLength }} />
+}
+
+export function TreeLogo({ className, strokeWidth = 4, draw = false, progress, title = 'AXIS' }: Props) {
   const common = {
     viewBox: '0 0 100 104',
     role: 'img',
@@ -39,6 +61,22 @@ export function TreeLogo({ className, strokeWidth = 4, draw = false, title = 'AX
     strokeWidth,
     strokeLinecap: 'round' as const,
     strokeLinejoin: 'miter' as const,
+  }
+
+  if (progress) {
+    return (
+      <svg {...common} className={className}>
+        {SEGMENTS.map((d, i) => (
+          <ScrollDrawnPath
+            key={i}
+            d={d}
+            progress={progress}
+            index={i}
+            count={SEGMENTS.length}
+          />
+        ))}
+      </svg>
+    )
   }
 
   if (!draw) {
