@@ -9,6 +9,7 @@ import { useDict } from '../i18n/useDict'
 import { useScrollTo } from '../lib/scrollContext'
 import { useTheme } from '../lib/useTheme'
 import { whatsappLink } from '../config/brand'
+import { useCart, cartCount } from '../lib/cart'
 
 export function Nav() {
   const { t, lang, setLang } = useDict()
@@ -18,6 +19,7 @@ export function Nav() {
   const router = useRouter()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const itemCount = cartCount(useCart())
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -113,6 +115,19 @@ export function Nav() {
           >
             <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={18} strokeWidth={1.5} />
           </button>
+
+          <Link
+            href="/tienda/carrito"
+            aria-label={t.cart.title}
+            className="relative text-warm-gray/60 transition-colors hover:text-gold"
+          >
+            <Icon name="bag" size={19} strokeWidth={1.5} />
+            {itemCount > 0 && (
+              <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 font-mono text-[0.6rem] leading-none text-carbon-900">
+                {itemCount}
+              </span>
+            )}
+          </Link>
 
           <a
             href={whatsappLink('general')}

@@ -27,8 +27,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   URL de CloudFront (`src/lib/cdn.ts`, `resolveProductSrc`). Las 4 imágenes locales de prueba siguen
 >   funcionando (clave sin `/`). Verifica acceso con `pnpm s3:check`. **Falta CORS** en el bucket para
 >   que el navegador del admin haga PUT/DELETE (ver PLAN/README).
-> - **Checkout:** `POST /api/checkout` (invitado, `src/server/checkout.ts`): valida stock, crea `axis_order`
->   `pending` (no descuenta stock — eso al confirmar pago). Listo para enganchar Wompi.
+> - **Checkout + Wompi (Fase 7, implementada — faltan llaves):** compra invitado con carrito
+>   localStorage (`src/lib/cart.ts`) o "Comprar ahora"; `POST /api/checkout` valida stock, crea
+>   `axis_order` `pending` con precios DESDE LA DB y responde parámetros FIRMADOS del Web Checkout
+>   (`src/server/wompi.ts`: firma integridad SHA256 server-side + `expiration-time` 1h). El pago se
+>   confirma SOLO por `POST /api/wompi/webhook` (checksum timing-safe, idempotente, valida monto;
+>   APPROVED→paid+stock−, DECLINED→failed, VOIDED→cancelled+restock). Resultado en
+>   `/tienda/pago/resultado` (verifica vía API). Descuentos: `compareAtPriceCop` (tachado + badge).
+>   Prueba integral: `pnpm exec tsx scripts/test-wompi.mts`. PENDIENTE del usuario: añadir al `.env`
+>   `NEXT_PUBLIC_WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_EVENTS_SECRET`,
+>   `NEXT_PUBLIC_SITE_URL` y registrar la URL de eventos en el dashboard de Wompi.
 > - **Rutas:** landing `app/page.tsx`; tienda `app/tienda/**` (server, lee DB); admin `app/admin/**`
 >   (login + panel guardado por rol); API en `app/api/**` (auth, products, admin, uploads/presign, checkout).
 > - Buena parte de lo de abajo (Vite, `index.html`, `src/index.css`) describe la etapa

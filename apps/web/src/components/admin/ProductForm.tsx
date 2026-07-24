@@ -14,6 +14,7 @@ type FormState = {
   descriptionEs: string
   descriptionEn: string
   priceCop: string
+  compareAtPriceCop: string
   stock: string
   position: string
   active: boolean
@@ -29,6 +30,7 @@ function initial(product?: ProductDTO): FormState {
     descriptionEs: product?.descriptionEs ?? '',
     descriptionEn: product?.descriptionEn ?? '',
     priceCop: product ? String(product.priceCop) : '',
+    compareAtPriceCop: product?.compareAtPriceCop ? String(product.compareAtPriceCop) : '',
     stock: product ? String(product.stock) : '0',
     position: product ? String(product.position ?? 0) : '0',
     active: product?.active ?? true,
@@ -78,6 +80,7 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
       descriptionEs: form.descriptionEs.trim(),
       descriptionEn: form.descriptionEn.trim(),
       priceCop: Number(form.priceCop),
+      compareAtPriceCop: form.compareAtPriceCop.trim() === '' ? null : Number(form.compareAtPriceCop),
       stock: Number(form.stock),
       position: Number(form.position),
       active: form.active,
@@ -161,7 +164,7 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
           </Field>
         </div>
 
-        <div className="mt-5 grid gap-5 sm:grid-cols-3">
+        <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <Field label={f.price}>
             <input
               className={inputCls}
@@ -170,6 +173,16 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
               value={form.priceCop}
               onChange={(e) => set('priceCop', e.target.value)}
               required
+            />
+          </Field>
+          <Field label={f.compareAtPrice}>
+            <input
+              className={inputCls}
+              type="number"
+              min={0}
+              value={form.compareAtPriceCop}
+              onChange={(e) => set('compareAtPriceCop', e.target.value)}
+              placeholder="—"
             />
           </Field>
           <Field label={f.stock}>

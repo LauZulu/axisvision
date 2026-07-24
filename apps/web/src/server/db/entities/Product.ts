@@ -40,9 +40,14 @@ export class AxisProduct {
   @Column({ type: 'text' })
   descriptionEn!: string
 
-  // Precio en pesos colombianos (COP). Para Wompi (Fase 7) se multiplicará ×100.
+  // Precio en pesos colombianos (COP). Para Wompi se multiplica ×100 (centavos).
   @Column({ type: 'integer' })
   priceCop!: number
+
+  // Precio "anterior" para mostrar descuento (tachado + badge −%). Si es null o
+  // <= priceCop no hay descuento. El precio de cobro SIEMPRE es priceCop.
+  @Column({ type: 'integer', nullable: true })
+  compareAtPriceCop!: number | null
 
   @Column({ type: 'varchar', length: 8, default: 'COP' })
   currency!: string

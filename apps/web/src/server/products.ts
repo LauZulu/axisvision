@@ -22,6 +22,7 @@ function toDTO(p: AxisProduct): ProductDTO {
     descriptionEs: p.descriptionEs,
     descriptionEn: p.descriptionEn,
     priceCop: p.priceCop,
+    compareAtPriceCop: p.compareAtPriceCop ?? null,
     currency: p.currency,
     stock: p.stock,
     active: p.active,

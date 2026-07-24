@@ -4,6 +4,7 @@ import { getDb } from './db'
 import { AxisProduct } from './db/entities/Product'
 import { AxisOrder } from './db/entities/Order'
 import { AxisOrderItem } from './db/entities/OrderItem'
+import { buildCheckoutParams, type CheckoutParams } from './wompi'
 
 export type CheckoutItemInput = { productId: string; quantity: number }
 
@@ -19,6 +20,8 @@ export type CheckoutResult = {
   amountCop: number
   currency: string
   status: string
+  /** Parámetros firmados del Web Checkout de Wompi (null si Wompi no está configurado). */
+  payment: CheckoutParams | null
 }
 
 export type CheckoutError = { ok: false; code: string; message: string }
@@ -79,6 +82,15 @@ export async function createGuestOrder(
     return manager.save(created)
   })
 
+  // Parámetros firmados para el Web Checkout. Si Wompi aún no está configurado
+  // (sin llaves en el .env), la orden igual se crea y payment va null.
+  let payment: CheckoutParams | null = null
+  try {
+    payment = buildCheckoutParams(order.reference, order.amountCop)
+  } catch {
+    payment = null
+  }
+
   return {
     ok: true,
     order: {
@@ -87,6 +99,7 @@ export async function createGuestOrder(
       amountCop: order.amountCop,
       currency: order.currency,
       status: order.status,
+      payment,
     },
   }
 }

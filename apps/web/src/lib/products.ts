@@ -15,11 +15,24 @@ export type ProductDTO = {
   descriptionEs: string
   descriptionEn: string
   priceCop: number
+  /** Precio "anterior" (tachado). Solo hay descuento si es > priceCop. */
+  compareAtPriceCop: number | null
   currency: string
   stock: number
   active: boolean
   position: number
   images: ProductImageDTO[]
+}
+
+/** Descuento activo: hay precio anterior y es mayor al precio actual. */
+export function hasDiscount(p: Pick<ProductDTO, 'priceCop' | 'compareAtPriceCop'>): boolean {
+  return p.compareAtPriceCop !== null && p.compareAtPriceCop > p.priceCop
+}
+
+/** Porcentaje de descuento redondeado (p. ej. 15). */
+export function discountPct(p: Pick<ProductDTO, 'priceCop' | 'compareAtPriceCop'>): number {
+  if (!hasDiscount(p)) return 0
+  return Math.round((1 - p.priceCop / p.compareAtPriceCop!) * 100)
 }
 
 export function productTagline(p: ProductDTO, lang: Lang): string {

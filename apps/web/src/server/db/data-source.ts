@@ -7,6 +7,7 @@ import { AxisOrder } from './entities/Order'
 import { AxisOrderItem } from './entities/OrderItem'
 import { AxisFavorite } from './entities/Favorite'
 import { InitAxisSchema1720000000000 } from './migrations/1720000000000-InitAxisSchema'
+import { WompiAndDiscounts1720000000001 } from './migrations/1720000000001-WompiAndDiscounts'
 
 export const ENTITIES = [
   AxisUser,
@@ -39,7 +40,7 @@ export function buildDataSource(): DataSource {
     synchronize: false,
     logging: process.env.TYPEORM_LOGGING === 'true',
     entities: ENTITIES,
-    migrations: [InitAxisSchema1720000000000],
+    migrations: [InitAxisSchema1720000000000, WompiAndDiscounts1720000000001],
     migrationsTableName: 'axis_migrations',
     // Resiliencia del pool: keepAlive evita que conexiones ociosas mueran en
     // silencio (NAT/firewall); timeouts razonables para no colgar requests.

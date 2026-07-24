@@ -61,6 +61,13 @@ export class AxisOrder {
   @Column({ type: 'varchar', length: 128, nullable: true })
   wompiTransactionId!: string | null
 
+  // Método con el que se pagó (CARD, NEQUI, PSE, …) — lo reporta el webhook.
+  @Column({ type: 'varchar', length: 32, nullable: true })
+  paymentMethodType!: string | null
+
+  @Column({ type: 'timestamptz', nullable: true })
+  paidAt!: Date | null
+
   @OneToMany('AxisOrderItem', 'order', { cascade: true })
   items!: AxisOrderItem[]
 

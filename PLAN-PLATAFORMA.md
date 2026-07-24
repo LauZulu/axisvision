@@ -261,16 +261,57 @@ Cada fase tiene **objetivo**, **pasos**, **archivos** y **criterio de aceptació
 5. UI sobria de dashboard (no necesita el brillo de la landing, pero mantiene tipografía/colores de marca).
 **Aceptación:** un admin edita un producto y el cambio se refleja en `/tienda`; un `user` normal recibe 403 en `/admin`; los datos persisten en la RDS.
 
-### Fase 7 — Checkout con Wompi (próximamente)
-**Objetivo:** dejar el pago listo para activar.
+### Fase 7 — Checkout con Wompi (plan detallado, basado en docs.wompi.co)
+
+**Decisiones tomadas:** **Web Checkout (redirect)** · **Comprar ahora + carrito localStorage** · **descuentos con precio tachado** (`compareAtPriceCop`).
+
+**Cómo funciona Wompi (resumen de la doc):**
+- Web Checkout = form GET a `https://checkout.wompi.co/p/` con `public-key`, `currency` (COP), `amount-in-cents`, `reference` (única), `signature:integrity` y opcionales (`redirect-url`, `expiration-time`, datos de cliente). Wompi muestra TODOS los métodos (tarjeta, Nequi, PSE, Bancolombia, etc.).
+- **Firma de integridad** = `SHA256(reference + amountInCents + currency [+ expirationTime] + WOMPI_INTEGRITY_SECRET)` — SIEMPRE server-side.
+- **Webhook** `transaction.updated`: verificar `signature.checksum` = `SHA256(valores de signature.properties en orden + timestamp + WOMPI_EVENTS_SECRET)` (propiedades extraídas DINÁMICAMENTE del evento). Responder 200 rápido; reintentos 30min/3h/24h → handler idempotente. El redirect NUNCA confirma un pago; el webhook (o `GET /v1/transactions/:id` con la llave pública) es la fuente de verdad.
+- Sandbox: llaves `pub_test_/prv_test_/test_events_/test_integrity_` + `sandbox.wompi.co`. Tarjeta `4242 4242 4242 4242`→APPROVED, `4111...`→DECLINED; Nequi `3991111111`→APPROVED.
+
+**Arquitectura del flujo (guest checkout):**
+```
+Detalle producto ──"Comprar ahora"──┐
+Carrito (localStorage) ──"Pagar"────┴─▶ /tienda/checkout  (datos invitado + resumen)
+    │  POST /api/checkout  { customer, shipping, items:[{productId, qty}] }   ← SIN precios del cliente
+    ▼
+Server: valida stock → precios DESDE LA DB → crea axis_order `pending` (snapshot) →
+        firma integridad (reference, montoCentavos, COP, expiración 1h) →
+        responde parámetros del Web Checkout
+    │  (auto-submit form GET)
+    ▼
+checkout.wompi.co ── cliente paga ──▶ redirect a /tienda/pago/resultado?id=TX
+    │                                     └─ server: GET /v1/transactions/:id → muestra estado real
+    └─ Wompi POST /api/wompi/webhook (transaction.updated)
+           └─ verificar checksum (timing-safe) → validar monto/moneda vs orden →
+              APPROVED: pending→paid + descontar stock (transaccional, una sola vez)
+              DECLINED/ERROR: pending→failed · VOIDED: →cancelled (+restock si estaba paid)
+```
+
 **Pasos:**
-1. Añadir vars Wompi (§5). Empezar en **sandbox**.
-2. `axis_order` (§3) + migración.
-3. `POST /api/checkout/session`: crea order `pending`, calcula **firma de integridad** (`WOMPI_INTEGRITY_SECRET`) para el Web Checkout / widget.
-4. UI de checkout: botón "Comprar" (hoy deshabilitado en Fase 2) → widget Wompi con `NEXT_PUBLIC_WOMPI_PUBLIC_KEY`.
-5. `POST /api/wompi/webhook`: verificar firma del evento (`WOMPI_EVENTS_SECRET`), actualizar `status` de la order (idempotente).
-6. Página de resultado (aprobado/rechazado) leyendo el estado real.
-**Aceptación:** en sandbox, una compra de prueba crea order `pending` → webhook la mueve a `approved`; firma verificada; sin secretos privados en el cliente.
+1. **Migración #2:** `axis_product.compareAtPriceCop` (int null, precio tachado) · `axis_order.paymentMethodType` (varchar null) · `axis_order.paidAt` (timestamptz null).
+2. **`src/server/wompi.ts`:** `integritySignature()`, `verifyEventChecksum()` (propiedades dinámicas + `crypto.timingSafeEqual`), `fetchTransaction()` (API por entorno según prefijo de la llave), `checkoutParams()`.
+3. **Checkout:** extender `createGuestOrder` + `POST /api/checkout` → responde `payment` (url, llave pública, reference, monto en centavos, firma, expiración, redirect).
+4. **Webhook** `POST /api/wompi/webhook` (público, verificado por checksum): idempotente; valida `amount_in_cents === order.amountCop*100` y `currency` antes de marcar pagado; stock con `GREATest(stock-qty,0)` en transacción; VOIDED tras paid → restock.
+5. **Carrito localStorage** (`axis-cart`): lib + badge en Nav + página `/tienda/carrito`.
+6. **UI compra:** selector de cantidad + "Comprar ahora" + "Añadir al carrito" en el detalle; `/tienda/checkout` (formulario invitado bilingüe) con auto-redirect a Wompi.
+7. **Resultado** `/tienda/pago/resultado?id=…`: consulta la transacción server-side y muestra estado real (aprobado/declinado/pendiente con refresh).
+8. **Descuentos:** campo "precio anterior" en admin; tienda muestra tachado + badge −%.
+9. **Pruebas:** simulación local del webhook (checksum válido con el secreto de eventos) verificando idempotencia y stock; E2E sandbox con tarjeta 4242; `grep` de secretos en `.next/static`.
+
+**Variables de entorno (añadir a `apps/web/.env`):**
+- `NEXT_PUBLIC_WOMPI_PUBLIC_KEY` = `pub_test_...` (pública por diseño)
+- `WOMPI_INTEGRITY_SECRET` = `test_integrity_...` (server-only)
+- `WOMPI_EVENTS_SECRET` = `test_events_...` (server-only)
+- `WOMPI_PRIVATE_KEY` = `prv_test_...` (server-only; para anulaciones/API futura, opcional hoy)
+- `NEXT_PUBLIC_SITE_URL` = `http://localhost:3000` (prod: `https://axisvision.co`)
+- En el dashboard de Wompi: **URL de eventos** → `https://axisvision.co/api/wompi/webhook` (sandbox y prod por separado; en local el webhook no llega — se prueba simulado o tras el deploy).
+
+**Reglas de seguridad NO negociables:** el cliente jamás envía precios (server desde DB) · firma de integridad server-side · checksum del webhook verificado timing-safe ANTES de procesar · idempotencia (reintentos de Wompi no duplican stock ni estados) · monto+moneda del evento validados contra la orden · `expiration-time` 1h (una orden vieja no se paga a precio viejo) · secretos fuera del bundle (solo `NEXT_PUBLIC_WOMPI_PUBLIC_KEY` y `NEXT_PUBLIC_SITE_URL` son públicos) · rate-limit en `/api/checkout` (ya existe).
+
+**Aceptación:** compra sandbox completa (tarjeta 4242) → orden `paid` + stock descontado UNA vez aunque el webhook se repita; DECLINED → `failed` sin tocar stock; checksum inválido → 403; secretos ausentes de `.next/static`.
 
 ### Fase 8 — Hardening y futuro
 - **S3**: migrar `images` de claves de asset locales → URLs S3 (subida desde el admin). El modelo `jsonb` ya lo soporta sin cambiar esquema.

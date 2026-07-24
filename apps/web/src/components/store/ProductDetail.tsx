@@ -1,22 +1,59 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ImageCarousel, type Slide } from '../ui/ImageCarousel'
 import { Icon } from '../ui/Icon'
 import { useDict } from '../../i18n/useDict'
+import { fill } from '../../lib/format'
 import { resolveProductSrc } from '../../lib/productImages'
-import { formatCop, productDescription, productTagline, type ProductDTO } from '../../lib/products'
+import {
+  discountPct,
+  formatCop,
+  hasDiscount,
+  productDescription,
+  productTagline,
+  type ProductDTO,
+} from '../../lib/products'
+import { addToCart } from '../../lib/cart'
 import { whatsappLink } from '../../config/brand'
 
 /** Detalle de producto (cliente). Datos desde la DB (DTO). */
 export function ProductDetail({ product }: { product: ProductDTO }) {
   const { t, lang } = useDict()
+  const router = useRouter()
   const soldOut = product.stock <= 0
+  const maxQty = Math.max(1, Math.min(product.stock, 20))
+  const [qty, setQty] = useState(1)
+  const [added, setAdded] = useState(false)
+
   const slides: Slide[] = product.images.map((img) => ({
     src: resolveProductSrc(img),
     alt: product.name,
   }))
   const reserveMsg = t.store.reserveMessage.replace('{model}', product.name)
+
+  function cartItem() {
+    const cover = product.images[0] ?? { key: '', url: null }
+    return {
+      productId: product.id,
+      slug: product.slug,
+      name: product.name,
+      priceCop: product.priceCop,
+      image: { key: cover.key, url: cover.url },
+    }
+  }
+
+  function onBuyNow() {
+    router.push(`/tienda/checkout?item=${encodeURIComponent(product.slug)}&qty=${qty}`)
+  }
+
+  function onAddToCart() {
+    addToCart(cartItem(), qty)
+    setAdded(true)
+    setTimeout(() => setAdded(false), 1800)
+  }
 
   return (
     <section className="py-14 md:py-20">
@@ -44,8 +81,18 @@ export function ProductDetail({ product }: { product: ProductDTO }) {
             </h1>
             <p className="mt-3 text-lg text-warm-gray/80">{productTagline(product, lang)}</p>
 
-            <div className="mt-6 flex items-center gap-4">
+            <div className="mt-6 flex flex-wrap items-center gap-3">
               <span className="font-head text-2xl text-warm-white">{formatCop(product.priceCop)}</span>
+              {hasDiscount(product) && (
+                <>
+                  <span className="text-sm text-warm-gray/45 line-through">
+                    {formatCop(product.compareAtPriceCop!)}
+                  </span>
+                  <span className="rounded-full bg-gold px-2.5 py-1 font-mono text-[0.65rem] tracking-widest text-carbon-900">
+                    {fill(t.store.discountBadge, { pct: discountPct(product) })}
+                  </span>
+                </>
+              )}
               {soldOut && (
                 <span className="rounded-full border border-line px-3 py-1 font-mono text-[0.65rem] tracking-widest text-warm-gray/70">
                   {t.store.soldOut}
@@ -57,6 +104,62 @@ export function ProductDetail({ product }: { product: ProductDTO }) {
               {productDescription(product, lang)}
             </p>
 
+            {!soldOut && (
+              <div className="mt-8 flex items-center gap-4">
+                <span className="text-sm text-warm-gray/70">{t.store.quantity}</span>
+                <div className="inline-flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setQty((q) => Math.max(1, q - 1))}
+                    disabled={qty <= 1}
+                    aria-label="−1"
+                    className="grid h-9 w-9 place-items-center rounded-md border border-line text-warm-gray/80 transition-colors hover:border-gold/50 hover:text-gold disabled:opacity-40"
+                  >
+                    −
+                  </button>
+                  <span className="w-10 text-center font-mono text-warm-white">{qty}</span>
+                  <button
+                    type="button"
+                    onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+                    disabled={qty >= maxQty}
+                    aria-label="+1"
+                    className="grid h-9 w-9 place-items-center rounded-md border border-line text-warm-gray/80 transition-colors hover:border-gold/50 hover:text-gold disabled:opacity-40"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              {!soldOut && (
+                <>
+                  <button type="button" onClick={onBuyNow} className="btn-axis">
+                    {t.store.buyNow}
+                    <Icon name="arrow" size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onAddToCart}
+                    className="inline-flex items-center justify-center gap-2 rounded-md border border-gold/40 px-6 py-[0.95rem] font-head text-sm font-medium text-warm-white transition-colors hover:border-gold hover:text-gold"
+                  >
+                    <Icon name="bag" size={17} />
+                    {added ? t.store.addedToCart : t.store.addToCart}
+                  </button>
+                </>
+              )}
+            </div>
+
+            <a
+              href={whatsappLink('general', reserveMsg)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center gap-2 text-sm text-warm-gray/60 transition-colors hover:text-gold"
+            >
+              <Icon name="whatsapp" size={16} />
+              {t.store.reserve}
+            </a>
+
             <div className="mt-9">
               <h2 className="eyebrow text-gold">{t.store.includesTitle}</h2>
               <ul className="mt-4 space-y-2.5">
@@ -67,29 +170,6 @@ export function ProductDetail({ product }: { product: ProductDTO }) {
                   </li>
                 ))}
               </ul>
-            </div>
-
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <a
-                href={whatsappLink('general', reserveMsg)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-axis"
-              >
-                <Icon name="whatsapp" size={18} />
-                {t.store.reserve}
-              </a>
-              <button
-                type="button"
-                disabled
-                title={t.store.soon}
-                className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-md border border-line px-6 py-[0.95rem] font-head text-sm font-medium text-warm-gray/45"
-              >
-                {t.store.buy}
-                <span className="font-mono text-[0.65rem] tracking-widest text-gold/70">
-                  · {t.store.soon}
-                </span>
-              </button>
             </div>
           </div>
         </div>

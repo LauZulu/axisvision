@@ -163,6 +163,18 @@ const PATHS: Record<string, JSX.Element> = {
     </>
   ),
   moon: <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />,
+  bag: (
+    <>
+      <path d="M5.5 8h13l-1 12h-11l-1-12z" />
+      <path d="M9 10V6.5a3 3 0 0 1 6 0V10" />
+    </>
+  ),
+  trash: (
+    <>
+      <path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l.8 13h9.4l.8-13" />
+      <path d="M10 11v6M14 11v6" />
+    </>
+  ),
 }
 
 export type IconKey = keyof typeof PATHS

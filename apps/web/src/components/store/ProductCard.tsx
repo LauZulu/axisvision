@@ -6,8 +6,9 @@ import { motion } from 'framer-motion'
 import { Icon } from '../ui/Icon'
 import { useDict } from '../../i18n/useDict'
 import { fadeUp } from '../../lib/motion'
+import { fill } from '../../lib/format'
 import { resolveProductSrc } from '../../lib/productImages'
-import { formatCop, productTagline, type ProductDTO } from '../../lib/products'
+import { discountPct, formatCop, hasDiscount, productTagline, type ProductDTO } from '../../lib/products'
 
 /** Tarjeta de producto para la rejilla de la tienda. Datos desde la DB (DTO). */
 export function ProductCard({ product }: { product: ProductDTO }) {
@@ -34,6 +35,11 @@ export function ProductCard({ product }: { product: ProductDTO }) {
               {t.store.soldOut}
             </span>
           )}
+          {!soldOut && hasDiscount(product) && (
+            <span className="absolute left-3 top-3 rounded-full bg-gold px-2.5 py-1 font-mono text-[0.65rem] tracking-widest text-carbon-900">
+              {fill(t.store.discountBadge, { pct: discountPct(product) })}
+            </span>
+          )}
         </div>
         <div className="p-6">
           <h3 className="font-head text-lg text-warm-white">{product.name}</h3>
@@ -41,7 +47,14 @@ export function ProductCard({ product }: { product: ProductDTO }) {
             {productTagline(product, lang)}
           </p>
           <div className="mt-5 flex items-baseline justify-between">
-            <span className="font-head text-warm-white">{formatCop(product.priceCop)}</span>
+            <span className="flex items-baseline gap-2">
+              <span className="font-head text-warm-white">{formatCop(product.priceCop)}</span>
+              {hasDiscount(product) && (
+                <span className="text-xs text-warm-gray/45 line-through">
+                  {formatCop(product.compareAtPriceCop!)}
+                </span>
+              )}
+            </span>
             <span className="inline-flex items-center gap-1 font-mono text-xs tracking-widest text-gold transition-transform group-hover:translate-x-0.5">
               {t.store.viewDetail}
               <Icon name="arrow" size={14} />

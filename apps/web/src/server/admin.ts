@@ -69,6 +69,7 @@ export type ProductInput = {
   descriptionEs: string
   descriptionEn: string
   priceCop: number
+  compareAtPriceCop?: number | null
   stock: number
   active: boolean
   position: number
@@ -105,6 +106,7 @@ export async function createProduct(input: ProductInput): Promise<string> {
       descriptionEs: input.descriptionEs,
       descriptionEn: input.descriptionEn,
       priceCop: input.priceCop,
+      compareAtPriceCop: input.compareAtPriceCop ?? null,
       currency: 'COP',
       stock: input.stock,
       active: input.active,

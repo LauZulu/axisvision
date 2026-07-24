@@ -13,6 +13,7 @@ export const productSchema = z.object({
   descriptionEs: z.string().min(1),
   descriptionEn: z.string().min(1),
   priceCop: z.number().int().min(0),
+  compareAtPriceCop: z.number().int().min(0).nullable().optional(),
   stock: z.number().int().min(0),
   active: z.boolean(),
   position: z.number().int().min(0),
