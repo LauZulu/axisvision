@@ -40,6 +40,8 @@ export const es = {
     store: 'Tienda',
     cta: 'Comprar AXIS',
     theme: 'Cambiar tema',
+    menuOpen: 'Abrir menú',
+    menuClose: 'Cerrar menú',
   },
 
   hero: {

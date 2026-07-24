@@ -38,6 +38,8 @@ export const en = {
     store: 'Store',
     cta: 'Buy AXIS',
     theme: 'Switch theme',
+    menuOpen: 'Open menu',
+    menuClose: 'Close menu',
   },
 
   hero: {
