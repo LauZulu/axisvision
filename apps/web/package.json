@@ -10,6 +10,9 @@
     "db:check": "tsx scripts/db-check.ts",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
+    "inventory:import": "tsx scripts/import-inventory.mts",
+    "images:sample": "tsx scripts/seed-sample-images.mts",
+    "images:upload": "tsx scripts/upload-product-images.mts",
     "s3:check": "tsx scripts/s3-check.ts"
   },
   "dependencies": {

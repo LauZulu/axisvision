@@ -63,13 +63,29 @@ export function ProductTable({ products }: { products: ProductDTO[] }) {
                   </div>
                   <div className="min-w-0">
                     <div className="truncate font-head text-warm-white">{p.name}</div>
-                    <div className="font-mono text-xs text-warm-gray/45">{p.slug}</div>
+                    <div className="font-mono text-xs text-warm-gray/45">
+                      {p.modelCode ?? p.slug}
+                      {p.size && <span className="ml-2">· {p.size}</span>}
+                    </div>
                   </div>
                 </div>
               </td>
               <td className="px-4 py-3 whitespace-nowrap text-warm-gray/80">{formatCop(p.priceCop)}</td>
               <td className="px-4 py-3">
-                <StockStepper productId={p.id} stock={p.stock} size="sm" />
+                {/* Con inventario por unidad el stock es derivado: no se teclea,
+                    se gestiona moviendo unidades en /admin/inventario. */}
+                {(p.unitsTotal ?? 0) > 0 ? (
+                  <Link
+                    href={`/admin/inventario?producto=${p.slug}`}
+                    className="inline-flex items-baseline gap-1.5 transition-colors hover:text-gold"
+                    title={p2.colStock}
+                  >
+                    <span className="font-mono text-warm-white">{p.stock}</span>
+                    <span className="font-mono text-xs text-warm-gray/45">/ {p.unitsTotal}</span>
+                  </Link>
+                ) : (
+                  <StockStepper productId={p.id} stock={p.stock} size="sm" />
+                )}
               </td>
               <td className="px-4 py-3">
                 <button

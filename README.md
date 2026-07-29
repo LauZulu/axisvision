@@ -42,7 +42,7 @@ src/
 
 1. **WhatsApp Business** → `src/config/brand.ts` (`WHATSAPP_NUMBER`).
 2. **Catálogo PDF** → colocar en `public/` y ajustar `CATALOG_URL`.
-3. **Fotografía de producto** → reemplazar `GlassesArt` (placeholder line-art) por fotos reales en `src/assets/product/`.
-4. **Logo árbol en SVG** real (si se desea sustituir el reconstruido) en `src/assets/brand/`.
+3. **Fotografía de producto** → las fotos reales ya están en S3 (`products/<slug>/<variante>/`); queda reemplazar el placeholder `GlassesArt` donde siga usándose.
+4. **Logo árbol en SVG** real (si se desea sustituir el reconstruido) → `src/components/ui/TreeLogo.tsx`.
 5. **Imagen Open Graph** → `public/og-image.jpg` (referenciada en `index.html`).
 6. Datos reales de **garantía, aliado clínico y registro de marca** en `src/i18n/*.ts`.

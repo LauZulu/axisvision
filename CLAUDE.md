@@ -20,14 +20,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   RDS (`db-axis-optica...:5432`, accesible públicamente) — sin túnel ni `.env.local`. Auth:
 >   `JWT_SECRET_MANAGMENT` (HS256 vía `jose`). Nota Next+TypeORM: en dev el HMR invalida la metadata
 >   de entidades; `getDb()` (src/server/db/index.ts) detecta y reconstruye el DataSource — no quitar.
-> - **Imágenes/S3:** bucket **privado** (`AWS_PRODUCTS_BUCKET`), lectura pública solo por **CloudFront**
+> - **Imágenes/S3:** bucket **privado** (`AWS_PRODUCTS_BUCKET`) con **versionado ACTIVADO** (un borrado
+>   deja marcador y la versión anterior se recupera), lectura pública solo por **CloudFront**
 >   (`NEXT_PUBLIC_CDN_URL`, ya definido). El admin sube/borra **directo a S3 con presigned URLs**
 >   (`POST /api/admin/uploads/presign`, `src/server/s3.ts`) — el backend NUNCA procesa binarios.
 >   **Ya NO hay imágenes en el repo**: todas viven en S3 y se sirven por CloudFront. Dos namespaces:
 >   `products/...` (fotos subidas por el admin; únicas que el admin puede borrar de S3) y `site/...`
 >   (fotos del sitio/landing y del seed; protegidas contra borrado en `deleteObjects` y el presign).
 >   La landing usa el manifiesto `src/lib/siteImages.ts` (URL CDN + dimensiones intrínsecas, cero CLS);
->   subir/actualizar originales: `scripts/migrate-images-to-s3.mts` (medía dimensiones con `identify`).
+>   subir/actualizar originales: `pnpm exec tsx scripts/migrate-images-to-s3.mts <carpeta>` (mide
+>   dimensiones con `identify`; la carpeta se pasa por argumento, `src/assets/` ya no existe).
 >   En la DB `axis_product_image.imageKey` guarda la **clave S3**; el frontend usa la URL de CloudFront
 >   (`src/lib/cdn.ts`, `resolveProductSrc`). Verifica acceso con `pnpm s3:check`. **Falta CORS** en el
 >   bucket para que el navegador del admin haga PUT/DELETE (ver PLAN/README).
@@ -41,6 +43,53 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   Prueba integral: `pnpm exec tsx scripts/test-wompi.mts`. PENDIENTE del usuario: añadir al `.env`
 >   `NEXT_PUBLIC_WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_EVENTS_SECRET`,
 >   `NEXT_PUBLIC_SITE_URL` y registrar la URL de eventos en el dashboard de Wompi.
+> - **Inventario real (por unidad) + lentes:** el catálogo son **6 modelos reales** cargados desde el
+>   Excel del cliente (`AXIS-AI-GLASSES-INVENTARIO-*.xlsx`): Origin `M02`, Apex `AIMB-G5`,
+>   Crystal `HK01`, Shadow `E03L`, Ocean `E03S`, Eclypse `M01PRO` (`axis_product.modelCode` es la
+>   llave del match; `size` chico/mediano/grande define la banda de precio). Cada gafa **física** es
+>   una fila en **`axis_product_unit`** (serial `AX01`…, `location` fds/casa/local/sold, `lensType`,
+>   `sellable`, `note`). **`axis_product.stock` es DERIVADO**: lo recalcula `syncStockFromUnits()`
+>   (`src/server/inventory.ts`) contando unidades `sellable` en casa o local — no editarlo a mano.
+>   Importar/resincronizar: `pnpm inventory:import [ruta.xlsx] [--dry]` (idempotente, upsert por
+>   `modelCode`/`code`; el catálogo con precios y copy vive en `CATALOG` dentro del script). El lector
+>   de `.xlsx` es propio y sin dependencias (`scripts/lib/xlsx.ts`). **Ojo:** la columna "Tipo Lente"
+>   del Excel dice `Sunglass` en todas las filas incluso en las oftálmicas — el dato real es el
+>   sufijo `/O` del nombre; las oftálmicas se cargan con `sellable:false` (son muestra).
+>   **Personalización de lente:** las gafas salen con sol polarizado (incluido) y el cliente puede
+>   pedir fórmula médica (óptica aliada), transitions o filtros → catálogo editable en
+>   **`axis_lens_option`** y snapshot en `axis_order_item` (`lensOptionId/Name`, `lensExtraPriceCop`,
+>   `prescriptionNote`). El usuario final NO ve "sol vs oftálmico" como productos distintos.
+>   El selector vive en la ficha (`LensPicker`) y el carrito indexa por **producto + lente**
+>   (`lineId()` en `src/lib/cart.ts`): el mismo modelo con dos lentes son dos líneas. El sobrecosto
+>   y la validación de la fórmula los aplica SIEMPRE el servidor (`src/server/checkout.ts`), nunca
+>   el cliente. Al confirmar el pago, el webhook marca **unidades reales** como `sold`
+>   (`sellUnits`/`releaseUnits`) y deriva el stock — nunca `stock - n`.
+> - **Panel admin:** `/admin/productos` (nombre, modelo, talla, precio, descuento, visibilidad, orden
+>   y fotos), `/admin/inventario` (unidad por unidad: ubicación, vendible, nota; guarda al vuelo y
+>   resincroniza el stock) y `/admin/lentes` (CRUD de opciones). El campo `stock` sale de solo
+>   lectura cuando el producto tiene unidades — se gestiona moviendo unidades, no tecleando.
+> - **Fotos de producto en S3 (57 reales, ya cargadas):** viven en
+>   **`products/<slug>/<variante>/<categoria>-NN.<ext>`**. Las subidas manuales desde el admin usan
+>   `products/<slug>/<uuid>.<ext>` (el presign recibe el `slug`). Ya **no quedan fotos de ejemplo**:
+>   `pnpm images:sample` sigue existiendo para volver a poblar con fotos de `site/` si hiciera falta,
+>   pero el catálogo actual usa fotos reales. El buzón local es
+>   **`fotos-para-subir/<slug>/<variante>/`** (raíz del repo, en `.gitignore`). Variantes válidas:
+>   `sunglass`, `oftalmica`, `amarillo` (fotos sueltas en `<slug>/` = sin variante, sirven para
+>   todas). Se suben con `pnpm images:upload [--dry] [--keep-samples]`, que renombra a
+>   **`products/<slug>/<variante>/<categoria>-NN.<ext>`** (categorías `frente`, `angulo`, `detalle`,
+>   `estuche`, `puesta`, `otro`), guarda la variante en `axis_product_image.lensVariant`, reemplaza
+>   las filas del producto y borra del bucket las `ejemplo-*` huérfanas. El orden y la categoría
+>   salen de `fotos-para-subir/<slug>/<variante>/orden.json`
+>   (`[{"file":"PXL_1.jpg","category":"frente"}]`, primero = portada), escrito DESPUÉS de revisar las
+>   fotos una a una; sin manifiesto se adivina por el nombre del archivo.
+> - **Galería por variante de lente:** `axis_lens_option.imageVariant` dice qué fotos mostrar al
+>   elegir cada opción (sol→`sunglass`; fórmula/transitions/filtro azul/transparente→`ophthalmic`;
+>   filtro amarillo→`yellow`). La ficha usa `imagesForLens()` (`src/lib/lenses.ts`): devuelve las de
+>   esa variante + las neutras y, si el modelo no tiene esa variante, cae a **una sola** alternativa
+>   (sol primero) — **nunca mezcla variantes** en la misma galería. El `<ImageCarousel>` se remonta
+>   con `key` al cambiar de lente. Realidad del catálogo: Origin y Eclypse tienen sol + oftálmica;
+>   Shadow y Ocean solo sol; **Crystal solo oftálmica** (lente transparente); **Apex es deportivo con
+>   lentes intercambiables** (espejado + amarillo), sin fotos oftálmicas.
 > - **Rutas:** landing `app/page.tsx`; tienda `app/tienda/**` (server, lee DB); admin `app/admin/**`
 >   (login + panel guardado por rol); API en `app/api/**` (auth, products, admin, uploads/presign, checkout).
 > - Buena parte de lo de abajo (Vite, `index.html`, `src/index.css`) describe la etapa
@@ -88,56 +137,63 @@ El sitio ya está construido (NO es el template base). Sobre Vite/React/TS:
 - **Animación:** `framer-motion` + `lenis` (smooth scroll en `src/lib/SmoothScroll.tsx`); variants/easings en `src/lib/motion.ts`. Animar solo `transform`/`opacity` (y `filter` de forma puntual, p. ej. el carrusel); honrar `prefers-reduced-motion` siempre.
 - **i18n:** `react-i18next` con diccionarios **TypeScript** `src/i18n/es.ts` y `en.ts` (NO json). El tipo se deriva de `es` (`Dict = typeof es`) → **ambos deben tener el mismo shape**. Acceso tipado con `useDict()` → `t`. **Español por defecto**; nada de texto hardcodeado, incluidos los `alt` de imágenes (en `t.alt`).
 - **Fuentes self-host** (`@fontsource`: Inter Tight, DM Sans, DM Mono, Cormorant Garamond), importadas en `src/main.tsx`.
-- **Imágenes responsive:** `vite-imagetools` (ver "Imágenes y assets").
+- **Imágenes:** `next/image` sobre CloudFront (ver "Imágenes y assets").
 - **Contacto:** todo sale de `src/config/brand.ts` (`WHATSAPP_NUMBER`, `SALES_EMAIL`, `whatsappLink()`). Hoy: WhatsApp `+57 312 3727253` y `contacto@axisvision.co`. Única vía confirmada: **WhatsApp Business** (sin formulario backend).
 
 ## Estructura del repo
 
 ```
-src/
+apps/web/src/
   components/ui/   Reutilizables: TreeLogo, GlassesArt, Icon, Reveal, CountUp,
                    SectionHeading, Img, ImageCarousel
-  sections/        Una por sección (Nav, Hero, WhatIsAxis, ProductShowcase,
-                   Capabilities, Specs, Clinical, ShowcaseBanner, Editions,
-                   Lifestyle, TrustSignals, FaqCommercial, ContactCommercial, Footer)
+  components/store/  Tienda (ProductDetail, LensPicker, CartView, CheckoutClient…)
+  components/admin/  Panel (ProductForm, InventoryView, LensOptionsView…)
+  sections/        Una por sección de la landing (Nav, Hero, WhatIsAxis, …, Footer)
   i18n/            es.ts, en.ts, index.ts (init i18next), useDict.ts
-  lib/             SmoothScroll (Lenis), scrollContext, motion (variants/easings)
+  lib/             SmoothScroll, motion, cart, products, lenses, cdn, siteImages
   config/          brand.ts (WhatsApp, correo, catálogo)
-  assets/          imágenes por categoría (ver abajo) + README.md
-  images.d.ts      tipos de los imports `?picture` (ResponsivePicture)
-  index.css        Tailwind + tokens (@theme) + componentes
-public/            favicon.svg · catalogo-axis.pdf · og-image.jpg
+  server/          backend: db/ (TypeORM), auth/, products, admin, inventory,
+                   lenses, checkout, wompi, s3
+apps/web/app/      rutas (landing, tienda/**, admin/**, api/**) + globals.css
+apps/web/public/   favicon.svg
 ```
+
+**Ya NO existen** `src/assets/`, `src/images.d.ts` ni `src/index.css`: eran de la
+etapa Vite. Ninguna imagen vive en el repo (salvo el favicon).
 
 ## Imágenes y assets — organización y nomenclatura
 
-> Guía completa carpeta por carpeta y con ejemplos: **`src/assets/README.md`**. Resumen:
+**Todas las imágenes viven en S3 y se sirven por CloudFront.** No hay imágenes en
+el repo (solo `apps/web/public/favicon.svg`). Dos namespaces en el bucket:
 
-**Dónde va cada imagen:**
-- **`src/assets/<categoría>/`** → todo lo que se muestra en la página (Vite la optimiza, versiona y genera variantes responsive). **El 95% va aquí.**
-- **`public/`** → solo URLs fijas: `catalogo-axis.pdf` (`CATALOG_URL`), `og-image.jpg` (1200×630, referida en `index.html`), `favicon.svg`.
+- **`site/<categoría>/`** → fotos de la landing. Categorías: `hero/`, `lifestyle/`,
+  `packaging/`, `retail/`, `product/`, `brand/`, `capabilities/`, `press/`.
+  El manifiesto con URL + dimensiones intrínsecas está en `src/lib/siteImages.ts`
+  (cero CLS). Para subir originales nuevos:
+  `pnpm exec tsx scripts/migrate-images-to-s3.mts <carpeta>` (mide con `identify`
+  y te imprime el manifiesto). **Protegidas** contra borrado desde el admin.
+- **`products/<slug>/<variante>/`** → fotos de producto, por `pnpm images:upload`
+  desde el buzón `fotos-para-subir/` (ver la nota de estado arriba). Son las
+  únicas que el admin puede borrar.
 
-**Categorías (carpetas):** `brand/` (logo/sello SVG) · `hero/` (portada) · `product/` (ángulos `angle-*`, detalles `detail-*`, estuche) · `capabilities/` (una por capacidad) · `lifestyle/` (modelos llevando el producto) · `editions/` (acabados) · `packaging/` (empaque) · `retail/` (expositor/contexto) · `press/` (prensa/aliados/certificaciones) · `icons/`.
+**Nomenclatura:** minúsculas-con-guiones, sin espacios/acentos/ñ. Originales en
+máxima resolución (ideal ≥2400px de ancho); `next/image` genera las variantes.
 
-**Nomenclatura:** minúsculas-con-guiones, sin espacios/acentos/ñ (ej. `modelo-traduccion-01.jpg`). Originales en **máxima resolución** (ideal ≥2400px de ancho); las variantes chicas las genera el build. Logos/iconos en **`.svg`** cuando se pueda.
-
-**Pipeline responsive (úsalo SIEMPRE para imágenes):**
-- Importa con el sufijo `?picture` y renderiza con `<Img>`:
-  ```tsx
-  import foto from '../assets/hero/hero-producto-02.jpeg?picture'
-  import { Img } from '../components/ui/Img'
-  <Img picture={foto} alt={t.alt.heroProduct} sizes="(min-width:768px) 48vw, 100vw" priority />
-  ```
-- `vite-imagetools` (`vite.config.ts → defaultDirectives`) genera **AVIF + WebP + JPEG** en 4 anchos (480/768/1200/1920), `quality:70`, con `srcset`.
-- `<Img>` (`src/components/ui/Img.tsx`) envuelve `<picture>`, lleva `width/height` intrínsecos (cero CLS), `loading="lazy"` por defecto y `priority` para el LCP (hero). `alt` SIEMPRE desde i18n (`t.alt.*`).
+**Cómo se renderizan:**
+- Fotos de la landing: `<Img>` (`src/components/ui/Img.tsx`) con una entrada de
+  `siteImages.ts` — lleva `width/height` intrínsecos (cero CLS), `loading="lazy"`
+  por defecto y `priority` para el LCP (hero). `alt` SIEMPRE desde i18n (`t.alt.*`).
+- Fotos de producto: la clave S3 de la DB se resuelve con `resolveProductSrc`
+  (`src/lib/productImages.ts`) → URL de CloudFront.
+- `next/image` optimiza y redimensiona en el servidor (el dominio del CDN está en
+  `next.config.ts → images.remotePatterns`). No hace falta pipeline de build.
 - **Carrusel:** `<ImageCarousel>` (`src/components/ui/ImageCarousel.tsx`) — auto-rota con disolver suave (todas las slides montadas para no parpadear; la anterior se desvanece + desenfoca por encima). Con `fit="contain"` rellena los márgenes con la misma foto borrosa y **oscurecida con `brightness`** (no `opacity`, para que borde e imagen se desvanezcan a la par).
 
 ## Pendiente (assets reales del cliente · `TODO[AXIS]`)
 
-- **Logo árbol SVG oficial** → hoy `TreeLogo` es una reconstrucción vectorial; si llega el SVG exacto, reemplaza los trazos manteniendo el `viewBox`. Archivo en `src/assets/brand/`.
-- **Catálogo PDF** → `public/catalogo-axis.pdf` (ajustar `CATALOG_URL`).
-- **Imagen Open Graph** → `public/og-image.jpg`.
-- **Fotos de ediciones** (cada acabado sobre fondo neutro) → `editions/` (hoy usan el line-art `GlassesArt`).
+- **Logo árbol SVG oficial** → hoy `TreeLogo` es una reconstrucción vectorial; si llega el SVG exacto, reemplaza los trazos manteniendo el `viewBox`.
+- **Catálogo PDF** → subir y ajustar `CATALOG_URL` en `src/config/brand.ts`.
+- **Imagen Open Graph** → falta (1200×630), referenciar desde `app/layout.tsx`.
 - **Datos reales** de garantía, aliado clínico y registro de marca → `src/i18n/*.ts`.
 
 ## Sistema de diseño — usar los valores EXACTOS
@@ -157,9 +213,8 @@ Identidad visual no negociable (detalle y reglas de uso en `PLAN-AXIS.md` §7):
 
 ## Restricciones que no se deben romper
 
-- **Sin backend / sin base de datos / sin checkout.** Todo es estático; la conversión es el contacto comercial.
 - **Enfoque B2C:** todo el copy le habla al usuario final; nada de lenguaje mayorista.
 - **Bilingüe ES/EN** con español por defecto; nada de texto hardcodeado.
-- **Mobile-first** y 60fps; el lujo no puede costar rendimiento (imágenes responsive AVIF/WebP + lazy, LCP < 2.5s).
-- **Imágenes SIEMPRE por el pipeline:** importar con `?picture` y renderizar con `<Img>` (o `<ImageCarousel>`), con `alt` desde i18n. No usar `<img src>` crudo de un asset pesado ni `background-image` para fotos. Respetar la organización y nomenclatura de `src/assets/README.md`.
+- **Mobile-first** y 60fps; el lujo no puede costar rendimiento (AVIF/WebP + lazy, LCP < 2.5s).
+- **Imágenes SIEMPRE desde S3/CloudFront** vía `next/image` (`<Img>`, `<ImageCarousel>` o `resolveProductSrc`), con `alt` desde i18n. Nunca `<img src>` crudo de una foto pesada ni `background-image` para fotos. No volver a meter imágenes en el repo.
 - Dorado solo en líneas/contornos; Morpho solo en destellos puntuales.

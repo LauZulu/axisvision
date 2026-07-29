@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { fill } from '../../lib/format'
 import { ImageUploader } from './ImageUploader'
 import { useDict } from '../../i18n/useDict'
 import type { ProductDTO } from '../../lib/products'
@@ -9,6 +11,8 @@ import type { ProductDTO } from '../../lib/products'
 type FormState = {
   slug: string
   name: string
+  modelCode: string
+  size: '' | 'chico' | 'mediano' | 'grande'
   taglineEs: string
   taglineEn: string
   descriptionEs: string
@@ -25,6 +29,8 @@ function initial(product?: ProductDTO): FormState {
   return {
     slug: product?.slug ?? '',
     name: product?.name ?? '',
+    modelCode: product?.modelCode ?? '',
+    size: product?.size ?? '',
     taglineEs: product?.taglineEs ?? '',
     taglineEn: product?.taglineEn ?? '',
     descriptionEs: product?.descriptionEs ?? '',
@@ -61,6 +67,8 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
   const f = t.admin.form
   const router = useRouter()
   const [form, setForm] = useState<FormState>(() => initial(product))
+  // Stock derivado: hay unidades físicas cargadas para este producto.
+  const derivedStock = (product?.unitsTotal ?? 0) > 0
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -75,13 +83,16 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
     const payload = {
       slug: form.slug.trim(),
       name: form.name.trim(),
+      modelCode: form.modelCode.trim() || null,
+      size: form.size || null,
       taglineEs: form.taglineEs.trim(),
       taglineEn: form.taglineEn.trim(),
       descriptionEs: form.descriptionEs.trim(),
       descriptionEn: form.descriptionEn.trim(),
       priceCop: Number(form.priceCop),
       compareAtPriceCop: form.compareAtPriceCop.trim() === '' ? null : Number(form.compareAtPriceCop),
-      stock: Number(form.stock),
+      // Con inventario por unidad el stock lo deriva el servidor: no se envía.
+      ...(derivedStock ? {} : { stock: Number(form.stock) }),
       position: Number(form.position),
       active: form.active,
       images: form.images,
@@ -133,9 +144,30 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
               className={inputCls}
               value={form.name}
               onChange={(e) => set('name', e.target.value)}
-              placeholder="AXIS Onyx"
+              placeholder="AXIS Origin"
               required
             />
+          </Field>
+          <Field label={f.modelCode}>
+            <input
+              className={inputCls}
+              value={form.modelCode}
+              onChange={(e) => set('modelCode', e.target.value)}
+              placeholder="M02"
+            />
+            <span className="mt-1 block text-xs text-warm-gray/45">{f.modelCodeHint}</span>
+          </Field>
+          <Field label={f.size}>
+            <select
+              className={inputCls}
+              value={form.size}
+              onChange={(e) => set('size', e.target.value as FormState['size'])}
+            >
+              <option value="">—</option>
+              <option value="chico">{f.sizeSmall}</option>
+              <option value="mediano">{f.sizeMedium}</option>
+              <option value="grande">{f.sizeLarge}</option>
+            </select>
           </Field>
           <Field label={f.taglineEs}>
             <input className={inputCls} value={form.taglineEs} onChange={(e) => set('taglineEs', e.target.value)} required />
@@ -187,13 +219,22 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
           </Field>
           <Field label={f.stock}>
             <input
-              className={inputCls}
+              className={`${inputCls} ${derivedStock ? 'cursor-not-allowed opacity-60' : ''}`}
               type="number"
               min={0}
               value={form.stock}
               onChange={(e) => set('stock', e.target.value)}
-              required
+              readOnly={derivedStock}
+              required={!derivedStock}
             />
+            {derivedStock && (
+              <span className="mt-1 block text-xs text-warm-gray/45">
+                {fill(f.stockDerived, { total: product?.unitsTotal ?? 0 })}{' '}
+                <Link href={`/admin/inventario?producto=${product?.slug}`} className="text-gold hover:underline">
+                  {f.stockManage}
+                </Link>
+              </span>
+            )}
           </Field>
           <Field label={f.position}>
             <input
@@ -218,7 +259,11 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
 
         {/* Fotos: se suben directo a S3 (presigned PUT) y se sirven por CloudFront. */}
         <div className="mt-7">
-          <ImageUploader value={form.images} onChange={(imgs) => set('images', imgs)} />
+          <ImageUploader
+            value={form.images}
+            onChange={(imgs) => set('images', imgs)}
+            slug={form.slug.trim() || product?.slug}
+          />
         </div>
 
         {error && <p className="mt-5 text-sm text-red-400">{error}</p>}

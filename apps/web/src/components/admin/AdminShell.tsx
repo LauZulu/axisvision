@@ -15,6 +15,8 @@ export function AdminShell({ email, children }: { email: string; children: React
   const nav = [
     { href: '/admin', label: t.admin.nav.dashboard },
     { href: '/admin/productos', label: t.admin.nav.products },
+    { href: '/admin/inventario', label: t.admin.nav.inventory },
+    { href: '/admin/lentes', label: t.admin.nav.lenses },
     { href: '/admin/pedidos', label: t.admin.nav.orders },
   ]
 
@@ -33,7 +35,7 @@ export function AdminShell({ email, children }: { email: string; children: React
               <TreeLogo className="h-6 w-auto" />
               <span className="font-mono text-[0.7rem] tracking-[0.22em] text-warm-gray/70">ADMIN</span>
             </Link>
-            <nav className="flex items-center gap-1">
+            <nav className="flex items-center gap-1 overflow-x-auto">
               {nav.map((item) => {
                 const active =
                   item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href)

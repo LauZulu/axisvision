@@ -13,9 +13,12 @@ import { useDict } from '../../i18n/useDict'
 export function ImageUploader({
   value,
   onChange,
+  slug,
 }: {
   value: string[]
   onChange: (keys: string[]) => void
+  /** Slug del producto: agrupa las fotos en `products/<slug>/` dentro del bucket. */
+  slug?: string
 }) {
   const { t } = useDict()
   const im = t.admin.images
@@ -26,7 +29,12 @@ export function ImageUploader({
     const presign = await fetch('/api/admin/uploads/presign', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ operation: 'put', filename: file.name, contentType: file.type }),
+      body: JSON.stringify({
+        operation: 'put',
+        filename: file.name,
+        contentType: file.type,
+        slug,
+      }),
     })
     if (!presign.ok) return null
     const { key, url } = (await presign.json()) as { key: string; url: string }

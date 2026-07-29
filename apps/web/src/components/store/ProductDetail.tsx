@@ -17,36 +17,63 @@ import {
   type ProductDTO,
 } from '../../lib/products'
 import { addToCart } from '../../lib/cart'
+import {
+  defaultLens,
+  imagesForLens,
+  lensName,
+  priceWithLens,
+  type LensOptionDTO,
+} from '../../lib/lenses'
+import { LensPicker } from './LensPicker'
 import { whatsappLink } from '../../config/brand'
 
 /** Detalle de producto (cliente). Datos desde la DB (DTO). */
-export function ProductDetail({ product }: { product: ProductDTO }) {
+export function ProductDetail({
+  product,
+  lensOptions,
+}: {
+  product: ProductDTO
+  lensOptions: LensOptionDTO[]
+}) {
   const { t, lang } = useDict()
   const router = useRouter()
   const soldOut = product.stock <= 0
   const maxQty = Math.max(1, Math.min(product.stock, 20))
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
+  const [lens, setLens] = useState<LensOptionDTO | null>(() => defaultLens(lensOptions))
 
-  const slides: Slide[] = product.images.map((img) => ({
+  // Precio mostrado = producto + lente elegido. El cobro lo recalcula el servidor.
+  const unitPrice = priceWithLens(product.priceCop, lens)
+
+  // La galería sigue al lente elegido: con lente de sol se ven las fotos de sol,
+  // con fórmula/transparente las de lente claro. Las neutras (estuche) siempre.
+  const gallery = imagesForLens(product.images, lens)
+  const slides: Slide[] = gallery.map((img) => ({
     src: resolveProductSrc(img),
     alt: product.name,
   }))
   const reserveMsg = t.store.reserveMessage.replace('{model}', product.name)
 
   function cartItem() {
-    const cover = product.images[0] ?? { key: '', url: null }
+    // La miniatura del carrito es la portada de la variante elegida.
+    const cover = gallery[0] ?? product.images[0] ?? { key: '', url: null }
     return {
       productId: product.id,
       slug: product.slug,
       name: product.name,
-      priceCop: product.priceCop,
+      priceCop: unitPrice,
       image: { key: cover.key, url: cover.url },
+      lens: lens
+        ? { id: lens.id, name: lensName(lens, lang), extraPriceCop: lens.extraPriceCop }
+        : null,
     }
   }
 
   function onBuyNow() {
-    router.push(`/tienda/checkout?item=${encodeURIComponent(product.slug)}&qty=${qty}`)
+    const params = new URLSearchParams({ item: product.slug, qty: String(qty) })
+    if (lens) params.set('lens', lens.id)
+    router.push(`/tienda/checkout?${params}`)
   }
 
   function onAddToCart() {
@@ -68,6 +95,8 @@ export function ProductDetail({ product }: { product: ProductDTO }) {
 
         <div className="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-16">
           <ImageCarousel
+            // Cambiar de lente reinicia la galería en su portada.
+            key={lens?.imageVariant ?? 'all'}
             slides={slides}
             fit="cover"
             sizes="(min-width: 1024px) 48vw, 92vw"
@@ -103,6 +132,18 @@ export function ProductDetail({ product }: { product: ProductDTO }) {
             <p className="mt-6 leading-relaxed text-warm-gray/80">
               {productDescription(product, lang)}
             </p>
+
+            {!soldOut && (
+              <LensPicker options={lensOptions} value={lens} onChange={setLens} />
+            )}
+
+            {/* Total con el lente elegido: el precio de arriba es el del armazón. */}
+            {!soldOut && lens && lens.extraPriceCop > 0 && (
+              <p className="mt-5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-warm-gray/70">
+                <span>{fill(t.store.lens.totalWith, { lens: lensName(lens, lang) })}</span>
+                <span className="font-head text-lg text-warm-white">{formatCop(unitPrice)}</span>
+              </p>
+            )}
 
             {!soldOut && (
               <div className="mt-8 flex items-center gap-4">

@@ -64,11 +64,18 @@ export async function checkS3Access(): Promise<{ bucket: string; region: string 
   return { bucket: bucket(), region: process.env.AWS_REGION! }
 }
 
-/** Genera una clave S3 única para una foto de producto: `products/<uuid>.<ext>`. */
-export function buildProductImageKey(filename: string): string {
+/**
+ * Clave S3 de una foto de producto: `products/<slug>/<uuid>.<ext>`.
+ *
+ * La carpeta por slug mantiene el bucket ordenado y hace evidente de qué modelo
+ * es cada foto (`products/axis-origin/…`). Sin slug cae en `products/_sin-modelo/`
+ * — no se pierde nada, pero conviene guardar el producto para reubicarla.
+ */
+export function buildProductImageKey(filename: string, slug?: string): string {
   const clean = (filename || '').toLowerCase()
   const ext = clean.includes('.') ? clean.split('.').pop()!.replace(/[^a-z0-9]/g, '') : 'jpg'
-  return `products/${randomUUID()}.${ext || 'jpg'}`
+  const folder = (slug ?? '').toLowerCase().replace(/[^a-z0-9-]/g, '') || '_sin-modelo'
+  return `products/${folder}/${randomUUID()}.${ext || 'jpg'}`
 }
 
 // Los helpers de URL pública (cdnUrl / isRemoteImage / cdnBase) viven en ../lib/cdn

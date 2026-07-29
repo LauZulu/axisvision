@@ -4,12 +4,26 @@ export type Lang = 'es' | 'en'
 
 // `url` = ruta pública de CloudFront cuando la imagen vive en S3; `null` para las
 // imágenes locales de prueba (el frontend las resuelve con el asset del repo).
-export type ProductImageDTO = { key: string; url: string | null; position: number }
+export type ImageLensVariant = 'sunglass' | 'ophthalmic' | 'yellow'
+
+export type ProductImageDTO = {
+  key: string
+  url: string | null
+  position: number
+  /** Con qué lente se tomó. null = sirve para cualquiera (estuche, accesorios). */
+  lensVariant: ImageLensVariant | null
+}
+
+/** Talla del armazón (define la banda de precio). */
+export type ProductSize = 'chico' | 'mediano' | 'grande'
 
 export type ProductDTO = {
   id: string
   slug: string
   name: string
+  /** Código de modelo del inventario ("M02"). Llave contra el Excel del cliente. */
+  modelCode: string | null
+  size: ProductSize | null
   taglineEs: string
   taglineEn: string
   descriptionEs: string
@@ -22,6 +36,12 @@ export type ProductDTO = {
   active: boolean
   position: number
   images: ProductImageDTO[]
+  /**
+   * Unidades físicas cargadas en el inventario (todas, no solo las disponibles).
+   * Solo se rellena en las consultas del admin. Si es > 0, `stock` es DERIVADO y
+   * no debe editarse a mano.
+   */
+  unitsTotal?: number
 }
 
 /** Descuento activo: hay precio anterior y es mayor al precio actual. */

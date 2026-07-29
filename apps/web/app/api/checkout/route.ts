@@ -19,6 +19,9 @@ const schema = z.object({
       z.object({
         productId: z.string().uuid(),
         quantity: z.number().int().min(1).max(20),
+        // El lente elegido: solo el id. El sobrecosto lo pone el servidor.
+        lensOptionId: z.string().uuid().optional(),
+        prescriptionNote: z.string().max(1000).optional(),
       }),
     )
     .min(1)

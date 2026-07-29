@@ -8,7 +8,8 @@ import { Icon } from '../ui/Icon'
 import { useDict } from '../../i18n/useDict'
 import { formatCop, type ProductDTO } from '../../lib/products'
 import { resolveProductSrc } from '../../lib/productImages'
-import { useCart, clearCart, type CartItem } from '../../lib/cart'
+import { useCart, clearCart, lineId, type CartItem } from '../../lib/cart'
+import { defaultLens, lensName, priceWithLens, type LensOptionDTO } from '../../lib/lenses'
 
 type PaymentParams = {
   checkoutUrl: string
@@ -28,6 +29,9 @@ type CheckoutLine = {
   priceCop: number
   quantity: number
   image: { key: string; url: string | null }
+  lens: { id: string; name: string; extraPriceCop: number } | null
+  /** Fórmula médica: se captura aquí cuando el lente la exige. */
+  requiresPrescription?: boolean
 }
 
 const inputCls =
@@ -40,8 +44,8 @@ const inputCls =
  * El servidor recalcula precios desde la DB y responde los parámetros FIRMADOS
  * del Web Checkout; aquí solo se auto-envía el form GET a checkout.wompi.co.
  */
-export function CheckoutClient() {
-  const { t } = useDict()
+export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionDTO[] }) {
+  const { t, lang } = useDict()
   const c = t.checkout
   const params = useSearchParams()
   const cart = useCart()
@@ -49,6 +53,10 @@ export function CheckoutClient() {
 
   const buyNowSlug = params.get('item')
   const buyNowQty = Math.max(1, Math.min(Number(params.get('qty')) || 1, 20))
+  const buyNowLensId = params.get('lens')
+
+  // Fórmulas médicas por línea (clave = lineId).
+  const [prescriptions, setPrescriptions] = useState<Record<string, string>>({})
 
   const [buyNowLine, setBuyNowLine] = useState<CheckoutLine | null>(null)
   const [loadingItem, setLoadingItem] = useState(Boolean(buyNowSlug))
@@ -78,13 +86,19 @@ export function CheckoutClient() {
         const p = data?.product
         if (p) {
           const cover = p.images[0] ?? { key: '', url: null }
+          const lens =
+            lensOptions.find((o) => o.id === buyNowLensId) ?? defaultLens(lensOptions)
           setBuyNowLine({
             productId: p.id,
             slug: p.slug,
             name: p.name,
-            priceCop: p.priceCop,
+            priceCop: priceWithLens(p.priceCop, lens),
             quantity: Math.min(buyNowQty, Math.max(1, p.stock)),
             image: { key: cover.key, url: cover.url },
+            lens: lens
+              ? { id: lens.id, name: lensName(lens, lang), extraPriceCop: lens.extraPriceCop }
+              : null,
+            requiresPrescription: lens?.requiresPrescription ?? false,
           })
         }
         setLoadingItem(false)
@@ -93,12 +107,16 @@ export function CheckoutClient() {
     return () => {
       alive = false
     }
-  }, [buyNowSlug, buyNowQty])
+  }, [buyNowSlug, buyNowQty, buyNowLensId, lensOptions, lang])
 
   const lines: CheckoutLine[] = useMemo(() => {
     if (buyNowSlug) return buyNowLine ? [buyNowLine] : []
-    return cart.map((i: CartItem) => ({ ...i }))
-  }, [buyNowSlug, buyNowLine, cart])
+    return cart.map((i: CartItem) => ({
+      ...i,
+      requiresPrescription:
+        lensOptions.find((o) => o.id === i.lens?.id)?.requiresPrescription ?? false,
+    }))
+  }, [buyNowSlug, buyNowLine, cart, lensOptions])
 
   const total = lines.reduce((sum, l) => sum + l.priceCop * l.quantity, 0)
 
@@ -128,7 +146,12 @@ export function CheckoutClient() {
             region: form.region.trim(),
             notes: form.notes.trim() || undefined,
           },
-          items: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })),
+          items: lines.map((l) => ({
+            productId: l.productId,
+            quantity: l.quantity,
+            lensOptionId: l.lens?.id,
+            prescriptionNote: prescriptions[lineId(l)]?.trim() || undefined,
+          })),
         }),
       })
       const data = await res.json().catch(() => null)
@@ -140,7 +163,9 @@ export function CheckoutClient() {
             ? c.errorStock
             : code === 'PRODUCT_UNAVAILABLE'
               ? c.errorUnavailable
-              : (data?.error?.message ?? c.errorGeneric),
+              : code === 'PRESCRIPTION_REQUIRED'
+                ? c.errorPrescription
+                : (data?.error?.message ?? c.errorGeneric),
         )
         setSubmitting(false)
         return
@@ -220,6 +245,42 @@ export function CheckoutClient() {
               </label>
             </div>
 
+            {/* Fórmula médica: solo para las líneas cuyo lente la exige. */}
+            {lines.some((l) => l.requiresPrescription) && (
+              <>
+                <h2 className="eyebrow mt-8 text-gold">{c.prescriptionTitle}</h2>
+                <p className="mt-2 text-sm text-warm-gray/60">{c.prescriptionHelp}</p>
+                <div className="mt-4 space-y-4">
+                  {lines
+                    .filter((l) => l.requiresPrescription)
+                    .map((l) => {
+                      const id = lineId(l)
+                      return (
+                        <label key={id} className="block text-sm text-warm-gray/80">
+                          <span className="mb-1.5 block">
+                            {l.name}
+                            {l.lens && (
+                              <span className="ml-2 font-mono text-[0.7rem] tracking-wide text-gold/75">
+                                {l.lens.name}
+                              </span>
+                            )}
+                          </span>
+                          <textarea
+                            className={`${inputCls} min-h-20`}
+                            required
+                            placeholder={c.prescriptionPlaceholder}
+                            value={prescriptions[id] ?? ''}
+                            onChange={(e) =>
+                              setPrescriptions((p) => ({ ...p, [id]: e.target.value }))
+                            }
+                          />
+                        </label>
+                      )
+                    })}
+                </div>
+              </>
+            )}
+
             {error && <p className="mt-5 text-sm text-red-400">{error}</p>}
 
             <button
@@ -238,12 +299,17 @@ export function CheckoutClient() {
             <h2 className="font-head text-lg text-warm-white">{c.summaryTitle}</h2>
             <ul className="mt-4 space-y-4">
               {lines.map((l) => (
-                <li key={l.productId} className="flex items-center gap-3">
+                <li key={lineId(l)} className="flex items-center gap-3">
                   <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-line bg-carbon-900">
                     <Image src={resolveProductSrc(l.image)} alt={l.name} fill sizes="56px" className="object-cover" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm text-warm-white">{l.name}</div>
+                    {l.lens && (
+                      <div className="truncate font-mono text-[0.7rem] tracking-wide text-gold/75">
+                        {l.lens.name}
+                      </div>
+                    )}
                     <div className="font-mono text-xs text-warm-gray/50">× {l.quantity}</div>
                   </div>
                   <span className="text-sm text-warm-gray/80">{formatCop(l.priceCop * l.quantity)}</span>

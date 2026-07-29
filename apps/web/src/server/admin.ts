@@ -1,6 +1,8 @@
 import { getDb } from './db'
 import { AxisProduct } from './db/entities/Product'
 import { AxisProductImage } from './db/entities/ProductImage'
+import { AxisProductUnit } from './db/entities/ProductUnit'
+import { syncStockFromUnits } from './inventory'
 import { deleteObjects } from './s3'
 import type { ProductDTO } from '../lib/products'
 
@@ -64,6 +66,8 @@ export async function getLowStockProducts(
 export type ProductInput = {
   slug: string
   name: string
+  modelCode?: string | null
+  size?: 'chico' | 'mediano' | 'grande' | null
   taglineEs: string
   taglineEn: string
   descriptionEs: string
@@ -101,6 +105,9 @@ export async function createProduct(input: ProductInput): Promise<string> {
     repo.create({
       slug: input.slug,
       name: input.name,
+      // Vacío → null: el índice único de modelCode admite varios NULL.
+      modelCode: input.modelCode?.trim() || null,
+      size: input.size ?? null,
       taglineEs: input.taglineEs,
       taglineEn: input.taglineEn,
       descriptionEs: input.descriptionEs,
@@ -127,8 +134,19 @@ export async function updateProduct(
   if (!product) return false
 
   const { images, ...fields } = patch
+
+  // El stock es DERIVADO del inventario por unidad: si el producto tiene
+  // unidades cargadas, el valor que venga del formulario se ignora (si no, un
+  // guardado del admin pisaría el conteo real con un número tecleado).
+  const hasUnits = await db.getRepository(AxisProductUnit).existsBy({ productId: id })
+  if (hasUnits) delete fields.stock
+
+  // Vacío → null (el índice único de modelCode admite varios NULL).
+  if (fields.modelCode !== undefined) fields.modelCode = fields.modelCode?.trim() || null
+
   Object.assign(product, fields)
   await repo.save(product)
+  if (hasUnits) await syncStockFromUnits(db, id)
   if (images) await replaceImages(id, images)
   return true
 }

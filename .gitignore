@@ -29,3 +29,7 @@ next-env.d.ts
 *.sln
 *.sw?
 .env
+
+# Buzón local de fotos originales (se suben a S3, no se versionan)
+fotos-para-subir/*/*
+!fotos-para-subir/*/.gitkeep

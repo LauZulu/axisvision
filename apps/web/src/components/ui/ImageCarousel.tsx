@@ -86,6 +86,16 @@ export function ImageCarousel({
     setIndex(next)
   }
 
+  // Si el conjunto de slides encoge (p. ej. al cambiar la variante de lente, que
+  // puede tener menos fotos), el índice puede quedar fuera de rango y no habría
+  // ninguna slide activa: el carrusel se vería en blanco.
+  useEffect(() => {
+    if (indexRef.current < slides.length) return
+    indexRef.current = 0
+    setIndex(0)
+    setLeaving(null)
+  }, [slides.length])
+
   useEffect(() => {
     if (reduce || slides.length <= 1) return
     const id = setInterval(() => {

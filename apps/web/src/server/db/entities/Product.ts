@@ -10,6 +10,10 @@ import {
 // import de TIPO (se borra al compilar) + relación por NOMBRE de entidad, para
 // romper el ciclo de imports de valor Product↔ProductImage (evita TDZ al bundlear).
 import type { AxisProductImage } from './ProductImage'
+import type { AxisProductUnit } from './ProductUnit'
+
+/** Talla del armazón (define la banda de precio). */
+export type ProductSize = 'chico' | 'mediano' | 'grande'
 
 /**
  * Producto AXIS. El copy es bilingüe en la propia DB (editable desde el admin).
@@ -24,9 +28,22 @@ export class AxisProduct {
   @Column({ type: 'varchar', length: 120 })
   slug!: string
 
-  // Nombre de marca (igual en ambos idiomas): "AXIS Onyx".
+  // Nombre de marca (igual en ambos idiomas): "AXIS Origin".
   @Column({ type: 'varchar', length: 120 })
   name!: string
+
+  // Código de modelo del inventario: "M02", "AIMB-G5". Es la llave con la que el
+  // Excel de inventario hace match contra el catálogo.
+  @Index({ unique: true })
+  @Column({ type: 'varchar', length: 40, nullable: true })
+  modelCode!: string | null
+
+  @Column({ type: 'varchar', length: 60, default: 'AXIS' })
+  brand!: string
+
+  // Talla del armazón. Determina la banda de precio: chico < mediano < grande.
+  @Column({ type: 'varchar', length: 16, nullable: true })
+  size!: ProductSize | null
 
   @Column({ type: 'varchar', length: 200 })
   taglineEs!: string
@@ -52,7 +69,9 @@ export class AxisProduct {
   @Column({ type: 'varchar', length: 8, default: 'COP' })
   currency!: string
 
-  // Unidades disponibles (número). El admin lo ajusta; el checkout lo descuenta.
+  // Unidades disponibles. DERIVADO del inventario por unidad: lo recalcula
+  // `syncStockFromUnits()` contando las `axis_product_unit` vendibles en casa o
+  // local. El checkout lo descuenta. No editarlo a mano si hay unidades cargadas.
   @Column({ type: 'integer', default: 0 })
   stock!: number
 
@@ -66,6 +85,9 @@ export class AxisProduct {
 
   @OneToMany('AxisProductImage', 'product', { cascade: true })
   images!: AxisProductImage[]
+
+  @OneToMany('AxisProductUnit', 'product')
+  units!: AxisProductUnit[]
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date

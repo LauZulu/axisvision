@@ -9,10 +9,13 @@ import {
 } from 'typeorm'
 import type { AxisProduct } from './Product'
 
+/** Con qué lente se tomó la foto. `null` = sirve para cualquiera. */
+export type ImageLensVariant = 'sunglass' | 'ophthalmic' | 'yellow'
+
 /**
  * Foto de producto INDEXADA: `position` define el orden dentro del producto.
- * Hoy `imageKey` es una clave de asset local (catálogo de prueba, imágenes
- * repetidas); en el futuro será una URL de S3 (mismo campo, ver assets.ts).
+ * `imageKey` es la clave en S3 (`products/<slug>/<variante>/<categoria>-NN.jpg`);
+ * el frontend la resuelve a URL de CloudFront.
  */
 @Entity({ name: 'axis_product_image' })
 @Index(['productId', 'position'])
@@ -27,9 +30,14 @@ export class AxisProductImage {
   @JoinColumn({ name: 'productId' })
   product!: AxisProduct
 
-  // Clave de asset local (p. ej. "product-onyx-front") o URL de S3.
+  // Clave en S3 (o clave de asset local en el catálogo de prueba antiguo).
   @Column({ type: 'varchar', length: 512 })
   imageKey!: string
+
+  // Lente con el que se fotografió. Las fotos sin variante (estuche, empaque,
+  // accesorios) se muestran siempre, elija lo que elija el cliente.
+  @Column({ type: 'varchar', length: 24, nullable: true })
+  lensVariant!: ImageLensVariant | null
 
   // Índice de orden de la foto (0 = principal).
   @Column({ type: 'integer', default: 0 })

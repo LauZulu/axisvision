@@ -17,6 +17,8 @@ const schema = z.discriminatedUnion('operation', [
     operation: z.literal('put'),
     filename: z.string().min(1).max(200),
     contentType: z.string().regex(/^image\/(jpe?g|png|webp|avif)$/, 'Solo imágenes (jpg/png/webp/avif)'),
+    // Slug del producto: agrupa la foto en `products/<slug>/` dentro del bucket.
+    slug: z.string().max(120).optional(),
   }),
   z.object({
     operation: z.literal('delete'),
@@ -37,7 +39,7 @@ export async function POST(req: Request) {
 
   try {
     if (parsed.data.operation === 'put') {
-      const key = buildProductImageKey(parsed.data.filename)
+      const key = buildProductImageKey(parsed.data.filename, parsed.data.slug)
       const url = await presignUpload(key, parsed.data.contentType)
       // El cliente sube con PUT a `url`; luego guarda `key` en el producto.
       // `publicUrl` es la ruta final de CloudFront (para previsualizar).

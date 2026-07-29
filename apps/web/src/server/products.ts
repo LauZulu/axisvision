@@ -1,9 +1,10 @@
 import { getDb } from './db'
 import { AxisProduct } from './db/entities/Product'
+import { AxisProductUnit } from './db/entities/ProductUnit'
 import type { ProductDTO } from '../lib/products'
 import { cdnUrl, isRemoteImage } from '../lib/cdn'
 
-function toDTO(p: AxisProduct): ProductDTO {
+function toDTO(p: AxisProduct, unitsTotal?: number): ProductDTO {
   const images = (p.images ?? [])
     .slice()
     .sort((a, b) => a.position - b.position)
@@ -12,11 +13,14 @@ function toDTO(p: AxisProduct): ProductDTO {
       // S3/CloudFront → URL pública; imagen local de prueba → null (se resuelve en el cliente).
       url: isRemoteImage(img.imageKey) ? cdnUrl(img.imageKey) : null,
       position: img.position,
+      lensVariant: img.lensVariant ?? null,
     }))
   return {
     id: p.id,
     slug: p.slug,
     name: p.name,
+    modelCode: p.modelCode ?? null,
+    size: p.size ?? null,
     taglineEs: p.taglineEs,
     taglineEn: p.taglineEn,
     descriptionEs: p.descriptionEs,
@@ -28,7 +32,21 @@ function toDTO(p: AxisProduct): ProductDTO {
     active: p.active,
     position: p.position,
     images,
+    ...(unitsTotal === undefined ? {} : { unitsTotal }),
   }
+}
+
+/** Unidades físicas por producto (todas). Solo para las vistas del admin. */
+async function unitCounts(): Promise<Map<string, number>> {
+  const db = await getDb()
+  const rows = await db
+    .createQueryBuilder()
+    .select('u."productId"', 'productId')
+    .addSelect('COUNT(*)', 'count')
+    .from(AxisProductUnit, 'u')
+    .groupBy('u."productId"')
+    .getRawMany<{ productId: string; count: string }>()
+  return new Map(rows.map((r) => [r.productId, Number(r.count)]))
 }
 
 /** Productos activos para la tienda, ordenados por `position`. */
@@ -39,17 +57,21 @@ export async function getActiveProducts(): Promise<ProductDTO[]> {
     relations: { images: true },
     order: { position: 'ASC' },
   })
-  return rows.map(toDTO)
+  // Lambda explícita: `map(toDTO)` pasaría el índice como `unitsTotal`.
+  return rows.map((p) => toDTO(p))
 }
 
 /** Todos los productos (incluye inactivos) — para el admin. */
 export async function getAllProducts(): Promise<ProductDTO[]> {
   const db = await getDb()
-  const rows = await db.getRepository(AxisProduct).find({
-    relations: { images: true },
-    order: { position: 'ASC' },
-  })
-  return rows.map(toDTO)
+  const [rows, counts] = await Promise.all([
+    db.getRepository(AxisProduct).find({
+      relations: { images: true },
+      order: { position: 'ASC' },
+    }),
+    unitCounts(),
+  ])
+  return rows.map((p) => toDTO(p, counts.get(p.id) ?? 0))
 }
 
 export async function getProductBySlug(slug: string): Promise<ProductDTO | null> {
@@ -65,5 +87,7 @@ export async function getProductById(id: string): Promise<ProductDTO | null> {
   const p = await db
     .getRepository(AxisProduct)
     .findOne({ where: { id }, relations: { images: true } })
-  return p ? toDTO(p) : null
+  if (!p) return null
+  const total = await db.getRepository(AxisProductUnit).countBy({ productId: p.id })
+  return toDTO(p, total)
 }

@@ -2,6 +2,7 @@ import { getDb } from '../../../../src/server/db'
 import { AxisOrder } from '../../../../src/server/db/entities/Order'
 import { AxisOrderItem } from '../../../../src/server/db/entities/OrderItem'
 import { verifyEventChecksum, type WompiEvent } from '../../../../src/server/wompi'
+import { hasUnits, releaseUnits, sellUnits, syncStockFromUnits } from '../../../../src/server/inventory'
 import { json, jsonError } from '../../../../src/server/http'
 
 export const runtime = 'nodejs'
@@ -72,10 +73,22 @@ export async function POST(req: Request) {
             const items = await manager.find(AxisOrderItem, { where: { orderId: order.id } })
             for (const item of items) {
               if (!item.productId) continue
-              await manager.query(
-                `UPDATE "axis_product" SET "stock" = GREATEST("stock" - $1, 0) WHERE "id" = $2`,
-                [item.quantity, item.productId],
-              )
+              // Con inventario por unidad se marcan unidades REALES como vendidas
+              // y se deriva el stock; un `stock - n` se perdería al resincronizar.
+              if (await hasUnits(manager, item.productId)) {
+                const sold = await sellUnits(manager, item.productId, item.id, item.quantity)
+                if (sold < item.quantity) {
+                  console.error(
+                    `[wompi] ${order.reference}: solo ${sold}/${item.quantity} unidades de ${item.productName}`,
+                  )
+                }
+                await syncStockFromUnits(manager, item.productId)
+              } else {
+                await manager.query(
+                  `UPDATE "axis_product" SET "stock" = GREATEST("stock" - $1, 0) WHERE "id" = $2`,
+                  [item.quantity, item.productId],
+                )
+              }
             }
           }
         })
@@ -102,10 +115,15 @@ export async function POST(req: Request) {
             const items = await manager.find(AxisOrderItem, { where: { orderId: order.id } })
             for (const item of items) {
               if (!item.productId) continue
-              await manager.query(
-                `UPDATE "axis_product" SET "stock" = "stock" + $1 WHERE "id" = $2`,
-                [item.quantity, item.productId],
-              )
+              if (await hasUnits(manager, item.productId)) {
+                await releaseUnits(manager, item.id)
+                await syncStockFromUnits(manager, item.productId)
+              } else {
+                await manager.query(
+                  `UPDATE "axis_product" SET "stock" = "stock" + $1 WHERE "id" = $2`,
+                  [item.quantity, item.productId],
+                )
+              }
             }
           }
         })

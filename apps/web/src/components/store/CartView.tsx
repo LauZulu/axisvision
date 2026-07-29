@@ -6,7 +6,7 @@ import { Icon } from '../ui/Icon'
 import { useDict } from '../../i18n/useDict'
 import { formatCop } from '../../lib/products'
 import { resolveProductSrc } from '../../lib/productImages'
-import { useCart, setCartQuantity, removeFromCart, cartTotalCop } from '../../lib/cart'
+import { useCart, setCartQuantity, removeFromCart, cartTotalCop, lineId } from '../../lib/cart'
 
 /** Carrito (localStorage). Los precios finales los recalcula el servidor al pagar. */
 export function CartView() {
@@ -37,7 +37,7 @@ export function CartView() {
 
         <ul className="mt-8 divide-y divide-line/60 rounded-2xl border border-line bg-carbon-850">
           {items.map((item) => (
-            <li key={item.productId} className="flex items-center gap-4 p-4 sm:p-5">
+            <li key={lineId(item)} className="flex items-center gap-4 p-4 sm:p-5">
               <Link
                 href={`/tienda/${item.slug}`}
                 className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-line bg-carbon-900"
@@ -55,12 +55,17 @@ export function CartView() {
                 <Link href={`/tienda/${item.slug}`} className="font-head text-warm-white hover:text-gold">
                   {item.name}
                 </Link>
+                {item.lens && (
+                  <div className="mt-0.5 font-mono text-[0.7rem] tracking-wide text-gold/75">
+                    {item.lens.name}
+                  </div>
+                )}
                 <div className="mt-1 text-sm text-warm-gray/60">{formatCop(item.priceCop)}</div>
 
                 <div className="mt-2.5 inline-flex items-center gap-1.5">
                   <button
                     type="button"
-                    onClick={() => setCartQuantity(item.productId, item.quantity - 1)}
+                    onClick={() => setCartQuantity(lineId(item), item.quantity - 1)}
                     aria-label="−1"
                     className="grid h-7 w-7 place-items-center rounded-md border border-line text-sm text-warm-gray/80 transition-colors hover:border-gold/50 hover:text-gold"
                   >
@@ -69,7 +74,7 @@ export function CartView() {
                   <span className="w-8 text-center font-mono text-sm text-warm-white">{item.quantity}</span>
                   <button
                     type="button"
-                    onClick={() => setCartQuantity(item.productId, item.quantity + 1)}
+                    onClick={() => setCartQuantity(lineId(item), item.quantity + 1)}
                     aria-label="+1"
                     className="grid h-7 w-7 place-items-center rounded-md border border-line text-sm text-warm-gray/80 transition-colors hover:border-gold/50 hover:text-gold"
                   >
@@ -84,7 +89,7 @@ export function CartView() {
                 </span>
                 <button
                   type="button"
-                  onClick={() => removeFromCart(item.productId)}
+                  onClick={() => removeFromCart(lineId(item))}
                   aria-label={t.cart.remove}
                   className="text-warm-gray/45 transition-colors hover:text-red-400"
                 >
