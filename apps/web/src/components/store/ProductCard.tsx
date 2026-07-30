@@ -36,7 +36,7 @@ export function ProductCard({ product }: { product: ProductDTO }) {
             </span>
           )}
           {!soldOut && hasDiscount(product) && (
-            <span className="absolute left-3 top-3 rounded-full bg-gold px-2.5 py-1 font-mono text-[0.65rem] tracking-widest text-carbon-900">
+            <span className="absolute left-3 top-3 rounded-full bg-gold px-2.5 py-1 font-mono text-[0.65rem] tracking-widest text-ink">
               {fill(t.store.discountBadge, { pct: discountPct(product) })}
             </span>
           )}

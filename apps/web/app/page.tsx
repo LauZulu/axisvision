@@ -2,39 +2,39 @@
 
 import { Nav } from '../src/sections/Nav'
 import { Hero } from '../src/sections/Hero'
-import { StoreRail } from '../src/sections/StoreRail'
-import { WhatIsAxis } from '../src/sections/WhatIsAxis'
-import { ProductShowcase } from '../src/sections/ProductShowcase'
-import { Capabilities } from '../src/sections/Capabilities'
-import { ShowcaseBanner } from '../src/sections/ShowcaseBanner'
-import { Lifestyle } from '../src/sections/Lifestyle'
-import { FaqCommercial } from '../src/sections/FaqCommercial'
-import { ContactCommercial } from '../src/sections/ContactCommercial'
+import { FutureIsWorn } from '../src/sections/FutureIsWorn'
+import { ExperienceAxis } from '../src/sections/ExperienceAxis'
+import { HumanStories } from '../src/sections/HumanStories'
+import { Collection } from '../src/sections/Collection'
+import { CompareModels } from '../src/sections/CompareModels'
+import { Craftsmanship } from '../src/sections/Craftsmanship'
+import { Community } from '../src/sections/Community'
+import { FounderEdition } from '../src/sections/FounderEdition'
+import { FinalCta } from '../src/sections/FinalCta'
 import { Footer } from '../src/sections/Footer'
-import { BuyBar } from '../src/components/ui/BuyBar'
 
-// Estructura orientada a conversión: hero → vitrina de compra (productos
-// reales con precio) → valor → producto → capacidades → momento de compra
-// (banner) → prueba social → objeciones (FAQ) → cierre. Specs/Clinical/
-// TrustSignals/Editions se retiraron: los modelos viven en la vitrina y la
-// tienda; el resto quedó condensado en pilares, FAQ y señales de confianza.
+// Mapa 1:1 con `website_sections` del JSON de marca: Hero → The Future is
+// Worn → Experience AXIS → Human Stories → Discover the Collection →
+// Compare Models → Craftsmanship → Community → Founder Edition → Final CTA.
+// Cada scroll responde una pregunta y abre otra (Curiosity Loop); el énfasis
+// se concentra al final (Peak-End).
 export default function Home() {
   return (
     <>
       <Nav />
       <main>
         <Hero />
-        <StoreRail />
-        <WhatIsAxis />
-        <ProductShowcase />
-        <Capabilities />
-        <ShowcaseBanner />
-        <Lifestyle />
-        <FaqCommercial />
-        <ContactCommercial />
+        <FutureIsWorn />
+        <ExperienceAxis />
+        <HumanStories />
+        <Collection />
+        <CompareModels />
+        <Craftsmanship />
+        <Community />
+        <FounderEdition />
+        <FinalCta />
       </main>
       <Footer />
-      <BuyBar />
     </>
   )
 }

@@ -5,191 +5,167 @@ export const es = {
   },
 
   alt: {
-    heroProduct:
-      'Gafas AXIS con inteligencia artificial flotando con un halo dorado sobre fondo negro carbón',
-    productShowcase:
-      'Gafas AXIS de lente transparente sobre su estuche de cuero, con iluminación dorada',
-    capabilities: 'Gafas AXIS junto a su estuche de cuero premium sobre fondo claro',
-    packaging: 'Estuche de cuero AXIS abierto: presentación premium',
-    frontBanner: 'Vista frontal de las gafas AXIS sobre una superficie clara',
-    lifestyle: [
-      'Mujer con gafas de sol AXIS frente a un árbol en flor',
+    hero: 'Gafas AXIS flotando en luz natural cálida',
+    future: [
       'Mujer usando gafas AXIS de lente transparente en una cafetería',
-      'Estuche de cuero AXIS junto a dos capuchinos y un croissant',
       'Hombre con gafas de sol AXIS al aire libre',
-      'Hombre con chaqueta y gafas de sol AXIS en un balcón',
-      'Estuche de cuero AXIS Smart Glasses junto a una taza de café',
-      'Mujer con gafas de sol AXIS entre la vegetación',
-      'Ciclista con gafas deportivas AXIS en carretera',
-      'Estuche AXIS junto a un portátil mostrando la web de AXIS',
-      'Hombre ajustándose las gafas de sol AXIS en un restaurante',
-      'Gafas deportivas AXIS de lente iridiscente sobre una mesa de café',
     ],
-  },
-
-  lifestyle: {
-    eyebrow: 'En el mundo real',
-    title: 'Así se ve AXIS en tu día a día.',
-    intro: 'Personas reales llevando AXIS. Así se verá contigo.',
+    experience: [
+      'Mujer con gafas de sol AXIS frente a un árbol en flor',
+      'Hombre ajustándose las gafas de sol AXIS en un restaurante',
+      'Estuche AXIS junto a un portátil',
+      'Mujer con gafas de sol AXIS entre la vegetación',
+    ],
+    stories: [
+      'Estuche de cuero AXIS junto a dos capuchinos y un croissant',
+      'Estuche de cuero AXIS junto a una taza de café',
+    ],
+    craft: [
+      'Estuche de cuero AXIS abierto con las gafas dentro',
+      'Gafas AXIS de lente transparente sobre su estuche de cuero, con luz dorada',
+      'Vista frontal de las gafas AXIS sobre una superficie clara',
+    ],
+    founder: 'Estuche de cuero AXIS cerrado',
+    collection: 'Gafas AXIS',
   },
 
   nav: {
-    product: 'Producto',
-    capabilities: 'Capacidades',
-    contact: 'Contacto',
+    home: 'AXIS — inicio',
+    collection: 'Colección',
+    craftsmanship: 'Artesanía',
+    founder: 'Founder Edition',
     store: 'Tienda',
-    cta: 'Comprar AXIS',
-    theme: 'Cambiar tema',
-    menuOpen: 'Abrir menú',
-    menuClose: 'Cerrar menú',
+    bag: 'Bolsa',
+    cta: 'Solicitar acceso',
+    menuOpen: 'Menú',
+    menuClose: 'Cerrar',
   },
 
   hero: {
-    eyebrow: 'Inteligencia que se lleva puesta',
-    titleLead: 'Una nueva forma',
-    titleAccent: 'de ver el mundo.',
-    subtitle:
-      'Vídeo, foto y traducción en vivo, en unas gafas con tu fórmula. Compra en línea y recíbelas en casa.',
-    ctaPrimary: 'Comprar AXIS',
-    ctaSecondary: 'Descubre AXIS',
-    trust: ['Pago seguro con Wompi', '6 meses de garantía', 'Envío a domicilio'],
+    headline: 'La próxima interfaz no es una pantalla.',
+    subheadline: 'La tecnología desaparece. La inteligencia permanece.',
+    cta: 'Solicitar acceso',
   },
 
-  banner: {
-    title: 'Tuyas hoy.',
-    cta: 'Comprar ahora',
+  future: {
+    label: 'El futuro se lleva puesto',
+    headline: 'Algunos esperan el futuro. Otros lo llevan puesto.',
   },
 
-  storeRail: {
-    eyebrow: 'Disponibles ya',
-    title: 'Elige tu AXIS.',
-    viewAll: 'Ver toda la tienda',
-  },
-
-  buyBar: {
-    cta: 'Comprar AXIS',
-    note: 'Pago seguro · Garantía 6 meses · Envío a casa',
-  },
-
-  what: {
-    eyebrow: '¿Qué es AXIS?',
-    statement:
-      'AXIS son gafas que ven, escuchan, traducen y se gradúan a tu vista — con la inteligencia de una IA y el diseño de una pieza de lujo.',
-    pillars: [
-      { title: 'Inteligencia a bordo', desc: 'Un asistente con IA que ve lo que tú ves.' },
-      { title: 'Captura manos libres', desc: 'Foto y vídeo en primera persona, sin sacar el teléfono.' },
-      { title: 'Traducción sin fronteras', desc: 'Conversaciones en otro idioma, en tiempo real.' },
-      { title: 'Lentes con tu fórmula', desc: 'Graduación real. Óptica de verdad, no un gadget.' },
+  experience: {
+    label: 'La experiencia AXIS',
+    stories: [
+      'Capturar recuerdos sin usar las manos.',
+      'Traducción en tiempo real.',
+      'Recordar ideas al instante.',
+      'Preguntarle a la IA con naturalidad.',
     ],
   },
 
-  product: {
-    eyebrow: 'Diseño',
-    title: 'Ingeniería que no se nota. Presencia que sí.',
-    intro:
-      'Materiales premium, líneas atemporales y el árbol de la vida grabado en la patilla. Una gafa que quieres llevar puesta.',
-    annotations: [
-      { label: 'Cámara', value: 'Captura en primera persona' },
-      { label: 'Audio open-ear', value: 'Sonido sin tapar el oído' },
-      { label: 'Montura', value: 'Acetato y titanio ligero' },
-      { label: 'Grabado', value: 'Árbol filogenético en la patilla' },
-    ],
-  },
-
-  capabilities: {
-    eyebrow: 'Inteligencia',
-    title: 'Todo lo que AXIS hace por ti.',
-    intro: 'Toca cada capacidad y descúbrela.',
-    items: [
-      { key: 'video', title: 'Vídeo manos libres', desc: 'Graba lo que ves, en primera persona, sin usar las manos.' },
-      { key: 'photo', title: 'Foto instantánea', desc: 'Captura el momento sin sacar el teléfono del bolsillo.' },
-      { key: 'ai', title: 'Asistente con IA', desc: 'Pregunta, identifica objetos, resume y traduce contexto en vivo.' },
-      { key: 'translate', title: 'Traducción en vivo', desc: 'Entiende y responde conversaciones en otro idioma, en tiempo real.' },
-      { key: 'audio', title: 'Audio open-ear', desc: 'Llamadas y música sin aislarte del mundo a tu alrededor.' },
-      { key: 'lens', title: 'Lentes con tu fórmula', desc: 'Graduación a tu medida. Producto óptico legítimo.' },
-      { key: 'battery', title: 'Autonomía real', desc: 'Todo el día de uso, con estuche de carga incluido.' },
-      { key: 'privacy', title: 'Privacidad por diseño', desc: 'Indicador de grabación y control total en tus manos.' },
-    ],
-    cta: 'Comprar AXIS',
-  },
-
-  specs: {
-    eyebrow: 'Especificaciones',
-    title: 'Ficha técnica.',
-    intro: 'Todo lo que quieres saber, en un vistazo.',
-    groups: [
+  stories: {
+    label: 'Historias humanas',
+    examples: [
+      { title: 'Leer más.', story: 'La IA lee en voz alta menús, letreros o documentos.' },
       {
-        key: 'capture',
-        title: 'Captura',
-        items: ['Vídeo 1080p a 30 fps', 'Foto 5 MP', 'Formato MP4', '32 GB de almacenamiento'],
+        title: 'Escuchar más.',
+        story: 'Subtítulos en tiempo real acompañan conversaciones en entornos ruidosos.',
       },
       {
-        key: 'intelligence',
-        title: 'Inteligencia',
-        items: [
-          'Reconocimiento de objetos con IA',
-          'Asistente de voz',
-          'Traducción en tiempo real',
-          'Traducción de diálogo',
-        ],
+        title: 'Entender más.',
+        story: 'La traducción ayuda a las personas a conectar entre idiomas.',
       },
       {
-        key: 'sound',
-        title: 'Sonido',
-        items: ['Doble altavoz', 'Doble micrófono con cancelación de ruido', 'Llamadas manos libres'],
-      },
-      {
-        key: 'connectivity',
-        title: 'Conectividad',
-        items: ['Bluetooth 5.3', 'WiFi integrado', 'Actualizaciones por aire (OTA)'],
-      },
-      {
-        key: 'battery',
-        title: 'Batería',
-        items: [
-          'Hasta 7 días en reposo',
-          'Carga completa en 1.5 h',
-          'Estuche de carga que también carga tu teléfono',
-        ],
-      },
-      {
-        key: 'design',
-        title: 'Diseño',
-        items: [
-          'Control táctil en la patilla',
-          'Luz indicadora de grabación',
-          'Resistente a salpicaduras',
-          'Detección de uso',
-        ],
+        title: 'Recordar más.',
+        story: 'Las ideas y conversaciones se convierten en memoria consultable.',
       },
     ],
   },
 
-  clinical: {
-    eyebrow: 'Respaldo clínico',
-    title: 'No es un gadget. Es óptica de verdad.',
-    body:
-      'Los lentes de AXIS se gradúan a tu fórmula y se validan junto a ópticas y profesionales aliados. No es un accesorio: es óptica real que puedes usar todo el día.',
-    badge: 'Validado con óptica profesional aliada',
-    points: [
-      'Lentes graduados a tu medida',
-      'Compatibilidad con monturas ópticas',
-      'Aval de profesionales de la visión',
-    ],
-    cta: 'Reservar AXIS',
+  collection: {
+    label: 'Descubre la colección',
+    headline: 'Elige tu perspectiva.',
+    discover: 'Descubrir',
+    products: {
+      origin: {
+        name: 'Origin',
+        identity: 'Herencia cálida.',
+        description: 'Acetato marrón clásico, inspirado en la artesanía atemporal.',
+      },
+      crystal: {
+        name: 'Crystal',
+        identity: 'Firma.',
+        description: 'Negro brillante para la sofisticación de todos los días.',
+      },
+      shadow: {
+        name: 'Shadow',
+        identity: 'Minimal.',
+        description: 'Negro mate para una confianza discreta.',
+      },
+      ocean: {
+        name: 'Ocean',
+        identity: 'Creativo.',
+        description: 'Azul petróleo suave, inspirado en la profundidad.',
+      },
+      apex: {
+        name: 'Apex',
+        identity: 'Rendimiento.',
+        description: 'Hecho para el movimiento.',
+      },
+      eclipse: {
+        name: 'Eclipse',
+        identity: 'Audaz.',
+        description: 'Lentes espejados hechos para destacar.',
+      },
+    },
   },
 
-  trust: {
-    eyebrow: 'Respaldo',
-    title: 'Detrás de cada AXIS, una marca que responde.',
-    signals: [
-      { title: '6 meses de garantía', desc: 'Cobertura formal para ti desde el día uno.' },
-      { title: 'Marca registrada', desc: 'Una marca protegida y seria, no un producto improvisado.' },
-      { title: 'Respaldo clínico', desc: 'Lentes validados con profesionales de la visión.' },
-      { title: 'Soporte dedicado', desc: 'Atención y reemplazo cuando lo necesites.' },
-      { title: 'Envíos y cambios', desc: 'Lo recibes en casa; cambios sin complicaciones.' },
-      { title: 'Continuidad de producto', desc: 'Ediciones y hoja de ruta. AXIS llegó para quedarse.' },
+  compare: {
+    label: 'Comparar modelos',
+    headline: 'Una inteligencia. Seis expresiones.',
+    discover: 'Descubrir',
+  },
+
+  craft: {
+    label: 'Artesanía',
+    headline: 'Diseñadas para desaparecer. Hechas para durar.',
+    captions: [
+      'Acetato, titanio y vidrio, equilibrados al miligramo.',
+      'El estuche se corta y cose como una pieza de marroquinería.',
+      'Cada AXIS se ensambla, se inspecciona y se numera a mano.',
     ],
+  },
+
+  community: {
+    label: 'Comunidad',
+    headline: 'Construido con quienes están dando forma al mañana.',
+    scenes: ['Conferencias', 'Universidades', 'Hackathons'],
+    pending: 'Fotografía en curso',
+  },
+
+  founder: {
+    label: 'Founder Edition',
+    headline: 'Sé de los primeros.',
+    elements: [
+      'Edición limitada y numerada',
+      'Llavero exclusivo',
+      'Empaque Founder',
+      'Acceso prioritario al software',
+      'Comunidad privada',
+    ],
+    note: 'La primera serie es pequeña por diseño.',
+  },
+
+  finalCta: {
+    headline: 'Lleva puesto lo que viene.',
+    button: 'Reserva las tuyas',
+  },
+
+  footer: {
+    tagline: 'Inteligencia humana. Amplificada.',
+    colExplore: 'Explorar',
+    colContact: 'Contacto',
+    rights: 'AXIS. Todos los derechos reservados.',
+    registered: 'Marca registrada ®',
   },
 
   store: {
@@ -252,40 +228,6 @@ export const es = {
         desc: 'Montura translúcida y lente clara para el día a día luminoso. La edición más ligera y versátil, hecha para llevarse de la mañana a la noche.',
       },
     },
-  },
-
-  faq: {
-    eyebrow: 'Preguntas frecuentes',
-    title: 'Lo que quizá te estás preguntando.',
-    items: [
-      { q: '¿Cómo compro AXIS?', a: 'Directo en nuestra tienda en línea: eliges tu modelo y pagas con tarjeta, PSE o Nequi vía Wompi. Si prefieres, también te asesoramos por WhatsApp.' },
-      { q: '¿Los lentes se gradúan a mi fórmula?', a: 'Sí. AXIS admite lentes con tu fórmula, validados con ópticas profesionales aliadas.' },
-      { q: '¿Cómo es la garantía?', a: 'Garantía de 6 meses, con soporte y reemplazo dedicados.' },
-      { q: '¿Cuánto dura la batería?', a: 'Todo el día de uso, con estuche de carga incluido que también carga tu teléfono.' },
-      { q: '¿AXIS respeta mi privacidad?', a: 'Sí. Una luz indicadora avisa cuando grabas y tú tienes el control en todo momento.' },
-      { q: '¿Hacen envíos?', a: 'Sí. Al confirmar tu pago coordinamos la entrega en tu casa, en cualquier parte del país.' },
-    ],
-  },
-
-  contact: {
-    eyebrow: 'Compra',
-    title: 'Lleva AXIS contigo.',
-    body:
-      'Elige tu modelo y págalo en línea en minutos. ¿Dudas con tu fórmula? Te asesoramos por WhatsApp.',
-    ctaStore: 'Comprar ahora',
-    ctaWhatsapp: 'Asesoría por WhatsApp',
-    note: 'Pago seguro con Wompi · Garantía 6 meses · Envío a domicilio',
-  },
-
-  footer: {
-    tagline: 'La evolución de cómo ves el mundo.',
-    colProduct: 'Producto',
-    colSupport: 'Ayuda',
-    colContact: 'Contacto',
-    linksProduct: ['Capacidades', 'Diseño'],
-    linksSupport: ['Garantía', 'Preguntas', 'Contacto'],
-    rights: 'AXIS. Todos los derechos reservados.',
-    registered: 'Marca registrada ®',
   },
 
   cart: {

@@ -103,7 +103,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Es vitrina:** SIN backend, SIN base de datos, SIN checkout. La conversión es el contacto por WhatsApp.
 
-**Tema:** oscuro por defecto + claro, con interruptor en el Nav (sol/luna). El tema se aplica con `<html data-theme>` y se persiste en `localStorage` (`axis-theme`); el script anti-FOUC vive en `index.html`. El cambio se hace a nivel de variables CSS en `src/index.css` (`:root[data-theme='light']` re-mapea solo los neutros carbón/blanco; el dorado y el Morpho no cambian). La sección Capabilities usa color fijo (siempre clara) y no sigue el tema.
+**Tema:** ÚNICO tema de luz (rediseño "luxury editorial" 2026-07). Ya NO hay modo oscuro,
+ni `data-theme`, ni script anti-FOUC, ni `useTheme`: la paleta vive en `@theme` de
+`apps/web/app/globals.css` y es estricta — lienzo `#F7F3EC`, tinta `#111111`, acento
+bronce `#B89A62`. Los tokens históricos (`carbon-*`, `warm-*`, `gold`, `line`) siguen
+existiendo como alias re-apuntados a esta paleta porque la tienda y el admin están
+escritos contra ellos.
 
 > **`PLAN-AXIS.md`** contiene el detalle de estrategia y diseño de la vitrina, ya **100% B2C** (sistema visual, tokens, animación, mapa de sitio, copy por sección orientado al usuario final). Para la evolución a plataforma full-stack (tienda, auth, DB, Wompi) la fuente de verdad es **`PLAN-PLATAFORMA.md`**; para copy/estructura de la vitrina, `PLAN-AXIS.md` y este CLAUDE.md están alineados.
 
@@ -144,19 +149,27 @@ El sitio ya está construido (NO es el template base). Sobre Vite/React/TS:
 
 ```
 apps/web/src/
-  components/ui/   Reutilizables: TreeLogo, GlassesArt, Icon, Reveal, CountUp,
-                   SectionHeading, Img, ImageCarousel
+  components/ui/   Reutilizables: TreeLogo, Icon (solo tienda/admin), Reveal,
+                   SectionHeading (solo tienda), Img, ImageCarousel (solo tienda)
   components/store/  Tienda (ProductDetail, LensPicker, CartView, CheckoutClient…)
   components/admin/  Panel (ProductForm, InventoryView, LensOptionsView…)
-  sections/        Una por sección de la landing (Nav, Hero, WhatIsAxis, …, Footer)
+  sections/        Landing 1:1 con el JSON de marca (orden de app/page.tsx):
+                   Nav, Hero, FutureIsWorn, ExperienceAxis, HumanStories,
+                   Collection, CompareModels, Craftsmanship, Community,
+                   FounderEdition, FinalCta, Footer
   i18n/            es.ts, en.ts, index.ts (init i18next), useDict.ts
-  lib/             SmoothScroll, motion, cart, products, lenses, cdn, siteImages
+  lib/             SmoothScroll, motion, cart, products, useProducts, lenses,
+                   cdn, siteImages
   config/          brand.ts (WhatsApp, correo, catálogo)
   server/          backend: db/ (TypeORM), auth/, products, admin, inventory,
                    lenses, checkout, wompi, s3
 apps/web/app/      rutas (landing, tienda/**, admin/**, api/**) + globals.css
 apps/web/public/   favicon.svg
 ```
+
+**Nav y Footer son compartidos con `/tienda`** (`app/tienda/layout.tsx` los envuelve
+y asume las alturas `h-16 / md:h-[72px]` del Nav). Las anclas de la landing son
+`#collection`, `#craftsmanship` y `#founder`; fuera del home navegan a `/#ancla`.
 
 **Ya NO existen** `src/assets/`, `src/images.d.ts` ni `src/index.css`: eran de la
 etapa Vite. Ninguna imagen vive en el repo (salvo el favicon).
@@ -198,14 +211,28 @@ máxima resolución (ideal ≥2400px de ancho); `next/image` genera las variante
 
 ## Sistema de diseño — usar los valores EXACTOS
 
-Identidad visual no negociable (detalle y reglas de uso en `PLAN-AXIS.md` §7):
+Identidad "luxury editorial" (barra: Apple · Aesop · Leica). Valores estrictos:
 
-- **Negro carbón** `#0A0A0A` / `#0D0D0D` — fondo base (nunca negro puro).
-- **Dorado antiguo** `#C8A96E` — SOLO líneas finas, etiquetas, contornos y el símbolo de marca. **Nunca** rellenos grandes.
-- **Dorado profundo** `#8B6B35` — detalle.
-- **Blanco cálido** `#F5F3EE` — una **única** sección de "luz" (zona técnica/comercial).
-- **Gris cálido** `#D8D6CF` — texto cuerpo, 18-20px, line-height 1.6.
-- **Iridiscencia Morpho** (el azul elegante, firma cromática distintiva) — gradiente `#1A3A8A → #2A5ADA → #2A1A4A → #0A0A1F`. **Único color vibrante** sobre carbón+dorado. Uso **raro = magia** (2-4 veces en toda la página): destello del hero, hover de CTAs, momentos clave. Nunca fondo plano dominante, nunca decoración floral.
+- **Lienzo** `#F7F3EC` — fondo único de toda la página (token `canvas` / alias `carbon-900`).
+- **Tinta** `#111111` — titulares y el único bloque oscuro permitido (sección Founder).
+- **Bronce** `#B89A62` — SOLO micro-interacciones, hovers, estados activos, numerales
+  del Founder y el CTA final (Von Restorff). Nunca bloques grandes ni etiquetas de sección
+  (las etiquetas usan `.label-luxe`, tinta atenuada). La clase `.eyebrow` (bronce) queda
+  para la tienda.
+- **Prohibido en la landing:** sombras (`shadow-*`/`drop-shadow`), tarjetas con fondo,
+  bordes alrededor de bloques de contenido, `rounded-*` decorativo e **iconos** (el único
+  símbolo permitido es el `TreeLogo`; carrito/menú son texto). `Icon.tsx` sigue existiendo
+  solo para tienda/admin.
+- **Tipografía fluida** con `clamp()`: `.display-hero`, `.display-section`, `.display-quiet`,
+  `.lead-luxe` (Cormorant Garamond para display, DM Sans cuerpo, DM Mono etiquetas).
+- **Movimiento lento tipo Apple:** `--ease-luxe: cubic-bezier(0.25,1,0.5,1)`, reveals
+  ≥ 900ms (`--duration-luxe`, `--duration-luxe-slow`, clase CSS `.reveal-luxe`, variants
+  en `src/lib/motion.ts`). `MotionConfig reducedMotion="user"` en `app/providers.tsx`.
+- El Morpho iridiscente y el modo oscuro se **retiraron** del código; la "magia" ahora es
+  restraint + fotografía.
+- **Copy EXACTA del JSON de marca en `en.ts`** (headlines tipo "The next interface isn't a
+  screen."); `es.ts` es su traducción fiel y AMBOS deben mantener el mismo shape
+  (`Dict = typeof es`).
 
 **Logo / sello recurrente:** el **símbolo dorado de AXIS** — un **árbol-runa** (tronco en Y, rama izquierda larga y un doble chevron anidado en la rama derecha), implementado como SVG en `src/components/ui/TreeLogo.tsx` (con animación de dibujado del trazo y `currentColor` para heredar el dorado). Es el sello central (nav, footer, watermark del hero/contacto). El alma de origen (evolución, "una nueva forma de ver el mundo") vive como ADN sutil en el logo y la elegancia, **no** como decoración. *Nota:* el `TreeLogo` actual es una reconstrucción vectorial fiel; si llega el SVG oficial exacto, sustituir los trazos manteniendo el `viewBox`.
 
@@ -217,4 +244,4 @@ Identidad visual no negociable (detalle y reglas de uso en `PLAN-AXIS.md` §7):
 - **Bilingüe ES/EN** con español por defecto; nada de texto hardcodeado.
 - **Mobile-first** y 60fps; el lujo no puede costar rendimiento (AVIF/WebP + lazy, LCP < 2.5s).
 - **Imágenes SIEMPRE desde S3/CloudFront** vía `next/image` (`<Img>`, `<ImageCarousel>` o `resolveProductSrc`), con `alt` desde i18n. Nunca `<img src>` crudo de una foto pesada ni `background-image` para fotos. No volver a meter imágenes en el repo.
-- Dorado solo en líneas/contornos; Morpho solo en destellos puntuales.
+- Bronce solo en micro-interacciones/énfasis; nada de iconos, sombras, tarjetas ni bordes en la landing (ver Sistema de diseño).

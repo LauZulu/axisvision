@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, type ReactNode } from 'react'
+import { MotionConfig } from 'framer-motion'
 import i18n from '../src/i18n'
 import { SmoothScroll } from '../src/lib/SmoothScroll'
 
@@ -8,6 +9,7 @@ import { SmoothScroll } from '../src/lib/SmoothScroll'
  * Providers de cliente para toda la app:
  *  - Inicializa i18n (import con efecto) y aplica el idioma guardado/del navegador
  *    tras el montaje (el primer render es 'es' → sin mismatch de hidratación).
+ *  - MotionConfig respeta prefers-reduced-motion en TODAS las animaciones framer.
  *  - Envuelve en SmoothScroll (Lenis + ScrollContext).
  */
 export function Providers({ children }: { children: ReactNode }) {
@@ -26,5 +28,9 @@ export function Providers({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  return <SmoothScroll>{children}</SmoothScroll>
+  return (
+    <MotionConfig reducedMotion="user">
+      <SmoothScroll>{children}</SmoothScroll>
+    </MotionConfig>
+  )
 }

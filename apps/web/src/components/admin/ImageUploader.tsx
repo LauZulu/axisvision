@@ -83,7 +83,7 @@ export function ImageUploader({
               <Image src={thumbSrc(key)} alt="" fill sizes="120px" className="object-cover" />
 
               {i === 0 && (
-                <span className="absolute left-1 top-1 rounded bg-gold px-1.5 py-0.5 font-mono text-[0.55rem] tracking-wide text-carbon-900">
+                <span className="absolute left-1 top-1 rounded bg-gold px-1.5 py-0.5 font-mono text-[0.55rem] tracking-wide text-ink">
                   {im.main}
                 </span>
               )}

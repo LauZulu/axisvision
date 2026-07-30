@@ -1,71 +1,56 @@
 @import 'tailwindcss';
 
 /* ============================================================
-   AXIS — Sistema de diseño (tokens exactos del PLAN-AXIS.md §7)
+   AXIS — Sistema de diseño (lujo editorial, un solo tema de luz)
+   Paleta estricta: lienzo #F7F3EC · tinta #111111 · bronce #B89A62.
+   Los nombres carbon-*/warm-* se conservan como alias porque la
+   tienda y el admin están escritos 100% contra estos tokens: al
+   re-apuntarlos, toda la app adopta la nueva paleta sin tocarlos.
    ============================================================ */
 @theme {
-  /* Negro carbón — fondo base (nunca negro puro) */
-  --color-carbon-900: #0a0a0a;
-  --color-carbon-850: #0d0d0d;
-  --color-carbon-800: #141414; /* cards / elevación sutil */
-  --color-carbon-700: #1c1c1c; /* bordes / hairlines oscuros */
+  /* Lienzo — fondo cálido de galería */
+  --color-carbon-900: #f7f3ec; /* fondo base */
+  --color-carbon-850: #fdfbf6; /* superficie elevada (tienda/admin) */
+  --color-carbon-800: #efe8db; /* tinte sutil / figuras vacías */
+  --color-carbon-700: #e3dbc9; /* borde suave (solo tienda/admin) */
 
-  /* Dorado — solo líneas, etiquetas, contornos, el árbol */
-  --color-gold: #c8a96e;
+  /* Tinta — el único "oscuro" permitido */
+  --color-warm-white: #111111; /* titulares (nombre histórico) */
+  --color-warm-gray: #46413a; /* texto cuerpo */
+
+  /* Bronce — SOLO micro-interacciones, estados activos y el CTA final */
+  --color-gold: #b89a62;
   --color-gold-deep: #8b6b35;
 
-  /* Luz cálida */
-  --color-warm-white: #f5f3ee; /* titulares (se invierte a carbón en tema claro) */
-  --color-warm-gray: #d8d6cf; /* texto cuerpo */
+  /* Alias semánticos del nuevo lenguaje (usar en la landing) */
+  --color-canvas: #f7f3ec;
+  --color-ink: #111111;
+  --color-bronze: #b89a62;
+  /* Sombra del acento para TEXTO sobre lienzo (#B89A62 puro da 2.4:1;
+     este tono derivado alcanza AA ≥4.5:1). El bronce puro queda para
+     fondos con tinta encima y para texto sobre la sección de tinta. */
+  --color-bronze-deep: #7d6539;
 
-  /* Hairline / separadores — se adapta al tema (blanco translúcido en oscuro) */
-  --color-line: rgba(255, 255, 255, 0.08);
-
-  /* Iridiscencia Morpho — firma cromática (uso raro = magia) */
-  --color-morpho-1: #1a3a8a;
-  --color-morpho-2: #2a5ada;
-  --color-morpho-3: #2a1a4a;
-  --color-morpho-4: #0a0a1f;
+  --color-line: rgba(17, 17, 17, 0.1);
 
   /* Tipografía — ruta híbrida */
-  --font-display: 'Cormorant Garamond', Georgia, serif; /* hero + manifiesto (lujo) */
-  --font-head: 'Inter Tight Variable', 'Inter Tight', system-ui, sans-serif; /* titulares corporativos */
-  --font-body: 'DM Sans Variable', 'DM Sans', system-ui, sans-serif; /* cuerpo */
-  --font-mono: 'DM Mono', ui-monospace, monospace; /* etiquetas/eyebrows */
+  --font-display: 'Cormorant Garamond', Georgia, serif; /* titulares editoriales */
+  --font-head: 'Inter Tight Variable', 'Inter Tight', system-ui, sans-serif;
+  --font-body: 'DM Sans Variable', 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, monospace; /* etiquetas */
 
-  /* Easings premium */
+  /* Movimiento — lento, tipo Apple */
+  --ease-luxe: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+  --duration-luxe: 900ms;
+  --duration-luxe-slow: 1300ms;
 }
 
-/* Gradiente firma Morpho (reutilizable) */
+/* Variables de movimiento también en :root para uso fuera de Tailwind */
 :root {
-  --gradient-morpho: linear-gradient(
-    120deg,
-    var(--color-morpho-1) 0%,
-    var(--color-morpho-2) 38%,
-    var(--color-morpho-3) 72%,
-    var(--color-morpho-4) 100%
-  );
-}
-
-/* ============================================================
-   Tema claro — se activa con <html data-theme="light">.
-   Oscuro es el default (sin atributo o data-theme="dark").
-   Solo se re-mapean los NEUTROS: el dorado y el Morpho —la firma
-   de marca— son idénticos en ambos temas. Como las utilidades de
-   Tailwind v4 leen estas variables con var(), todo el sitio cambia
-   sin tocar clases. La sección de "luz" (Capabilities) mantiene su
-   propio color fijo y no se invierte.
-   ============================================================ */
-:root[data-theme='light'] {
-  --color-carbon-900: #f5f3ee; /* fondo base claro (blanco cálido) */
-  --color-carbon-850: #ffffff; /* tarjetas */
-  --color-carbon-800: #efece4; /* elevación sutil */
-  --color-carbon-700: #e4dfd3; /* bordes suaves */
-  --color-warm-white: #0a0a0a; /* titulares → carbón */
-  --color-warm-gray: #3f3d38; /* texto cuerpo → gris cálido oscuro */
-  --color-line: rgba(10, 10, 10, 0.12);
+  --ease-luxe: cubic-bezier(0.25, 1, 0.5, 1);
+  --duration-luxe: 900ms;
+  --duration-luxe-slow: 1300ms;
 }
 
 /* ============================================================
@@ -81,24 +66,23 @@
 
   body {
     margin: 0;
-    background-color: var(--color-carbon-900);
+    background-color: var(--color-canvas);
     color: var(--color-warm-gray);
     font-family: var(--font-body);
     font-size: 19px;
     line-height: 1.6;
     font-synthesis: none;
-    transition:
-      background-color 0.4s var(--ease-out-expo),
-      color 0.4s var(--ease-out-expo);
   }
 
   ::selection {
-    background: var(--color-gold);
-    color: var(--color-carbon-900);
+    background: var(--color-ink);
+    color: var(--color-canvas);
   }
 
-  h1, h2, h3 {
-    color: var(--color-warm-white);
+  h1,
+  h2,
+  h3 {
+    color: var(--color-ink);
     font-weight: 500;
     text-wrap: balance;
   }
@@ -116,9 +100,12 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-gold);
+    outline: 2px solid var(--color-ink);
     outline-offset: 3px;
-    border-radius: 2px;
+  }
+  /* Dentro del bloque de tinta (Founder) el indicador se invierte */
+  .bg-ink :focus-visible {
+    outline-color: var(--color-canvas);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -137,120 +124,205 @@
    Componentes / utilidades de marca
    ============================================================ */
 @layer components {
-  /* Eyebrow — DM Mono dorado, mayúsculas, tracking amplio */
+  /* Etiqueta editorial neutra — tinta atenuada, NO bronce (Von Restorff:
+     el acento se reserva para momentos de énfasis, no para cada sección). */
+  .label-luxe {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.26em;
+    font-size: 0.68rem;
+    color: color-mix(in srgb, var(--color-ink) 62%, transparent);
+  }
+
+  /* Eyebrow histórico (lo usa la tienda) — ahora bronce sobre lienzo */
   .eyebrow {
     font-family: var(--font-mono);
     text-transform: uppercase;
     letter-spacing: 0.22em;
     font-size: 0.72rem;
-    color: var(--color-gold);
+    color: var(--color-bronze);
   }
 
-  /* Texto con relleno del gradiente Morpho */
-  .text-morpho {
-    background: var(--gradient-morpho);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  /* Escala tipográfica fluida — ritmo editorial de revista */
+  .display-hero {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 8.5vw, 7rem);
+    line-height: 1.02;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+  .display-section {
+    font-family: var(--font-display);
+    font-size: clamp(2.3rem, 5.2vw, 4.6rem);
+    line-height: 1.05;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+  .display-quiet {
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 3.2vw, 2.9rem);
+    line-height: 1.12;
+    font-weight: 500;
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+  .lead-luxe {
+    font-size: clamp(1.1rem, 1.5vw, 1.35rem);
+    line-height: 1.65;
+    color: color-mix(in srgb, var(--color-warm-gray) 88%, transparent);
   }
 
-  .bg-morpho {
-    background-image: var(--gradient-morpho);
+  /* CTA primario — bloque de tinta, sin radio, sin sombra, sin borde.
+     El bronce aparece solo al hover (micro-interacción). */
+  .btn-ink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.1rem 2.7rem;
+    background: var(--color-ink);
+    color: var(--color-canvas);
+    font-family: var(--font-head);
+    font-weight: 500;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    transition: background-color var(--duration-luxe) var(--ease-luxe);
+  }
+  .btn-ink:hover {
+    background: var(--color-bronze);
+    color: var(--color-ink);
+  }
+  .btn-ink.btn-sm {
+    padding: 0.72rem 1.6rem;
+    font-size: 0.7rem;
   }
 
-  /* Hairline dorado reutilizable */
-  .hairline-gold {
-    border-color: color-mix(in srgb, var(--color-gold) 28%, transparent);
+  /* Variante sobre tinta (sección Founder) */
+  .btn-canvas {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.1rem 2.7rem;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-head);
+    font-weight: 500;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+    transition:
+      background-color var(--duration-luxe) var(--ease-luxe),
+      color var(--duration-luxe) var(--ease-luxe);
+  }
+  .btn-canvas:hover {
+    background: var(--color-bronze);
+    color: var(--color-ink);
   }
 
-  /* Botón primario — borde dorado + barrido Morpho al hover */
+  /* La tienda y el admin usan .btn-axis en 12 sitios: se re-implementa
+     con el nuevo lenguaje (bloque de tinta) manteniendo el nombre. */
   .btn-axis {
-    position: relative;
-    isolation: isolate;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.6rem;
-    padding: 0.95rem 1.9rem;
+    padding: 1rem 2.2rem;
+    background: var(--color-ink);
+    color: var(--color-canvas);
     font-family: var(--font-head);
     font-weight: 500;
-    font-size: 0.95rem;
-    letter-spacing: 0.01em;
-    color: var(--color-warm-white);
-    border: 1px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
-    border-radius: 999px;
-    background: transparent;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    border: none;
+    border-radius: 0;
     cursor: pointer;
-    overflow: hidden;
-    transition:
-      border-color 0.4s var(--ease-out-expo),
-      color 0.4s var(--ease-out-expo),
-      transform 0.4s var(--ease-out-expo);
-  }
-  .btn-axis::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: var(--gradient-morpho);
-    opacity: 0;
-    transform: translateY(101%);
-    transition:
-      transform 0.5s var(--ease-out-expo),
-      opacity 0.5s var(--ease-out-expo);
+    transition: background-color var(--duration-luxe) var(--ease-luxe);
   }
   .btn-axis:hover {
-    border-color: transparent;
-    transform: translateY(-1px);
-  }
-  .btn-axis:hover::before {
-    opacity: 1;
-    transform: translateY(0);
+    background: var(--color-bronze);
+    color: var(--color-ink);
   }
 
-  /* Botón secundario — texto + subrayado dorado */
-  .btn-ghost {
+  /* Enlace editorial — subrayado fino que crece; bronce solo al hover */
+  .link-luxe {
     display: inline-flex;
-    align-items: center;
+    align-items: baseline;
     gap: 0.5rem;
     font-family: var(--font-head);
     font-weight: 500;
-    font-size: 0.95rem;
-    color: var(--color-warm-gray);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--color-ink);
     background: none;
     border: none;
     cursor: pointer;
-    transition: color 0.3s var(--ease-out-expo);
+    padding-bottom: 0.35rem;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 100% 1px;
+    transition:
+      color var(--duration-luxe) var(--ease-luxe),
+      background-size var(--duration-luxe) var(--ease-luxe);
   }
-  .btn-ghost:hover {
-    color: var(--color-gold);
+  .link-luxe:hover {
+    color: var(--color-bronze-deep);
+  }
+
+  /* Sección editorial — respiración doble de lo habitual */
+  .section-luxe {
+    padding-block: clamp(6.5rem, 16vh, 13rem);
+  }
+
+  /* Figuras editoriales — la foto respira, sin marcos ni sombras */
+  .figure-luxe {
+    overflow: hidden;
+  }
+  .figure-luxe img {
+    transition: transform var(--duration-luxe-slow) var(--ease-luxe);
+  }
+  .figure-luxe:hover img {
+    transform: scale(1.03);
+  }
+
+  /* Figura vacía preparada para fotografía futura */
+  .figure-pending {
+    background: var(--color-carbon-800);
+    display: grid;
+    place-items: center;
+  }
+
+  /* Revelado al scroll — "Slow Apple-like animations" en CSS puro,
+     disponible para elementos sin framer-motion. */
+  .reveal-luxe {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity var(--duration-luxe-slow) var(--ease-luxe),
+      transform var(--duration-luxe-slow) var(--ease-luxe);
+  }
+  .reveal-luxe.is-revealed {
+    opacity: 1;
+    transform: none;
   }
 }
 
-/* Contenedor de ancho de marca */
+/* Contenedor editorial — más ancho y con canales generosos */
 .container-axis {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1440px;
   margin-inline: auto;
-  padding-inline: 1.5rem;
-}
-@media (min-width: 768px) {
-  .container-axis {
-    padding-inline: 2.5rem;
-  }
-}
-
-/* Cambio de tema — revelado circular (View Transitions API).
-   Sin crossfade por defecto: la vista nueva entra recortada por el círculo
-   que anima useTheme desde el punto del clic. */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-::view-transition-old(root) {
-  z-index: 1;
-}
-::view-transition-new(root) {
-  z-index: 2;
+  padding-inline: clamp(1.5rem, 5vw, 4.5rem);
 }

@@ -2,48 +2,24 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion'
+import { AnimatePresence, motion, type Variants } from 'framer-motion'
 import { usePathname, useRouter } from 'next/navigation'
 import { TreeLogo } from '../components/ui/TreeLogo'
-import { Icon } from '../components/ui/Icon'
 import { useDict } from '../i18n/useDict'
 import { useScrollTo } from '../lib/scrollContext'
-import { useTheme } from '../lib/useTheme'
 import { useCart, cartCount } from '../lib/cart'
-import { EASE_OUT_EXPO } from '../lib/motion'
+import { EASE_LUXE } from '../lib/motion'
 
-/** Hamburguesa animada: las líneas exteriores se pliegan en X y la central se disuelve. */
-function BurgerIcon({ open }: { open: boolean }) {
-  const spring = { duration: 0.45, ease: EASE_OUT_EXPO }
-  const line = 'absolute left-0 block h-[1.5px] w-full rounded-full bg-current'
-  return (
-    <span className="relative block h-[15px] w-[22px]">
-      <motion.span
-        className={`${line} top-0`}
-        animate={open ? { rotate: 45, y: 6.75 } : { rotate: 0, y: 0 }}
-        transition={spring}
-      />
-      <motion.span
-        className={`${line} top-1/2 -translate-y-1/2`}
-        animate={open ? { opacity: 0, x: 10 } : { opacity: 1, x: 0 }}
-        transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
-      />
-      <motion.span
-        className={`${line} bottom-0`}
-        animate={open ? { rotate: -45, y: -6.75 } : { rotate: 0, y: 0 }}
-        transition={spring}
-      />
-    </span>
-  )
-}
-
+/**
+ * Navegación mínima de lujo: marca, tres anclas, idioma, bolsa (texto, sin
+ * iconos) y un único CTA. Compartida con /tienda — mantiene las alturas
+ * h-16 / md:h-[72px] que asume app/tienda/layout.tsx.
+ */
 export function Nav() {
   const { t, lang, setLang } = useDict()
-  const { theme, toggle } = useTheme()
   const scrollTo = useScrollTo()
   const pathname = usePathname()
   const router = useRouter()
-  const reducedMotion = useReducedMotion()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const itemCount = cartCount(useCart())
@@ -76,9 +52,9 @@ export function Nav() {
   useEffect(() => setMenuOpen(false), [pathname])
 
   const links: Array<[string, string]> = [
-    ['#product', t.nav.product],
-    ['#capabilities', t.nav.capabilities],
-    ['#contact', t.nav.contact],
+    ['#collection', t.nav.collection],
+    ['#craftsmanship', t.nav.craftsmanship],
+    ['#founder', t.nav.founder],
   ]
 
   // Enlaces de ancla: en el home hacen scroll suave; en otra página navegan a /#ancla.
@@ -101,188 +77,152 @@ export function Nav() {
   }
 
   const panelV: Variants = {
-    hidden: {
-      opacity: 0,
-      transition: { duration: 0.35, ease: EASE_OUT_EXPO, when: 'afterChildren' },
-    },
+    hidden: { opacity: 0, transition: { duration: 0.5, ease: EASE_LUXE, when: 'afterChildren' } },
     show: {
       opacity: 1,
       transition: {
-        duration: 0.4,
-        ease: EASE_OUT_EXPO,
+        duration: 0.6,
+        ease: EASE_LUXE,
         when: 'beforeChildren',
-        staggerChildren: reducedMotion ? 0 : 0.07,
-        delayChildren: reducedMotion ? 0 : 0.05,
+        staggerChildren: 0.08,
+        delayChildren: 0.05,
       },
     },
   }
-  const rowV: Variants = reducedMotion
-    ? {
-        hidden: { opacity: 0, transition: { duration: 0.2 } },
-        show: { opacity: 1, transition: { duration: 0.3 } },
-      }
-    : {
-        hidden: { y: '115%', transition: { duration: 0.3, ease: EASE_OUT_EXPO } },
-        show: { y: 0, transition: { duration: 0.65, ease: EASE_OUT_EXPO } },
-      }
+  const rowV: Variants = {
+    hidden: { y: '115%', transition: { duration: 0.4, ease: EASE_LUXE } },
+    show: { y: 0, transition: { duration: 0.9, ease: EASE_LUXE } },
+  }
   const footV: Variants = {
-    hidden: { opacity: 0, y: reducedMotion ? 0 : 14, transition: { duration: 0.25 } },
-    show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE_OUT_EXPO } },
+    hidden: { opacity: 0, transition: { duration: 0.3 } },
+    show: { opacity: 1, transition: { duration: 0.9, ease: EASE_LUXE } },
   }
 
-  const menuRows: Array<{ label: string; onClick?: () => void; href?: string }> = [
-    ...links.map(([href, label]) => ({ label, onClick: () => go(href) })),
-    { label: t.nav.store, href: '/tienda' },
-  ]
+  const bagLabel = `${t.nav.bag}${itemCount > 0 ? ` (${itemCount})` : ''}`
 
   return (
     <>
-    <header
-      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-500 ${
-        scrolled || menuOpen
-          ? 'border-b border-line bg-carbon-900/85 backdrop-blur-xl'
-          : 'border-b border-transparent bg-transparent'
-      }`}
-    >
-      <nav className="container-axis flex h-16 items-center justify-between md:h-[72px]">
-        <button
-          onClick={goTop}
-          className="flex items-center gap-2.5 text-gold"
-          aria-label="AXIS — inicio"
-        >
-          <TreeLogo className="h-7 w-auto" />
-          <span className="font-head text-sm tracking-[0.28em] text-warm-white">AXIS</span>
-        </button>
-
-        <div className="hidden items-center gap-9 md:flex">
-          {links.map(([href, label]) => (
-            <button
-              key={href}
-              onClick={() => go(href)}
-              className="font-head text-sm text-warm-gray/85 transition-colors hover:text-gold"
-            >
-              {label}
-            </button>
-          ))}
-          <Link
-            href="/tienda"
-            className="font-head text-sm text-warm-gray/85 transition-colors hover:text-gold"
+      <header
+        className={`fixed inset-x-0 top-0 z-50 transition-colors duration-700 ${
+          scrolled || menuOpen ? 'bg-canvas/95' : 'bg-transparent'
+        }`}
+      >
+        <nav className="container-axis flex h-16 items-center justify-between md:h-[72px]">
+          <button
+            onClick={goTop}
+            className="flex items-center gap-2.5 text-ink"
+            aria-label={t.nav.home}
           >
-            {t.nav.store}
-          </Link>
-        </div>
+            <TreeLogo className="h-6 w-auto" strokeWidth={5} />
+            <span className="font-head text-sm tracking-[0.32em]">AXIS</span>
+          </button>
 
-        <div className="flex items-center gap-4 md:gap-5">
-          <div className="hidden font-mono text-xs tracking-widest min-[400px]:block">
-            <button
-              onClick={() => setLang('es')}
-              className={lang === 'es' ? 'text-gold' : 'text-warm-gray/45 hover:text-warm-gray'}
+          <div className="hidden items-center gap-10 md:flex">
+            {links.map(([href, label]) => (
+              <button
+                key={href}
+                onClick={() => go(href)}
+                className="font-head text-[0.8rem] tracking-[0.08em] text-warm-gray/80 transition-colors duration-700 hover:text-bronze-deep"
+              >
+                {label}
+              </button>
+            ))}
+            <Link
+              href="/tienda"
+              className="font-head text-[0.8rem] tracking-[0.08em] text-warm-gray/80 transition-colors duration-700 hover:text-bronze-deep"
             >
-              ES
-            </button>
-            <span className="mx-1 text-warm-gray/30">/</span>
-            <button
-              onClick={() => setLang('en')}
-              className={lang === 'en' ? 'text-gold' : 'text-warm-gray/45 hover:text-warm-gray'}
-            >
-              EN
-            </button>
+              {t.nav.store}
+            </Link>
           </div>
 
-          <button
-            onClick={toggle}
-            aria-label={t.nav.theme}
-            title={t.nav.theme}
-            className="text-warm-gray/60 transition-colors hover:text-gold"
-          >
-            {/* El icono gira/aparece al cambiar (key remonta el span) */}
-            <motion.span
-              key={theme}
-              initial={{ rotate: -90, scale: 0.5, opacity: 0 }}
-              animate={{ rotate: 0, scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, ease: EASE_OUT_EXPO }}
-              className="block"
+          <div className="flex items-center gap-6">
+            <div className="hidden font-mono text-[0.68rem] tracking-[0.18em] min-[400px]:block">
+              <button
+                onClick={() => setLang('es')}
+                aria-pressed={lang === 'es'}
+                className={
+                  lang === 'es'
+                    ? 'text-bronze-deep underline underline-offset-4'
+                    : 'text-warm-gray/75 transition-colors duration-700 hover:text-ink'
+                }
+              >
+                ES
+              </button>
+              <span className="mx-1 text-warm-gray/40">/</span>
+              <button
+                onClick={() => setLang('en')}
+                aria-pressed={lang === 'en'}
+                className={
+                  lang === 'en'
+                    ? 'text-bronze-deep underline underline-offset-4'
+                    : 'text-warm-gray/75 transition-colors duration-700 hover:text-ink'
+                }
+              >
+                EN
+              </button>
+            </div>
+
+            <Link
+              href="/tienda/carrito"
+              className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-warm-gray/80 transition-colors duration-700 hover:text-bronze-deep"
             >
-              <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={18} />
-            </motion.span>
-          </button>
+              {bagLabel}
+            </Link>
 
-          <Link
-            href="/tienda/carrito"
-            aria-label={t.cart.title}
-            className="relative text-warm-gray/60 transition-colors hover:text-gold"
-          >
-            <Icon name="bag" size={19} strokeWidth={1.5} />
-            {itemCount > 0 && (
-              <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 font-mono text-[0.6rem] leading-none text-carbon-900">
-                {itemCount}
-              </span>
-            )}
-          </Link>
+            <Link href="/tienda" className="btn-ink btn-sm hidden md:inline-flex">
+              {t.nav.cta}
+            </Link>
 
-          <Link href="/tienda" className="btn-axis hidden md:inline-flex">
-            {t.nav.cta}
-          </Link>
+            <button
+              className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-ink md:hidden"
+              aria-expanded={menuOpen}
+              aria-controls="mobile-menu"
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              {menuOpen ? t.nav.menuClose : t.nav.menuOpen}
+            </button>
+          </div>
+        </nav>
+      </header>
 
-          <button
-            className="-mr-1 p-1 text-warm-white transition-colors hover:text-gold md:hidden"
-            aria-label={menuOpen ? t.nav.menuClose : t.nav.menuOpen}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((v) => !v)}
-          >
-            <BurgerIcon open={menuOpen} />
-          </button>
-        </div>
-      </nav>
-
-    </header>
-
-    {/* Menú móvil a pantalla completa. Vive FUERA del <header>: su backdrop-blur lo
-        convierte en containing block y colapsaría un descendiente position:fixed. */}
+      {/* Menú móvil a pantalla completa — lienzo sólido, tipografía grande. */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
             key="mobile-menu"
+            id="mobile-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t.nav.menuOpen}
+            data-lenis-prevent
             variants={panelV}
             initial="hidden"
             animate="show"
             exit="hidden"
-            className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-carbon-900/95 pt-24 backdrop-blur-2xl md:hidden"
+            className="bg-canvas fixed inset-0 z-40 flex flex-col overflow-y-auto pt-24 md:hidden"
           >
-            <TreeLogo
-              aria-hidden
-              className="pointer-events-none fixed -bottom-12 -right-10 h-80 w-auto text-gold opacity-[0.05]"
-            />
-
-            <nav className="container-axis flex flex-1 flex-col justify-center">
-              {menuRows.map((row, i) => (
-                <div key={row.label} className="overflow-hidden border-b border-line">
+            <nav className="container-axis flex flex-1 flex-col justify-center gap-2">
+              {[...links, ['/tienda', t.nav.store] as [string, string]].map(([href, label], i) => (
+                <div key={label} className="overflow-hidden">
                   <motion.div variants={rowV}>
-                    {row.href ? (
-                      <Link
-                        href={row.href}
-                        onClick={() => setMenuOpen(false)}
-                        className="flex w-full items-baseline gap-5 py-5"
-                      >
-                        <span className="font-mono text-xs tracking-[0.2em] text-gold/70">
+                    {href.startsWith('#') ? (
+                      <button onClick={() => go(href)} className="flex w-full items-baseline gap-5 py-4 text-left">
+                        <span className="font-mono text-[0.62rem] tracking-[0.2em] text-warm-gray/75">
                           0{i + 1}
                         </span>
-                        <span className="font-head text-3xl font-light text-warm-white">
-                          {row.label}
-                        </span>
-                      </Link>
-                    ) : (
-                      <button
-                        onClick={row.onClick}
-                        className="flex w-full items-baseline gap-5 py-5 text-left"
-                      >
-                        <span className="font-mono text-xs tracking-[0.2em] text-gold/70">
-                          0{i + 1}
-                        </span>
-                        <span className="font-head text-3xl font-light text-warm-white">
-                          {row.label}
-                        </span>
+                        <span className="font-display text-4xl text-ink">{label}</span>
                       </button>
+                    ) : (
+                      <Link
+                        href={href}
+                        onClick={() => setMenuOpen(false)}
+                        className="flex w-full items-baseline gap-5 py-4"
+                      >
+                        <span className="font-mono text-[0.62rem] tracking-[0.2em] text-warm-gray/75">
+                          0{i + 1}
+                        </span>
+                        <span className="font-display text-4xl text-ink">{label}</span>
+                      </Link>
                     )}
                   </motion.div>
                 </div>
@@ -293,28 +233,38 @@ export function Nav() {
               variants={footV}
               className="container-axis pb-[max(2.5rem,env(safe-area-inset-bottom))]"
             >
-              <Link
-                href="/tienda"
-                onClick={() => setMenuOpen(false)}
-                className="btn-axis w-full"
-              >
+              <Link href="/tienda" onClick={() => setMenuOpen(false)} className="btn-ink w-full">
                 {t.nav.cta}
               </Link>
-              <div className="mt-6 flex items-center justify-between">
-                <p className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-warm-gray/50">
-                  {t.hero.eyebrow}
-                </p>
-                <div className="font-mono text-xs tracking-widest">
+              <div className="mt-8 flex items-center justify-between">
+                <Link
+                  href="/tienda/carrito"
+                  onClick={() => setMenuOpen(false)}
+                  className="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-warm-gray/70"
+                >
+                  {bagLabel}
+                </Link>
+                <div className="font-mono text-[0.68rem] tracking-[0.18em]">
                   <button
                     onClick={() => setLang('es')}
-                    className={lang === 'es' ? 'text-gold' : 'text-warm-gray/45'}
+                    aria-pressed={lang === 'es'}
+                    className={
+                      lang === 'es'
+                        ? 'text-bronze-deep underline underline-offset-4'
+                        : 'text-warm-gray/75'
+                    }
                   >
                     ES
                   </button>
-                  <span className="mx-1 text-warm-gray/30">/</span>
+                  <span className="mx-1 text-warm-gray/40">/</span>
                   <button
                     onClick={() => setLang('en')}
-                    className={lang === 'en' ? 'text-gold' : 'text-warm-gray/45'}
+                    aria-pressed={lang === 'en'}
+                    className={
+                      lang === 'en'
+                        ? 'text-bronze-deep underline underline-offset-4'
+                        : 'text-warm-gray/75'
+                    }
                   >
                     EN
                   </button>

@@ -117,7 +117,7 @@ export function ProductDetail({
                   <span className="text-sm text-warm-gray/45 line-through">
                     {formatCop(product.compareAtPriceCop!)}
                   </span>
-                  <span className="rounded-full bg-gold px-2.5 py-1 font-mono text-[0.65rem] tracking-widest text-carbon-900">
+                  <span className="rounded-full bg-gold px-2.5 py-1 font-mono text-[0.65rem] tracking-widest text-ink">
                     {fill(t.store.discountBadge, { pct: discountPct(product) })}
                   </span>
                 </>

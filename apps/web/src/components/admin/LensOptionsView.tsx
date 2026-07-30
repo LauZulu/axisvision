@@ -208,7 +208,7 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-head text-warm-white">{o.nameEs}</span>
                   {o.isDefault && (
-                    <span className="rounded-full bg-gold px-2 py-0.5 font-mono text-[0.6rem] tracking-wide text-carbon-900">
+                    <span className="rounded-full bg-gold px-2 py-0.5 font-mono text-[0.6rem] tracking-wide text-ink">
                       {l.included}
                     </span>
                   )}
