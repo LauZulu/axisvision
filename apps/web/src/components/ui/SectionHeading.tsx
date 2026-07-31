@@ -63,22 +63,35 @@ export function SectionHeading({
         </motion.span>
       )}
 
-      {/* Máscara editorial: el título emerge de su propia línea base */}
-      <div className="mt-5 overflow-hidden">
-        {reduce ? (
+      {/* Máscara editorial: el título emerge de su propia línea base.
+          OJO: el `whileInView` va en la MÁSCARA, no en el <h2>. El h2 arranca
+          desplazado un 105%, o sea justo fuera del recorte de su padre, y el
+          IntersectionObserver intersecta contra los clips de los ancestros: su
+          ratio era 0 de forma permanente, el observer no disparaba nunca y el
+          título se quedaba escondido para siempre. La máscara sí se ve, así que
+          disparando desde ella el h2 recibe la variante y entra. */}
+      {reduce ? (
+        <div className="mt-5 overflow-hidden">
           <h2 className={titleCls}>{title}</h2>
-        ) : (
+        </div>
+      ) : (
+        <motion.div
+          className="mt-5 overflow-hidden"
+          initial="hidden"
+          whileInView="show"
+          viewport={inView}
+        >
           <motion.h2
-            initial={{ y: '105%' }}
-            whileInView={{ y: '0%' }}
-            viewport={inView}
-            transition={{ duration: 0.9, ease: EASE_OUT_EXPO }}
+            variants={{
+              hidden: { y: '105%' },
+              show: { y: '0%', transition: { duration: 0.9, ease: EASE_OUT_EXPO } },
+            }}
             className={titleCls}
           >
             {title}
           </motion.h2>
-        )}
-      </div>
+        </motion.div>
+      )}
 
       {intro && (
         <Reveal delay={0.12}>

@@ -72,24 +72,18 @@ export const en = {
     eyebrow: 'What is AXIS?',
     statement:
       'AXIS are glasses that see, hear, translate and adapt to your prescription — with the intelligence of AI and the design of a luxury object.',
-    pillars: [
-      { title: 'On-board intelligence', desc: 'An AI assistant that sees what you see.' },
-      { title: 'Hands-free capture', desc: 'First-person photo and video, no phone needed.' },
-      { title: 'Translation without borders', desc: 'Conversations in another language, in real time.' },
-      { title: 'Your prescription lenses', desc: 'Real optics, not just a gadget.' },
-    ],
   },
 
   product: {
     eyebrow: 'Design',
     title: 'Engineering you don’t notice. Presence you do.',
     intro:
-      'Premium materials, timeless lines and the tree of life engraved on the temple. Glasses you want to wear.',
+      'Fine materials and classic proportions. Nothing in their silhouette gives away what they carry inside. Glasses you want to wear.',
     annotations: [
-      { label: 'Camera', value: 'First-person capture' },
-      { label: 'Open-ear audio', value: 'Sound without blocking your ears' },
       { label: 'Frame', value: 'Acetate and lightweight titanium' },
+      { label: 'Lines', value: 'Classic acetate silhouette' },
       { label: 'Engraving', value: 'Phylogenetic tree on the temple' },
+      { label: 'Case', value: 'Leather, included in the box' },
     ],
   },
 

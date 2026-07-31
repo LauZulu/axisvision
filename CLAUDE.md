@@ -227,6 +227,22 @@ aclare la crema; el tema claro lleva su propio refuerzo porque el titular es car
 y cae justo sobre el producto oscuro de la foto. Si cambias la foto, revisa el
 contraste del titular **en los dos temas** antes de dar por bueno el cambio.
 
+**Sin repetir capacidades:** cada cosa que AXIS hace se cuenta **una sola vez**, en
+`Capabilities` (los 8 ítems de `t.capabilities.items`). `WhatIsAxis` es solo el
+statement — su rejilla de 4 pilares se retiró porque los cuatro estaban ya en esa
+lista (dos con el mismo título) y la propia frase los enumera. `ProductShowcase`
+habla solo de materiales y hechura, sin cámara ni audio. `Lifestyle` son 7 fotos de
+gente llevando AXIS, que es lo que promete su copy. Al añadir copy, comprueba que no
+vuelve a decirse lo mismo en otra sección: la página ya venía de 11,5 pantallas.
+
+**Revelados con `whileInView` (trampa real):** el trigger NUNCA va en un elemento
+que arranca desplazado fuera del recorte de su padre. El `IntersectionObserver`
+intersecta también contra los clips de los ancestros, así que un `<h2>` con
+`initial={{ y: '105%' }}` dentro de un `overflow-hidden` tiene ratio 0 permanente,
+no dispara nunca y **se queda invisible para siempre** (así estuvieron 5 de los 7
+títulos de sección). El patrón correcto está en `SectionHeading`: `whileInView` en
+la máscara, y el hijo entra por `variants`.
+
 **Tipografía (ruta híbrida confirmada):** **Inter Tight** (titulares/columna corporativa-tech) + **Cormorant Garamond** (solo hero y 1-2 frases manifiesto = alma de lujo) + **DM Sans** (cuerpo) + **DM Mono** (etiquetas/eyebrows en MAYÚSCULAS doradas con tracking amplio 0.15-0.25em).
 
 ## Restricciones que no se deben romper

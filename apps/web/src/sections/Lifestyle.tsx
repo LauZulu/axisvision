@@ -5,33 +5,34 @@ import { SectionHeading } from '../components/ui/SectionHeading'
 import { useDict } from '../i18n/useDict'
 import { fadeUp, inView, stagger } from '../lib/motion'
 
-// Galería de uso real — el orden coincide con t.alt.lifestyle[i].
 import {
   modelo06 as modelo06Mujer,
   modelo01,
-  modelo07 as cafeCroissant,
   modelo02,
   modelo05,
-  axisEnCafe as cafeEstuche,
   modelo03,
   modelo06Ciclista as ciclista,
-  modelo08 as cafeLaptop,
   modelo04,
-  axisEnCafe02 as cafeSport,
 } from '../lib/siteImages'
 
+/**
+ * Galería de uso real. Solo fotos de gente llevando AXIS, que es lo que promete
+ * el copy de la sección ("Personas reales llevando AXIS. Así se verá contigo").
+ * Se quitaron las cuatro naturalezas muertas del estuche —tres eran la misma
+ * idea, el estuche sobre una mesa de café— que además dejaban esta sección como
+ * la más larga de la página con diferencia.
+ *
+ * `alt` es el índice dentro de t.alt.lifestyle: va explícito para que quitar o
+ * reordenar fotos no desplace los textos alternativos.
+ */
 const GALLERY = [
-  modelo06Mujer,
-  modelo01,
-  cafeCroissant,
-  modelo02,
-  modelo05,
-  cafeEstuche,
-  modelo03,
-  ciclista,
-  cafeLaptop,
-  modelo04,
-  cafeSport,
+  { pic: modelo06Mujer, alt: 0 },
+  { pic: modelo01, alt: 1 },
+  { pic: modelo02, alt: 3 },
+  { pic: modelo05, alt: 4 },
+  { pic: modelo03, alt: 6 },
+  { pic: ciclista, alt: 7 },
+  { pic: modelo04, alt: 9 },
 ]
 
 export function Lifestyle() {
@@ -65,15 +66,15 @@ export function Lifestyle() {
           viewport={inView}
           className="mt-14 columns-2 gap-4 md:columns-3 [column-fill:_balance]"
         >
-          {GALLERY.map((pic, i) => (
+          {GALLERY.map((shot, i) => (
             <motion.figure key={i} variants={fadeUp} className="mb-4 break-inside-avoid">
               <motion.div
                 style={{ y: speeds[i % 3] }}
                 className="group relative overflow-hidden rounded-xl border border-line"
               >
                 <Img
-                  picture={pic}
-                  alt={t.alt.lifestyle[i]}
+                  picture={shot.pic}
+                  alt={t.alt.lifestyle[shot.alt]}
                   sizes="(min-width: 768px) 30vw, 45vw"
                   className="w-full transition-transform duration-700 ease-out group-hover:scale-[1.05]"
                 />

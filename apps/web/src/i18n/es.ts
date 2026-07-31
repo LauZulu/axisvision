@@ -72,26 +72,24 @@ export const es = {
 
   what: {
     eyebrow: '¿Qué es AXIS?',
+    // Sin pilares: los cuatro que había aquí están en `capabilities.items`
+    // (dos con el mismo título) y la frase de arriba ya los enumera.
     statement:
       'AXIS son gafas que ven, escuchan, traducen y se gradúan a tu vista — con la inteligencia de una IA y el diseño de una pieza de lujo.',
-    pillars: [
-      { title: 'Inteligencia a bordo', desc: 'Un asistente con IA que ve lo que tú ves.' },
-      { title: 'Captura manos libres', desc: 'Foto y vídeo en primera persona, sin sacar el teléfono.' },
-      { title: 'Traducción sin fronteras', desc: 'Conversaciones en otro idioma, en tiempo real.' },
-      { title: 'Lentes con tu fórmula', desc: 'Graduación real. Óptica de verdad, no un gadget.' },
-    ],
   },
 
   product: {
     eyebrow: 'Diseño',
     title: 'Ingeniería que no se nota. Presencia que sí.',
+    // Solo diseño y materiales: cámara y audio open-ear viven en `capabilities`
+    // (el audio, con el mismo título), y el árbol grabado ya lo dice su ficha.
     intro:
-      'Materiales premium, líneas atemporales y el árbol de la vida grabado en la patilla. Una gafa que quieres llevar puesta.',
+      'Materiales nobles y proporciones clásicas. Nada en su silueta delata lo que llevan dentro. Una gafa que quieres llevar puesta.',
     annotations: [
-      { label: 'Cámara', value: 'Captura en primera persona' },
-      { label: 'Audio open-ear', value: 'Sonido sin tapar el oído' },
       { label: 'Montura', value: 'Acetato y titanio ligero' },
+      { label: 'Líneas', value: 'Silueta clásica de pasta' },
       { label: 'Grabado', value: 'Árbol filogenético en la patilla' },
+      { label: 'Estuche', value: 'Cuero, incluido en la caja' },
     ],
   },
 

@@ -1,17 +1,22 @@
-import { motion } from 'framer-motion'
 import { Reveal } from '../components/ui/Reveal'
-import { Icon, type IconKey } from '../components/ui/Icon'
 import { useDict } from '../i18n/useDict'
-import { fadeUp, inView, stagger } from '../lib/motion'
 
-const PILLAR_ICONS: IconKey[] = ['ai', 'photo', 'translate', 'lens']
-
+/**
+ * Momento de manifiesto entre la vitrina y el producto: una sola frase que dice
+ * qué es AXIS y deja respirar la página.
+ *
+ * Antes llevaba debajo una rejilla de cuatro pilares. Se quitó porque los
+ * cuatro estaban ya en la sección de Capacidades —"Lentes con tu fórmula" con
+ * el mismo título, y la traducción con la misma frase— y porque el statement
+ * de arriba enumera esos mismos cuatro ("ven, escuchan, traducen y se
+ * gradúan"): las tarjetas repetían la línea que tenían justo encima.
+ */
 export function WhatIsAxis() {
   const { t } = useDict()
   return (
     <section id="what" className="border-t border-line py-24 md:py-36">
       <div className="container-axis">
-        <Reveal className="mx-auto max-w-[24ch] text-center">
+        <Reveal className="text-center">
           <span className="eyebrow">{t.what.eyebrow}</span>
         </Reveal>
         <Reveal delay={0.06}>
@@ -19,28 +24,6 @@ export function WhatIsAxis() {
             {t.what.statement}
           </p>
         </Reveal>
-
-        <motion.ul
-          variants={stagger}
-          initial="hidden"
-          whileInView="show"
-          viewport={inView}
-          className="mt-16 grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4"
-        >
-          {t.what.pillars.map((p, i) => (
-            <motion.li
-              key={p.title}
-              variants={fadeUp}
-              className="bg-carbon-900 p-7 transition-colors duration-500 hover:bg-carbon-850"
-            >
-              <span className="text-gold">
-                <Icon name={PILLAR_ICONS[i]} size={28} strokeWidth={1.4} />
-              </span>
-              <h3 className="font-head mt-5 text-lg font-medium text-warm-white">{p.title}</h3>
-              <p className="mt-2 text-[0.97rem] text-warm-gray/75">{p.desc}</p>
-            </motion.li>
-          ))}
-        </motion.ul>
       </div>
     </section>
   )
