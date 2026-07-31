@@ -13,7 +13,10 @@ import type { ProductDTO } from '../lib/products'
  * Vitrina de producto justo bajo el hero: los modelos reales (foto + precio)
  * a un scroll de la apertura. Carga desde /api/products en cliente para que la
  * landing siga siendo estática; si la DB no responde, la sección no aparece.
- * En mobile es un carrusel horizontal con snap; en desktop, rejilla de 4.
+ * Rejilla en todos los tamaños: 2 columnas en móvil (3 filas) y 3 en desktop
+ * (2 filas). Con 6 modelos ambas quedan simétricas y el catálogo entero se ve
+ * de un vistazo — antes era un carrusel horizontal donde en móvil solo asomaba
+ * un modelo y medio y había que adivinar que se deslizaba.
  */
 export function StoreRail() {
   const { t } = useDict()
@@ -49,13 +52,10 @@ export function StoreRail() {
           initial="hidden"
           whileInView="show"
           viewport={inView}
-          className="mt-12 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-4"
+          className="mt-12 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3"
         >
           {products.map((product) => (
-            <TiltCard
-              key={product.slug}
-              className="w-[76vw] shrink-0 snap-center sm:w-auto sm:shrink"
-            >
+            <TiltCard key={product.slug} className="h-full">
               <ProductCard product={product} />
             </TiltCard>
           ))}

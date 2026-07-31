@@ -5,7 +5,6 @@ export const en = {
   },
 
   alt: {
-    heroProduct: 'AXIS AI glasses floating with a golden halo on a carbon-black background',
     productShowcase: 'AXIS clear-lens glasses resting on their leather case, lit with warm gold',
     capabilities: 'AXIS glasses next to their premium leather case on a light background',
     packaging: 'Open AXIS leather case: premium presentation',

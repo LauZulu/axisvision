@@ -5,8 +5,7 @@ export const es = {
   },
 
   alt: {
-    heroProduct:
-      'Gafas AXIS con inteligencia artificial flotando con un halo dorado sobre fondo negro carbón',
+    // La portada del hero es decorativa (lleva alt=""): el mensaje va en el titular.
     productShowcase:
       'Gafas AXIS de lente transparente sobre su estuche de cuero, con iluminación dorada',
     capabilities: 'Gafas AXIS junto a su estuche de cuero premium sobre fondo claro',

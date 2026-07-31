@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 
+/* Variante `light:` — aplica solo bajo <html data-theme="light">. Permite alternar
+   por CSS (sin JS ni flash de hidratación) p. ej. la foto de fondo del hero. */
+@custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
+
 /* ============================================================
    AXIS — Sistema de diseño (tokens exactos del PLAN-AXIS.md §7)
    ============================================================ */
@@ -206,6 +210,46 @@
   .btn-axis:hover::before {
     opacity: 1;
     transform: translateY(0);
+  }
+
+  /* Velo del hero — va encima de la foto a sangre de la portada.
+     Hace tres cosas: aclara/oscurece el centro para que el titular centrado
+     tenga contraste, deja el borde superior legible bajo el nav y funde el
+     borde inferior con la sección siguiente.
+     Se construye con --color-carbon-900, que ya se invierte por tema: el mismo
+     velo oscurece la versión de fondo carbón y aclara la de fondo crema. */
+  .hero-scrim {
+    background:
+      radial-gradient(
+        ellipse 80% 60% at 50% 48%,
+        color-mix(in srgb, var(--color-carbon-900) 58%, transparent) 0%,
+        transparent 78%
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-carbon-900) 70%, transparent) 0%,
+        color-mix(in srgb, var(--color-carbon-900) 30%, transparent) 24%,
+        color-mix(in srgb, var(--color-carbon-900) 38%, transparent) 62%,
+        var(--color-carbon-900) 100%
+      );
+  }
+
+  /* En tema claro el titular es carbón y cae justo sobre el producto oscuro de
+     la foto: hace falta bastante más velo crema para que el texto respire. */
+  :root[data-theme='light'] .hero-scrim {
+    background:
+      radial-gradient(
+        ellipse 95% 62% at 50% 48%,
+        color-mix(in srgb, var(--color-carbon-900) 74%, transparent) 0%,
+        transparent 88%
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-carbon-900) 72%, transparent) 0%,
+        color-mix(in srgb, var(--color-carbon-900) 30%, transparent) 24%,
+        color-mix(in srgb, var(--color-carbon-900) 34%, transparent) 62%,
+        var(--color-carbon-900) 100%
+      );
   }
 
   /* Botón secundario — texto + subrayado dorado */

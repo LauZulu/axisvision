@@ -182,7 +182,10 @@ máxima resolución (ideal ≥2400px de ancho); `next/image` genera las variante
 **Cómo se renderizan:**
 - Fotos de la landing: `<Img>` (`src/components/ui/Img.tsx`) con una entrada de
   `siteImages.ts` — lleva `width/height` intrínsecos (cero CLS), `loading="lazy"`
-  por defecto y `priority` para el LCP (hero). `alt` SIEMPRE desde i18n (`t.alt.*`).
+  por defecto y `priority` para el LCP (hero). `alt` SIEMPRE desde i18n (`t.alt.*`),
+  salvo fondos decorativos a sangre (`alt=""`, ver el hero). Con `fill` la foto
+  rellena al contenedor (`relative` + alto propio) en vez de usar su tamaño
+  intrínseco; acompáñalo de `object-cover`/`object-contain`.
 - Fotos de producto: la clave S3 de la DB se resuelve con `resolveProductSrc`
   (`src/lib/productImages.ts`) → URL de CloudFront.
 - `next/image` optimiza y redimensiona en el servidor (el dominio del CDN está en
@@ -207,7 +210,22 @@ Identidad visual no negociable (detalle y reglas de uso en `PLAN-AXIS.md` §7):
 - **Gris cálido** `#D8D6CF` — texto cuerpo, 18-20px, line-height 1.6.
 - **Iridiscencia Morpho** (el azul elegante, firma cromática distintiva) — gradiente `#1A3A8A → #2A5ADA → #2A1A4A → #0A0A1F`. **Único color vibrante** sobre carbón+dorado. Uso **raro = magia** (2-4 veces en toda la página): destello del hero, hover de CTAs, momentos clave. Nunca fondo plano dominante, nunca decoración floral.
 
-**Logo / sello recurrente:** el **símbolo dorado de AXIS** — un **árbol-runa** (tronco en Y, rama izquierda larga y un doble chevron anidado en la rama derecha), implementado como SVG en `src/components/ui/TreeLogo.tsx` (con animación de dibujado del trazo y `currentColor` para heredar el dorado). Es el sello central (nav, footer, watermark del hero/contacto). El alma de origen (evolución, "una nueva forma de ver el mundo") vive como ADN sutil en el logo y la elegancia, **no** como decoración. *Nota:* el `TreeLogo` actual es una reconstrucción vectorial fiel; si llega el SVG oficial exacto, sustituir los trazos manteniendo el `viewBox`.
+**Logo / sello recurrente:** el **símbolo dorado de AXIS** — un **árbol-runa** (tronco en Y, rama izquierda larga y un doble chevron anidado en la rama derecha), implementado como SVG en `src/components/ui/TreeLogo.tsx` (con animación de dibujado del trazo y `currentColor` para heredar el dorado). Es el sello central (nav, footer, watermark de contacto; el hero ya no lo lleva —
+la portada es una foto a sangre y el árbol competiría con el producto). El alma de origen (evolución, "una nueva forma de ver el mundo") vive como ADN sutil en el logo y la elegancia, **no** como decoración. *Nota:* el `TreeLogo` actual es una reconstrucción vectorial fiel; si llega el SVG oficial exacto, sustituir los trazos manteniendo el `viewBox`.
+
+**Portada (hero):** foto **a sangre** ocupando el viewport (`min-h-[100svh]`), con el
+titular, el subtítulo y los CTA **centrados** encima. La misma composición existe en
+dos fondos y cada tema estrena el suyo: `site/hero/hero-producto.jpeg` (carbón) y
+`site/packaging/empaque-abierto-con-gafas.jpeg` (crema). El intercambio es **puro
+CSS** con la variante `light:` (definida con `@custom-variant` en `globals.css`), así
+que lo decide el `data-theme` que ya puso el script anti-FOUC y no parpadea al
+hidratar; ambas van con `alt=""` (decorativas — `opacity:0` no las saca del árbol de
+accesibilidad, así que con texto se anunciarían las dos). La foto va con un
+desenfoque suave y debajo del velo **`.hero-scrim`** (`globals.css`), construido
+sobre `--color-carbon-900` para que el mismo velo oscurezca la versión carbón y
+aclare la crema; el tema claro lleva su propio refuerzo porque el titular es carbón
+y cae justo sobre el producto oscuro de la foto. Si cambias la foto, revisa el
+contraste del titular **en los dos temas** antes de dar por bueno el cambio.
 
 **Tipografía (ruta híbrida confirmada):** **Inter Tight** (titulares/columna corporativa-tech) + **Cormorant Garamond** (solo hero y 1-2 frases manifiesto = alma de lujo) + **DM Sans** (cuerpo) + **DM Mono** (etiquetas/eyebrows en MAYÚSCULAS doradas con tracking amplio 0.15-0.25em).
 

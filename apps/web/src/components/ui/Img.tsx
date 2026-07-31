@@ -14,6 +14,12 @@ type Props = {
    * alta prioridad y sin lazy. El resto va lazy por defecto.
    */
   priority?: boolean
+  /**
+   * Rellena al contenedor en vez de ocupar su tamaño intrínseco (fotos a sangre).
+   * El padre debe ser `relative` y tener alto propio; acompáñalo de
+   * `object-cover`/`object-contain` en `className`.
+   */
+  fill?: boolean
 }
 
 /**
@@ -22,13 +28,21 @@ type Props = {
  * El `<img>` respeta las clases de layout (aspect-ratio + object-fit) igual que antes;
  * el reset de Tailwind (`img { height: auto }`) deja que las clases gobiernen el tamaño.
  */
-export function Img({ picture, alt, className, sizes = '100vw', priority = false }: Props) {
+export function Img({
+  picture,
+  alt,
+  className,
+  sizes = '100vw',
+  priority = false,
+  fill = false,
+}: Props) {
   return (
     <Image
       src={picture}
       alt={alt}
       sizes={sizes}
       priority={priority}
+      fill={fill}
       className={className}
     />
   )
