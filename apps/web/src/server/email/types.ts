@@ -25,6 +25,8 @@ export type OrderLine = {
   unitPriceCop: number
   lensOptionName?: string | null
   lensExtraPriceCop?: number | null
+  prescriptionOptionName?: string | null
+  prescriptionExtraPriceCop?: number | null
   prescriptionNote?: string | null
 }
 

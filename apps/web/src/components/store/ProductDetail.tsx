@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ImageCarousel, type Slide } from '../ui/ImageCarousel'
+import { ProductGallery, type GallerySlide } from './ProductGallery'
 import { Icon } from '../ui/Icon'
 import { useDict } from '../../i18n/useDict'
 import { fill } from '../../lib/format'
@@ -21,6 +21,7 @@ import {
   defaultLens,
   imagesForLens,
   lensName,
+  prescriptionAddon,
   priceWithLens,
   type LensOptionDTO,
 } from '../../lib/lenses'
@@ -49,14 +50,21 @@ export function ProductDetail({
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
   const [lens, setLens] = useState<LensOptionDTO | null>(() => defaultLens(lensOptions))
+  // La fórmula es una pregunta APARTE del tipo de lente: se monta sobre
+  // cualquiera de ellos. Un lente que solo existe graduado la impone.
+  const [wantsRx, setWantsRx] = useState(false)
+  const rxOption = prescriptionAddon(lensOptions)
+  const withPrescription = Boolean(rxOption) && (wantsRx || Boolean(lens?.requiresPrescription))
+  const rx = withPrescription ? rxOption : null
 
-  // Precio mostrado = producto + lente elegido. El cobro lo recalcula el servidor.
-  const unitPrice = priceWithLens(product.priceCop, lens)
+  // Precio mostrado = producto + lente + fórmula. El cobro lo recalcula el servidor.
+  const unitPrice = priceWithLens(product.priceCop, lens, rx)
+  const extras = unitPrice - product.priceCop
 
-  // La galería sigue al lente elegido: con lente de sol se ven las fotos de sol,
-  // con fórmula/transparente las de lente claro. Las neutras (estuche) siempre.
+  // La galería sigue al TIPO de lente: con lente de sol se ven las fotos de sol,
+  // con transparente las de lente claro. Las neutras (estuche) siempre.
   const gallery = imagesForLens(product.images, lens)
-  const slides: Slide[] = gallery.map((img) => ({
+  const slides: GallerySlide[] = gallery.map((img) => ({
     src: resolveProductSrc(img),
     alt: product.name,
   }))
@@ -74,12 +82,16 @@ export function ProductDetail({
       lens: lens
         ? { id: lens.id, name: lensName(lens, lang), extraPriceCop: lens.extraPriceCop }
         : null,
+      prescription: rx
+        ? { id: rx.id, name: lensName(rx, lang), extraPriceCop: rx.extraPriceCop }
+        : null,
     }
   }
 
   function onBuyNow() {
     const params = new URLSearchParams({ item: product.slug, qty: String(qty) })
     if (lens) params.set('lens', lens.id)
+    if (rx) params.set('rx', '1')
     router.push(`/tienda/checkout?${params}`)
   }
 
@@ -90,7 +102,10 @@ export function ProductDetail({
   }
 
   return (
-    <section className="py-14 md:py-20">
+    // El aire de arriba lo pone ya el `pt-16 md:pt-[72px]` del layout (el hueco
+    // de la nav fija): sumarle un `py-14` dejaba la ficha empezando a media
+    // pantalla. Solo el respiro de abajo se mantiene.
+    <section className="pt-6 pb-14 md:pt-8 md:pb-20">
       <div className="container-axis">
         <Link
           href="/tienda"
@@ -100,17 +115,18 @@ export function ProductDetail({
           {t.store.back}
         </Link>
 
-        <div className="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-16">
-          <ImageCarousel
+        {/* La galería va `sticky`: la columna de la derecha (configurador, compra,
+            qué incluye) siempre es más larga que la foto, y sin esto el cliente
+            elegía el lente mirando una franja vacía. */}
+        <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-start lg:gap-14">
+          <ProductGallery
             // Cambiar de lente reinicia la galería en su portada.
             key={lens?.imageVariant ?? 'all'}
             slides={slides}
-            fit="cover"
-            sizes="(min-width: 1024px) 48vw, 92vw"
-            className="aspect-[4/5] w-full overflow-hidden rounded-2xl border border-line bg-carbon-900"
+            className="lg:sticky lg:top-24"
           />
 
-          <div className="lg:pt-4">
+          <div>
             <span className="eyebrow text-gold">{t.store.eyebrow}</span>
             <h1 className="mt-4 font-head text-3xl leading-tight font-medium text-warm-white md:text-4xl">
               {product.name}
@@ -144,14 +160,28 @@ export function ProductDetail({
                 para comprar, es lo que cambia la galería entre lente de sol,
                 oftálmico y filtro amarillo. Sin él, media colección de fotos
                 queda inalcanzable. */}
-            {!soldOut && <LensPicker options={lensOptions} value={lens} onChange={setLens} />}
+            {!soldOut && (
+              <LensPicker
+                options={lensOptions}
+                value={lens}
+                onChange={setLens}
+                withPrescription={withPrescription}
+                onPrescriptionChange={setWantsRx}
+              />
+            )}
 
-            {/* Total con el lente elegido: el precio de arriba es el del armazón. */}
-            {!soldOut && lens && lens.extraPriceCop > 0 && (
-              <p className="mt-5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-warm-gray/70">
-                <span>{fill(t.store.lens.totalWith, { lens: lensName(lens, lang) })}</span>
-                <span className="font-head text-lg text-warm-white">{formatCop(unitPrice)}</span>
-              </p>
+            {/* El precio de arriba es el del armazón; aquí se cierra la cuenta
+                con lo que el cliente acaba de añadir, desglosado. */}
+            {!soldOut && extras > 0 && (
+              <div className="mt-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line pt-4">
+                <span className="text-sm text-warm-gray/70">
+                  {t.store.lens.total}
+                  <span className="ml-2 font-mono text-xs text-warm-gray/45">
+                    {formatCop(product.priceCop)} + {formatCop(extras)}
+                  </span>
+                </span>
+                <span className="font-head text-xl text-warm-white">{formatCop(unitPrice)}</span>
+              </div>
             )}
 
             {canPurchase && (

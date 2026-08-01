@@ -35,6 +35,8 @@ export const lensOptionSchema = z.object({
     .min(1)
     .max(80)
     .regex(/^[a-z0-9-]+$/, 'Solo minúsculas, números y guiones'),
+  // 'lens' = un tipo de lente; 'prescription' = el complemento de fórmula.
+  kind: z.enum(['lens', 'prescription']).default('lens'),
   nameEs: z.string().min(1).max(120),
   nameEn: z.string().min(1).max(120),
   descriptionEs: z.string().max(300).default(''),

@@ -11,6 +11,7 @@ const inputCls =
 
 type Draft = {
   slug: string
+  kind: 'lens' | 'prescription'
   nameEs: string
   nameEn: string
   descriptionEs: string
@@ -26,6 +27,7 @@ type Draft = {
 function toDraft(o?: LensOptionDTO): Draft {
   return {
     slug: o?.slug ?? '',
+    kind: o?.kind ?? 'lens',
     nameEs: o?.nameEs ?? '',
     nameEn: o?.nameEn ?? '',
     descriptionEs: o?.descriptionEs ?? '',
@@ -40,8 +42,10 @@ function toDraft(o?: LensOptionDTO): Draft {
 }
 
 /**
- * Catálogo de lentes que el cliente elige al comprar. El lente de fábrica
- * (`isDefault`) va sin costo; el resto suma su sobrecosto al precio del producto.
+ * Catálogo del configurador de lente. Son dos cosas distintas conviviendo en la
+ * misma tabla, y el campo `kind` es el que las separa: los `lens` son los tipos
+ * de lente (el cliente elige UNO, y el `isDefault` va sin costo) y el
+ * `prescription` es el complemento de fórmula, que se suma a cualquiera de ellos.
  */
 export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
   const { t } = useDict()
@@ -156,6 +160,18 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
               </label>
             </div>
             <label className="block text-sm text-warm-gray/80">
+              <span className="mb-1.5 block">{l.kind}</span>
+              <select
+                className={inputCls}
+                value={draft.kind}
+                onChange={(e) => set('kind', e.target.value as Draft['kind'])}
+              >
+                <option value="lens">{l.kindLens}</option>
+                <option value="prescription">{l.kindPrescription}</option>
+              </select>
+              <span className="mt-1 block text-xs text-warm-gray/45">{l.kindHint}</span>
+            </label>
+            <label className="block text-sm text-warm-gray/80">
               <span className="mb-1.5 block">{l.imageVariant}</span>
               <select
                 className={inputCls}
@@ -217,8 +233,10 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
                       {t.admin.products.hidden}
                     </span>
                   )}
-                  {o.requiresPrescription && (
-                    <span className="font-mono text-[0.65rem] tracking-wide text-gold/70">Rx</span>
+                  {(o.kind === 'prescription' || o.requiresPrescription) && (
+                    <span className="font-mono text-[0.65rem] tracking-wide text-gold/70">
+                      {o.kind === 'prescription' ? l.kindPrescription : 'Rx'}
+                    </span>
                   )}
                 </div>
                 <p className="mt-0.5 truncate text-sm text-warm-gray/55">{o.descriptionEs}</p>

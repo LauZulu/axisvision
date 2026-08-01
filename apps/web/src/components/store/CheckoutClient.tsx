@@ -9,7 +9,13 @@ import { useDict } from '../../i18n/useDict'
 import { formatCop, type ProductDTO } from '../../lib/products'
 import { resolveProductSrc } from '../../lib/productImages'
 import { useCart, clearCart, lineId, type CartItem } from '../../lib/cart'
-import { defaultLens, lensName, priceWithLens, type LensOptionDTO } from '../../lib/lenses'
+import {
+  defaultLens,
+  lensName,
+  prescriptionAddon,
+  priceWithLens,
+  type LensOptionDTO,
+} from '../../lib/lenses'
 
 type PaymentParams = {
   checkoutUrl: string
@@ -30,8 +36,8 @@ type CheckoutLine = {
   quantity: number
   image: { key: string; url: string | null }
   lens: { id: string; name: string; extraPriceCop: number } | null
-  /** Fórmula médica: se captura aquí cuando el lente la exige. */
-  requiresPrescription?: boolean
+  /** Complemento de fórmula elegido en la ficha. null = sin graduación. */
+  prescription?: { id: string; name: string; extraPriceCop: number } | null
 }
 
 const inputCls =
@@ -54,6 +60,7 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
   const buyNowSlug = params.get('item')
   const buyNowQty = Math.max(1, Math.min(Number(params.get('qty')) || 1, 20))
   const buyNowLensId = params.get('lens')
+  const buyNowRx = params.get('rx') === '1'
 
   // Fórmulas médicas por línea (clave = lineId).
   const [prescriptions, setPrescriptions] = useState<Record<string, string>>({})
@@ -88,17 +95,23 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
           const cover = p.images[0] ?? { key: '', url: null }
           const lens =
             lensOptions.find((o) => o.id === buyNowLensId) ?? defaultLens(lensOptions)
+          // La fórmula la pide el cliente, o la impone un lente que solo existe
+          // graduado. El sobrecosto real lo recalcula el servidor igual.
+          const addon = prescriptionAddon(lensOptions)
+          const rx = buyNowRx || lens?.requiresPrescription ? (addon ?? null) : null
           setBuyNowLine({
             productId: p.id,
             slug: p.slug,
             name: p.name,
-            priceCop: priceWithLens(p.priceCop, lens),
+            priceCop: priceWithLens(p.priceCop, lens, rx),
             quantity: Math.min(buyNowQty, Math.max(1, p.stock)),
             image: { key: cover.key, url: cover.url },
             lens: lens
               ? { id: lens.id, name: lensName(lens, lang), extraPriceCop: lens.extraPriceCop }
               : null,
-            requiresPrescription: lens?.requiresPrescription ?? false,
+            prescription: rx
+              ? { id: rx.id, name: lensName(rx, lang), extraPriceCop: rx.extraPriceCop }
+              : null,
           })
         }
         setLoadingItem(false)
@@ -107,16 +120,12 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
     return () => {
       alive = false
     }
-  }, [buyNowSlug, buyNowQty, buyNowLensId, lensOptions, lang])
+  }, [buyNowSlug, buyNowQty, buyNowLensId, buyNowRx, lensOptions, lang])
 
   const lines: CheckoutLine[] = useMemo(() => {
     if (buyNowSlug) return buyNowLine ? [buyNowLine] : []
-    return cart.map((i: CartItem) => ({
-      ...i,
-      requiresPrescription:
-        lensOptions.find((o) => o.id === i.lens?.id)?.requiresPrescription ?? false,
-    }))
-  }, [buyNowSlug, buyNowLine, cart, lensOptions])
+    return cart.map((i: CartItem) => ({ ...i, prescription: i.prescription ?? null }))
+  }, [buyNowSlug, buyNowLine, cart])
 
   const total = lines.reduce((sum, l) => sum + l.priceCop * l.quantity, 0)
 
@@ -150,6 +159,7 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
             productId: l.productId,
             quantity: l.quantity,
             lensOptionId: l.lens?.id,
+            withPrescription: Boolean(l.prescription),
             prescriptionNote: prescriptions[lineId(l)]?.trim() || undefined,
           })),
         }),
@@ -245,14 +255,14 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
               </label>
             </div>
 
-            {/* Fórmula médica: solo para las líneas cuyo lente la exige. */}
-            {lines.some((l) => l.requiresPrescription) && (
+            {/* Fórmula médica: solo para las líneas que la pidieron en la ficha. */}
+            {lines.some((l) => l.prescription) && (
               <>
                 <h2 className="eyebrow mt-8 text-gold">{c.prescriptionTitle}</h2>
                 <p className="mt-2 text-sm text-warm-gray/60">{c.prescriptionHelp}</p>
                 <div className="mt-4 space-y-4">
                   {lines
-                    .filter((l) => l.requiresPrescription)
+                    .filter((l) => l.prescription)
                     .map((l) => {
                       const id = lineId(l)
                       return (
@@ -305,9 +315,9 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm text-warm-white">{l.name}</div>
-                    {l.lens && (
+                    {(l.lens || l.prescription) && (
                       <div className="truncate font-mono text-[0.7rem] tracking-wide text-gold/75">
-                        {l.lens.name}
+                        {[l.lens?.name, l.prescription?.name].filter(Boolean).join(' · ')}
                       </div>
                     )}
                     <div className="font-mono text-xs text-warm-gray/50">× {l.quantity}</div>

@@ -56,9 +56,11 @@ export function CartView() {
                 <Link href={`/tienda/${item.slug}`} className="font-head text-warm-white hover:text-gold">
                   {item.name}
                 </Link>
-                {item.lens && (
+                {/* Lente y fórmula son dos decisiones: se listan las dos, porque
+                    son lo que diferencia dos líneas del mismo modelo. */}
+                {(item.lens || item.prescription) && (
                   <div className="mt-0.5 font-mono text-[0.7rem] tracking-wide text-gold/75">
-                    {item.lens.name}
+                    {[item.lens?.name, item.prescription?.name].filter(Boolean).join(' · ')}
                   </div>
                 )}
                 <div className="mt-1 text-sm text-warm-gray/60">{formatCop(item.priceCop)}</div>

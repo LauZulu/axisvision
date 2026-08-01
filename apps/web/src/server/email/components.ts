@@ -119,10 +119,24 @@ export function dataList(rows: Array<{ label: string; value: string } | null>): 
 export function itemsTable(lines: OrderLine[], totalCop: number): string {
   const rows = lines
     .map((l) => {
-      const lens = l.lensOptionName
-        ? `<div style="margin-top:4px;font-family:${FONT.body};font-size:13px;line-height:1.5;color:#8f8d87;">Lente: ${esc(l.lensOptionName)}${
-            l.lensExtraPriceCop ? ` (+ ${esc(formatCop(l.lensExtraPriceCop))})` : ' (incluido)'
-          }</div>`
+      // Lente y fórmula son dos decisiones distintas del configurador: se
+      // listan por separado o el comprador no entiende de dónde sale el total.
+      const detail = [
+        l.lensOptionName
+          ? `Lente: ${esc(l.lensOptionName)}${
+              l.lensExtraPriceCop ? ` (+ ${esc(formatCop(l.lensExtraPriceCop))})` : ' (incluido)'
+            }`
+          : null,
+        l.prescriptionOptionName
+          ? `${esc(l.prescriptionOptionName)}${
+              l.prescriptionExtraPriceCop
+                ? ` (+ ${esc(formatCop(l.prescriptionExtraPriceCop))})`
+                : ''
+            }`
+          : null,
+      ].filter(Boolean)
+      const lens = detail.length
+        ? `<div style="margin-top:4px;font-family:${FONT.body};font-size:13px;line-height:1.5;color:#8f8d87;">${detail.join(' · ')}</div>`
         : ''
       const qty = l.quantity > 1 ? `<span style="color:#8f8d87;"> × ${l.quantity}</span>` : ''
       return `<tr>

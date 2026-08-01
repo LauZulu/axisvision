@@ -2,16 +2,21 @@
 // servidor → seguro en componentes cliente).
 import type { ImageLensVariant, Lang } from './products'
 
+/** `lens` = tipo de lente (excluyentes). `prescription` = complemento de fórmula. */
+export type LensOptionKind = 'lens' | 'prescription'
+
 export type LensOptionDTO = {
   id: string
   slug: string
+  /** Qué pregunta del configurador responde esta opción. */
+  kind: LensOptionKind
   nameEs: string
   nameEn: string
   descriptionEs: string
   descriptionEn: string
   /** Sobrecosto en COP sobre el precio del producto. 0 = incluido. */
   extraPriceCop: number
-  /** Pide la fórmula médica en el checkout. */
+  /** Obliga a llevar fórmula médica (y a escribirla en el checkout). */
   requiresPrescription: boolean
   /** El lente con el que vienen las gafas de fábrica. */
   isDefault: boolean
@@ -29,19 +34,47 @@ export function lensDescription(o: LensOptionDTO, lang: Lang): string {
   return lang === 'en' ? o.descriptionEn : o.descriptionEs
 }
 
-/** La opción de fábrica (o la primera) — la preseleccionada en la ficha. */
-export function defaultLens(options: LensOptionDTO[]): LensOptionDTO | null {
-  return options.find((o) => o.isDefault) ?? options[0] ?? null
+/**
+ * El configurador son DOS preguntas independientes, no una lista de excluyentes:
+ * qué lente lleva la montura, y si va con la fórmula del cliente. Estas dos
+ * funciones parten el catálogo en esas dos preguntas.
+ *
+ * Nota de compatibilidad: las filas anteriores a la migración 5 no traen `kind`.
+ * Se asume `lens`, que es lo que eran.
+ */
+export function lensTypes(options: LensOptionDTO[]): LensOptionDTO[] {
+  return options.filter((o) => o.kind !== 'prescription')
 }
 
-/** Precio final de una unidad: producto + lente elegido. */
-export function priceWithLens(priceCop: number, lens: LensOptionDTO | null): number {
-  return priceCop + (lens?.extraPriceCop ?? 0)
+/** El complemento de fórmula (una sola fila activa). null si no está en catálogo. */
+export function prescriptionAddon(options: LensOptionDTO[]): LensOptionDTO | null {
+  return options.find((o) => o.kind === 'prescription') ?? null
+}
+
+/** La opción de fábrica (o la primera) — la preseleccionada en la ficha. */
+export function defaultLens(options: LensOptionDTO[]): LensOptionDTO | null {
+  const types = lensTypes(options)
+  return types.find((o) => o.isDefault) ?? types[0] ?? null
+}
+
+/**
+ * Precio final de una unidad: producto + lente + fórmula (si la pidió).
+ * Es solo para MOSTRAR — el cobro lo recalcula el servidor desde la DB.
+ */
+export function priceWithLens(
+  priceCop: number,
+  lens: LensOptionDTO | null,
+  prescription: LensOptionDTO | null = null,
+): number {
+  return priceCop + (lens?.extraPriceCop ?? 0) + (prescription?.extraPriceCop ?? 0)
 }
 
 /**
  * Fotos que corresponden al lente elegido: las de esa variante más las neutras
  * (estuche, accesorios), que sirven para cualquiera.
+ *
+ * Solo mira el TIPO de lente: unas gafas de sol graduadas se ven como gafas de
+ * sol, así que pedir la fórmula no cambia la galería.
  *
  * Si el producto no tiene fotos de esa variante — Crystal solo se fotografió con
  * lente transparente, Apex no tiene fotos con fórmula — cae a UNA sola variante

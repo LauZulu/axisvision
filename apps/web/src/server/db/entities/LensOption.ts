@@ -8,13 +8,22 @@ import {
 } from 'typeorm'
 import type { ImageLensVariant } from './ProductImage'
 
+/** `lens` = un tipo de lente (excluyentes). `prescription` = el complemento de fórmula. */
+export type LensOptionKind = 'lens' | 'prescription'
+
 /**
- * Opción de lente que el cliente elige al comprar. Las gafas salen con lente de
- * sol polarizado (la opción `isDefault`, sin costo); el resto son
- * personalizaciones que suman `extraPriceCop` al precio del producto.
+ * Opción del configurador de lente. Son DOS preguntas independientes, no una
+ * lista de excluyentes — por eso el `kind`:
  *
- * Las que llevan fórmula médica (`requiresPrescription`) piden los datos de la
- * fórmula en el checkout y se montan con la óptica aliada.
+ *  - `kind: 'lens'` → QUÉ lente lleva la montura (sol polarizado, transitions,
+ *    filtro azul…). Excluyentes entre sí; el `isDefault` es el de fábrica y va
+ *    sin costo.
+ *  - `kind: 'prescription'` → ¿lo quiere CON su fórmula médica? Es un
+ *    complemento que se suma a cualquier tipo de lente, no un lente aparte.
+ *
+ * Estaban aplanados en una sola lista y se contradecían: "Transitions" decía
+ * "disponible con o sin fórmula" pero elegirlo dejaba la fórmula fuera del
+ * alcance. El precio final es producto + lente + (fórmula si la pidió).
  *
  * Catálogo editable desde el panel admin: NO hardcodear opciones en el frontend.
  */
@@ -26,6 +35,10 @@ export class AxisLensOption {
   @Index({ unique: true })
   @Column({ type: 'varchar', length: 80 })
   slug!: string
+
+  // Qué pregunta responde esta fila: el tipo de lente o el complemento de fórmula.
+  @Column({ type: 'varchar', length: 16, default: 'lens' })
+  kind!: LensOptionKind
 
   @Column({ type: 'varchar', length: 120 })
   nameEs!: string
@@ -43,11 +56,14 @@ export class AxisLensOption {
   @Column({ type: 'integer', default: 0 })
   extraPriceCop!: number
 
-  // Pide fórmula médica en el checkout (se monta con la óptica aliada).
+  // Pide fórmula médica en el checkout (se monta con la óptica aliada). Siempre
+  // true en la fila `prescription`; un tipo de lente puede marcarlo si solo
+  // existe graduado.
   @Column({ type: 'boolean', default: false })
   requiresPrescription!: boolean
 
   // La opción con la que vienen las gafas de fábrica. Solo una debería tenerlo.
+  // No aplica a la fila `prescription`.
   @Column({ type: 'boolean', default: false })
   isDefault!: boolean
 

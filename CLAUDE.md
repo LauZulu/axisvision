@@ -55,18 +55,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   de `.xlsx` es propio y sin dependencias (`scripts/lib/xlsx.ts`). **Ojo:** la columna "Tipo Lente"
 >   del Excel dice `Sunglass` en todas las filas incluso en las oftálmicas — el dato real es el
 >   sufijo `/O` del nombre; las oftálmicas se cargan con `sellable:false` (son muestra).
->   **Personalización de lente:** las gafas salen con sol polarizado (incluido) y el cliente puede
->   pedir fórmula médica (óptica aliada), transitions o filtros → catálogo editable en
->   **`axis_lens_option`** y snapshot en `axis_order_item` (`lensOptionId/Name`, `lensExtraPriceCop`,
->   `prescriptionNote`). El usuario final NO ve "sol vs oftálmico" como productos distintos.
->   El selector vive en la ficha (`LensPicker`) y el carrito indexa por **producto + lente**
->   (`lineId()` en `src/lib/cart.ts`): el mismo modelo con dos lentes son dos líneas. El sobrecosto
->   y la validación de la fórmula los aplica SIEMPRE el servidor (`src/server/checkout.ts`), nunca
->   el cliente. Al confirmar el pago, el webhook marca **unidades reales** como `sold`
->   (`sellUnits`/`releaseUnits`) y deriva el stock — nunca `stock - n`.
+>   **Personalización de lente — DOS preguntas, no una lista:** el configurador de la ficha pregunta
+>   (1) **qué lente** lleva la montura —excluyentes: sol polarizado (incluido), transitions,
+>   transparente, filtro azul, filtro amarillo— y (2) **si va con la fórmula** del cliente, que es un
+>   **complemento** que se suma a *cualquiera* de ellos. Ambas viven en **`axis_lens_option`**
+>   separadas por la columna **`kind`** (`'lens'` \| `'prescription'`; helpers `lensTypes()` y
+>   `prescriptionAddon()` en `src/lib/lenses.ts`). Antes eran 6 opciones excluyentes y el modelo se
+>   contradecía solo —"Transitions: disponible con o sin fórmula", pero elegirlo dejaba la fórmula
+>   fuera de alcance— además de convertir la ficha en un muro de 6 barras más alto que la foto
+>   (migración `1720000000005-LensPrescriptionAddon`). Snapshot en `axis_order_item`:
+>   `lensOptionId/Name` + `lensExtraPriceCop` para el lente y `prescriptionOptionId/Name` +
+>   `prescriptionExtraPriceCop` + `prescriptionNote` para la fórmula — los correos del pedido
+>   desglosan los dos. El usuario final NO ve "sol vs oftálmico" como productos distintos.
+>   El selector es `LensPicker` (fichas compactas + casilla) y el carrito indexa por
+>   **producto + lente + fórmula** (`lineId()` en `src/lib/cart.ts`): el mismo modelo con dos
+>   configuraciones son dos líneas. El sobrecosto y la validación de la fórmula los aplica SIEMPRE el
+>   servidor (`src/server/checkout.ts`), nunca el cliente; el precio final es
+>   `producto + lente + fórmula`. Un tipo de lente con `requiresPrescription` impone la casilla
+>   (queda marcada y bloqueada). Al confirmar el pago, el webhook marca **unidades reales** como
+>   `sold` (`sellUnits`/`releaseUnits`) y deriva el stock — nunca `stock - n`.
+> - **Ficha de producto (`ProductDetail`):** dos columnas con la galería **`sticky`** — la columna
+>   derecha siempre es más larga que la foto, y sin eso se elegía el lente mirando una franja vacía.
+>   La galería es **`ProductGallery`** (store), NO el `ImageCarousel` de la landing: **no auto-rota**
+>   (en la ficha el cliente está comparando y una foto que se mueve sola le estorba) y todas las
+>   fotos están a la vista en una tira de miniaturas. El alto manda sobre la proporción en `lg`
+>   (`lg:h-[min(64vh,38rem)]`) para que la columna entera quepa en pantalla de portátil.
 > - **Panel admin:** `/admin/productos` (nombre, modelo, talla, precio, descuento, visibilidad, orden
 >   y fotos), `/admin/inventario` (unidad por unidad: ubicación, vendible, nota; guarda al vuelo y
->   resincroniza el stock) y `/admin/lentes` (CRUD de opciones). El campo `stock` sale de solo
+>   resincroniza el stock) y `/admin/lentes` (CRUD de opciones, con el selector `kind` para decir si
+>   la fila es un tipo de lente o el complemento de fórmula). El campo `stock` sale de solo
 >   lectura cuando el producto tiene unidades — se gestiona moviendo unidades, no tecleando.
 > - **Fotos de producto en S3 (57 reales, ya cargadas):** viven en
 >   **`products/<slug>/<variante>/<categoria>-NN.<ext>`**. Las subidas manuales desde el admin usan

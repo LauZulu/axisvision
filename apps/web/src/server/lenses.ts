@@ -1,11 +1,12 @@
 import { getDb } from './db'
 import { AxisLensOption } from './db/entities/LensOption'
-import type { LensOptionDTO } from '../lib/lenses'
+import type { LensOptionDTO, LensOptionKind } from '../lib/lenses'
 
 function toDTO(o: AxisLensOption): LensOptionDTO {
   return {
     id: o.id,
     slug: o.slug,
+    kind: o.kind ?? 'lens',
     nameEs: o.nameEs,
     nameEn: o.nameEn,
     descriptionEs: o.descriptionEs,
@@ -39,6 +40,7 @@ export async function getAllLensOptions(): Promise<LensOptionDTO[]> {
 export type LensOptionInput = {
   imageVariant?: 'sunglass' | 'ophthalmic' | 'yellow' | null
   slug: string
+  kind?: LensOptionKind
   nameEs: string
   nameEn: string
   descriptionEs: string

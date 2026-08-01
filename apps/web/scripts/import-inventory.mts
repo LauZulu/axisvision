@@ -151,9 +151,14 @@ const CATALOG = [
  * existen (para respetar lo que el admin haya configurado); usa `--reset-lenses`
  * si quieres forzar los valores de este archivo.
  */
+// Configurador de lente: DOS preguntas independientes, no una lista de
+// excluyentes. `kind: 'lens'` son los tipos de lente (se elige uno);
+// `kind: 'prescription'` es el complemento de fórmula, que se suma a cualquiera
+// de ellos. Antes estaban aplanados y se contradecían (ver migración 5).
 const LENS_OPTIONS = [
   {
     slug: 'sol-polarizado',
+    kind: 'lens' as const,
     nameEs: 'Lente de sol polarizado',
     nameEn: 'Polarized sun lens',
     descriptionEs: 'El lente con el que vienen tus AXIS. Corta el reflejo y protege del sol.',
@@ -165,23 +170,25 @@ const LENS_OPTIONS = [
     position: 1,
   },
   {
-    slug: 'formula-medica',
-    nameEs: 'Lente con tu fórmula',
-    nameEn: 'Prescription lens',
-    descriptionEs: 'Montamos tu fórmula con nuestra óptica aliada. Nos la envías después de comprar.',
-    descriptionEn: 'We fit your prescription with our partner optician. You send it after purchase.',
+    slug: 'transitions',
+    kind: 'lens' as const,
+    nameEs: 'Transitions (fotocromático)',
+    nameEn: 'Transitions (photochromic)',
+    descriptionEs: 'Se oscurece con el sol y se aclara en interiores.',
+    descriptionEn: 'Darkens in the sun, clears indoors.',
     extraPriceCop: 10_000,
-    requiresPrescription: true,
+    requiresPrescription: false,
     isDefault: false,
     active: true,
     position: 2,
   },
   {
-    slug: 'transitions',
-    nameEs: 'Transitions (fotocromático)',
-    nameEn: 'Transitions (photochromic)',
-    descriptionEs: 'Se oscurece con el sol y se aclara en interiores. Disponible con o sin fórmula.',
-    descriptionEn: 'Darkens in the sun, clears indoors. Available with or without prescription.',
+    slug: 'transparente',
+    kind: 'lens' as const,
+    nameEs: 'Lente transparente',
+    nameEn: 'Clear lens',
+    descriptionEs: 'Sin filtro de sol, para llevar AXIS todo el día.',
+    descriptionEn: 'No sun filter, to wear AXIS all day.',
     extraPriceCop: 10_000,
     requiresPrescription: false,
     isDefault: false,
@@ -190,6 +197,7 @@ const LENS_OPTIONS = [
   },
   {
     slug: 'filtro-azul',
+    kind: 'lens' as const,
     nameEs: 'Filtro de luz azul',
     nameEn: 'Blue light filter',
     descriptionEs: 'Lente transparente con filtro para pantallas. Para uso en interiores.',
@@ -202,6 +210,7 @@ const LENS_OPTIONS = [
   },
   {
     slug: 'filtro-amarillo',
+    kind: 'lens' as const,
     nameEs: 'Filtro amarillo',
     nameEn: 'Yellow filter',
     descriptionEs: 'Mejora el contraste con poca luz: conducción nocturna y días nublados.',
@@ -213,16 +222,19 @@ const LENS_OPTIONS = [
     position: 5,
   },
   {
-    slug: 'transparente',
-    nameEs: 'Lente transparente sin fórmula',
-    nameEn: 'Clear lens, no prescription',
-    descriptionEs: 'Para llevar AXIS todo el día sin filtro de sol.',
-    descriptionEn: 'To wear AXIS all day without a sun filter.',
+    slug: 'formula-medica',
+    kind: 'prescription' as const,
+    nameEs: 'Con tu fórmula médica',
+    nameEn: 'With your prescription',
+    descriptionEs:
+      'Montamos tu fórmula con nuestra óptica aliada, sobre el lente que elijas. Nos la envías después de comprar.',
+    descriptionEn:
+      'We fit your prescription on the lens you picked, with our partner optician. You send it after purchase.',
     extraPriceCop: 10_000,
-    requiresPrescription: false,
+    requiresPrescription: true,
     isDefault: false,
     active: true,
-    position: 6,
+    position: 10,
   },
 ]
 
@@ -421,6 +433,7 @@ async function main() {
           nameEn: opt.nameEn,
           descriptionEs: opt.descriptionEs,
           descriptionEn: opt.descriptionEn,
+          kind: opt.kind,
           requiresPrescription: opt.requiresPrescription,
           isDefault: opt.isDefault,
           position: opt.position,

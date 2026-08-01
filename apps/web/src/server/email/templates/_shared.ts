@@ -49,9 +49,15 @@ export function shippingBlock(data: OrderEmailData): string {
 /** Las mismas líneas, en texto plano. */
 export function linesAsText(lines: OrderLine[]): string[] {
   return lines.map((l) => {
-    const lens = l.lensOptionName
-      ? ` [lente: ${l.lensOptionName}${l.lensExtraPriceCop ? ` +${formatCop(l.lensExtraPriceCop)}` : ''}]`
-      : ''
+    const detail = [
+      l.lensOptionName
+        ? `lente: ${l.lensOptionName}${l.lensExtraPriceCop ? ` +${formatCop(l.lensExtraPriceCop)}` : ''}`
+        : null,
+      l.prescriptionOptionName
+        ? `${l.prescriptionOptionName}${l.prescriptionExtraPriceCop ? ` +${formatCop(l.prescriptionExtraPriceCop)}` : ''}`
+        : null,
+    ].filter(Boolean)
+    const lens = detail.length ? ` [${detail.join(' · ')}]` : ''
     return `- ${l.productName}${l.quantity > 1 ? ` x${l.quantity}` : ''}${lens} — ${formatCop(
       l.unitPriceCop * l.quantity,
     )}`

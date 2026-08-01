@@ -30,6 +30,8 @@ function toLines(items: AxisOrderItem[]): OrderLine[] {
     unitPriceCop: i.unitPriceCop,
     lensOptionName: i.lensOptionName,
     lensExtraPriceCop: i.lensExtraPriceCop,
+    prescriptionOptionName: i.prescriptionOptionName,
+    prescriptionExtraPriceCop: i.prescriptionExtraPriceCop,
     prescriptionNote: i.prescriptionNote,
   }))
 }

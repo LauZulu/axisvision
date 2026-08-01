@@ -240,11 +240,11 @@ export const es = {
       privacy: 'Solo lo usamos para avisarte de este modelo. Puedes darte de baja en un clic.',
     },
     lens: {
-      title: 'Elige tu lente',
-      help: 'Tus AXIS vienen con lente de sol polarizado. Si prefieres otro, lo montamos con nuestra óptica aliada antes de enviártelas.',
+      title: 'Lente',
       included: 'Incluido',
-      prescriptionNotice: 'Te pediremos tu fórmula al finalizar la compra.',
-      totalWith: 'Total con {lens}:',
+      prescriptionNotice: 'Te pediremos los datos de tu fórmula al finalizar la compra.',
+      prescriptionForced: 'Este lente solo se monta con fórmula médica.',
+      total: 'Total',
     },
     products: {
       onyx: {
@@ -504,7 +504,11 @@ export const es = {
     },
     lenses: {
       title: 'Opciones de lente',
-      subtitle: 'Lo que el cliente puede elegir al comprar. El de fábrica va sin costo.',
+      subtitle: 'Lo que el cliente configura al comprar: qué lente lleva y si va con su fórmula.',
+      kind: 'Qué es',
+      kindLens: 'Tipo de lente',
+      kindPrescription: 'Complemento de fórmula',
+      kindHint: 'El cliente elige UN tipo de lente. La fórmula es una casilla aparte que se suma al que haya elegido.',
       name: 'Nombre (ES)',
       nameEn: 'Nombre (EN)',
       descriptionEs: 'Descripción (ES)',

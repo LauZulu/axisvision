@@ -10,9 +10,11 @@ import { buildCheckoutParams, type CheckoutParams } from './wompi'
 export type CheckoutItemInput = {
   productId: string
   quantity: number
-  /** Opción de lente elegida. Si falta, se usa la de fábrica. */
+  /** Tipo de lente elegido. Si falta, se usa el de fábrica. */
   lensOptionId?: string
-  /** Fórmula médica cuando la opción la exige. */
+  /** El cliente pidió montar su fórmula médica (complemento, se suma al lente). */
+  withPrescription?: boolean
+  /** Datos de la fórmula (obligatorios si la línea la lleva). */
   prescriptionNote?: string
 }
 
@@ -53,10 +55,13 @@ export async function createGuestOrder(
   const byId = new Map(products.map((p) => [p.id, p]))
 
   // Opciones de lente ACTIVAS desde la DB: el sobrecosto nunca se toma del
-  // cliente (igual que el precio del producto).
+  // cliente (igual que el precio del producto). El catálogo son dos preguntas
+  // distintas: el TIPO de lente (excluyentes) y el COMPLEMENTO de fórmula.
   const lensOptions = await db.getRepository(AxisLensOption).findBy({ active: true })
-  const lensById = new Map(lensOptions.map((o) => [o.id, o]))
-  const defaultLens = lensOptions.find((o) => o.isDefault) ?? null
+  const lensTypes = lensOptions.filter((o) => o.kind !== 'prescription')
+  const lensById = new Map(lensTypes.map((o) => [o.id, o]))
+  const defaultLens = lensTypes.find((o) => o.isDefault) ?? null
+  const prescriptionAddon = lensOptions.find((o) => o.kind === 'prescription') ?? null
 
   // El stock se valida por PRODUCTO, sumando todas sus líneas: un mismo modelo
   // puede venir en varias líneas si el cliente eligió lentes distintos.
@@ -66,6 +71,7 @@ export async function createGuestOrder(
     product: AxisProduct
     quantity: number
     lens: AxisLensOption | null
+    prescription: AxisLensOption | null
     prescriptionNote: string | null
   }
   const lines: Line[] = []
@@ -81,12 +87,24 @@ export async function createGuestOrder(
       return { ok: false, code: 'LENS_UNAVAILABLE', message: 'La opción de lente elegida no está disponible.' }
     }
 
+    // Complemento de fórmula: lo pide el cliente por su cuenta, o lo impone el
+    // tipo de lente si solo existe graduado. El precio sale SIEMPRE de la DB.
+    const wantsPrescription = Boolean(item.withPrescription) || Boolean(lens?.requiresPrescription)
+    if (wantsPrescription && !prescriptionAddon) {
+      return {
+        ok: false,
+        code: 'PRESCRIPTION_UNAVAILABLE',
+        message: 'El montaje con fórmula médica no está disponible en este momento.',
+      }
+    }
+    const prescription = wantsPrescription ? prescriptionAddon : null
+
     const prescriptionNote = item.prescriptionNote?.trim() || null
-    if (lens?.requiresPrescription && !prescriptionNote) {
+    if (prescription && !prescriptionNote) {
       return {
         ok: false,
         code: 'PRESCRIPTION_REQUIRED',
-        message: `Falta la fórmula para el lente "${lens.nameEs}" de ${product.name}.`,
+        message: `Falta la fórmula médica de ${product.name}.`,
       }
     }
 
@@ -96,10 +114,11 @@ export async function createGuestOrder(
     }
     requestedByProduct.set(product.id, total)
 
-    lines.push({ product, quantity: item.quantity, lens, prescriptionNote })
+    lines.push({ product, quantity: item.quantity, lens, prescription, prescriptionNote })
   }
 
-  const unitPrice = (l: Line) => l.product.priceCop + (l.lens?.extraPriceCop ?? 0)
+  const unitPrice = (l: Line) =>
+    l.product.priceCop + (l.lens?.extraPriceCop ?? 0) + (l.prescription?.extraPriceCop ?? 0)
   const amountCop = lines.reduce((sum, l) => sum + unitPrice(l) * l.quantity, 0)
 
   // Transacción: crea orden + líneas de forma atómica.
@@ -123,6 +142,9 @@ export async function createGuestOrder(
           lensOptionId: l.lens?.id ?? null,
           lensOptionName: l.lens?.nameEs ?? null,
           lensExtraPriceCop: l.lens?.extraPriceCop ?? 0,
+          prescriptionOptionId: l.prescription?.id ?? null,
+          prescriptionOptionName: l.prescription?.nameEs ?? null,
+          prescriptionExtraPriceCop: l.prescription?.extraPriceCop ?? 0,
           prescriptionNote: l.prescriptionNote,
         }),
       ),

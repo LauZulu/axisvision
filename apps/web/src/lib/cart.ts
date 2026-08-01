@@ -6,28 +6,33 @@ import { useSyncExternalStore } from 'react'
 // cantidad + datos de presentación; los PRECIOS reales los calcula el servidor
 // desde la DB al crear la orden (lo del carrito es informativo).
 //
-// La línea se identifica por producto + LENTE elegido: el mismo modelo con dos
-// lentes distintos son dos líneas separadas (`lineId`).
+// La línea se identifica por producto + LENTE + FÓRMULA: el mismo modelo con
+// dos configuraciones distintas son dos líneas separadas (`lineId`).
 export type CartItem = {
   productId: string
   slug: string
   name: string
-  /** Precio unitario mostrado = producto + extra del lente. */
+  /** Precio unitario mostrado = producto + extra del lente + extra de fórmula. */
   priceCop: number
   quantity: number
   image: { key: string; url: string | null }
-  /** Lente elegido. null = el de fábrica (o catálogo de lentes no disponible). */
+  /** Tipo de lente elegido. null = el de fábrica (o catálogo no disponible). */
   lens: { id: string; name: string; extraPriceCop: number } | null
-  /** Fórmula médica cuando el lente la exige. */
+  /**
+   * Complemento de fórmula médica, independiente del tipo de lente.
+   * null = el cliente NO pidió graduación.
+   */
+  prescription?: { id: string; name: string; extraPriceCop: number } | null
+  /** Datos de la fórmula (se piden en el checkout, no en la ficha). */
   prescriptionNote?: string | null
 }
 
 const STORAGE_KEY = 'axis-cart'
 const MAX_QTY = 20
 
-/** Identidad de una línea del carrito: producto + lente. */
-export function lineId(item: Pick<CartItem, 'productId' | 'lens'>): string {
-  return `${item.productId}::${item.lens?.id ?? 'default'}`
+/** Identidad de una línea del carrito: producto + lente + fórmula. */
+export function lineId(item: Pick<CartItem, 'productId' | 'lens' | 'prescription'>): string {
+  return `${item.productId}::${item.lens?.id ?? 'default'}::${item.prescription?.id ?? 'norx'}`
 }
 
 let items: CartItem[] = []
@@ -41,11 +46,11 @@ function load() {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     const parsed = raw ? (JSON.parse(raw) as CartItem[]) : []
     if (Array.isArray(parsed)) {
-      // `lens` no existía en la versión anterior del carrito: se normaliza a null
-      // para no romper a quien tenga un carrito viejo guardado.
+      // `lens` y `prescription` no existían en versiones anteriores del carrito:
+      // se normalizan a null para no romper a quien tenga uno viejo guardado.
       items = parsed
         .filter((i) => i && i.productId && i.quantity > 0)
-        .map((i) => ({ ...i, lens: i.lens ?? null }))
+        .map((i) => ({ ...i, lens: i.lens ?? null, prescription: i.prescription ?? null }))
     }
   } catch {
     items = []

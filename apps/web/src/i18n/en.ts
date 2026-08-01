@@ -232,11 +232,11 @@ export const en = {
       privacy: 'We only use it to notify you about this model. You can unsubscribe in one click.',
     },
     lens: {
-      title: 'Choose your lens',
-      help: 'Your AXIS ship with polarized sun lenses. Prefer something else? We fit it with our partner optician before shipping.',
+      title: 'Lens',
       included: 'Included',
-      prescriptionNotice: "We'll ask for your prescription at checkout.",
-      totalWith: 'Total with {lens}:',
+      prescriptionNotice: "We'll ask for your prescription details at checkout.",
+      prescriptionForced: 'This lens is only fitted with a prescription.',
+      total: 'Total',
     },
     products: {
       onyx: {
@@ -496,7 +496,11 @@ export const en = {
     },
     lenses: {
       title: 'Lens options',
-      subtitle: 'What the customer can choose at checkout. The stock lens is free.',
+      subtitle: 'What the customer configures at checkout: which lens, and whether it carries their prescription.',
+      kind: 'What it is',
+      kindLens: 'Lens type',
+      kindPrescription: 'Prescription add-on',
+      kindHint: 'The customer picks ONE lens type. The prescription is a separate checkbox that adds on top of it.',
       name: 'Name (ES)',
       nameEn: 'Name (EN)',
       descriptionEs: 'Description (ES)',

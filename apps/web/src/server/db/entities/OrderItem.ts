@@ -53,7 +53,21 @@ export class AxisOrderItem {
   @Column({ type: 'integer', default: 0 })
   lensExtraPriceCop!: number
 
-  // Datos de la fórmula médica cuando la opción los exige (texto libre del
+  // --- Complemento de fórmula médica (independiente del tipo de lente) ---
+
+  // Opción `kind: 'prescription'` aplicada. null = se compró sin fórmula.
+  @Column({ type: 'uuid', nullable: true })
+  prescriptionOptionId!: string | null
+
+  // Nombre en español del complemento al momento de comprar.
+  @Column({ type: 'varchar', length: 120, nullable: true })
+  prescriptionOptionName!: string | null
+
+  // Parte de `unitPriceCop` que corresponde a montar la fórmula.
+  @Column({ type: 'integer', default: 0 })
+  prescriptionExtraPriceCop!: number
+
+  // Datos de la fórmula médica cuando la línea la lleva (texto libre del
   // cliente: OD/OI, esfera, cilindro, eje, adición…).
   @Column({ type: 'text', nullable: true })
   prescriptionNote!: string | null
