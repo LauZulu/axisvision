@@ -23,6 +23,7 @@ import { renderAdminNewOrder } from './adminNewOrder'
 import { renderAdminOutOfStock } from './adminOutOfStock'
 import { renderAdminWaitlistDigest } from './adminWaitlistDigest'
 import { renderAdminPasswordReset } from './adminPasswordReset'
+import { renderAdminPaymentAlert } from './adminPaymentAlert'
 
 export {
   renderOrderPaid,
@@ -41,6 +42,7 @@ export {
   renderAdminOutOfStock,
   renderAdminWaitlistDigest,
   renderAdminPasswordReset,
+  renderAdminPaymentAlert,
 }
 
 export type TemplateGroup = 'Compra' | 'Reserva' | 'Interno'
@@ -168,6 +170,13 @@ export const TEMPLATES: TemplateEntry[] = [
     group: 'Interno',
     trigger: 'Cron semanal',
     preview: () => renderAdminWaitlistDigest(S.SAMPLE_ADMIN_DIGEST),
+  },
+  {
+    key: 'admin-payment-alert',
+    title: 'Alerta de pago',
+    group: 'Interno',
+    trigger: 'Pago aprobado que no encaja con el pedido (cobro duplicado, monto raro)',
+    preview: () => renderAdminPaymentAlert(S.SAMPLE_ADMIN_PAYMENT_ALERT),
   },
   {
     key: 'admin-password-reset',

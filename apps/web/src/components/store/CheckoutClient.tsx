@@ -8,7 +8,7 @@ import { Icon } from '../ui/Icon'
 import { useDict } from '../../i18n/useDict'
 import { formatCop, type ProductDTO } from '../../lib/products'
 import { resolveProductSrc } from '../../lib/productImages'
-import { useCart, clearCart, lineId, type CartItem } from '../../lib/cart'
+import { useCart, markCartPendingOrder, lineId, type CartItem } from '../../lib/cart'
 import {
   defaultLens,
   lensName,
@@ -235,8 +235,11 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
         setSubmitting(false)
         return
       }
-      // Orden creada: si venía del carrito, vaciarlo antes de salir a Wompi.
-      if (!buyNowSlug) clearCart()
+      // El carrito NO se vacía aquí: solo se marca cuál salió a pagar. Vaciarlo
+      // antes de que el pago se apruebe deja sin nada a quien reciba un rechazo,
+      // y Wompi no permite reutilizar una referencia ya usada. Lo vacía la
+      // página de resultado cuando el pago queda aprobado.
+      if (!buyNowSlug) markCartPendingOrder(pay.reference)
       setPayment(pay)
     } catch {
       setError(c.errorGeneric)

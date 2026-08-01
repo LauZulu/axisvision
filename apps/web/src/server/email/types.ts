@@ -145,3 +145,19 @@ export type AdminPasswordResetData = {
   /** IP desde donde se pidió, para que se note si no fue el dueño de la cuenta. */
   requestIp?: string | null
 }
+
+/**
+ * Alerta interna cuando un pago no encaja con el pedido. Los tres casos en los
+ * que hay dinero real de por medio y el sistema no puede decidir solo.
+ */
+export type AdminPaymentAlertData = {
+  kind: 'double_charge' | 'amount_mismatch' | 'approved_on_failed'
+  reference: string
+  orderStatus: string
+  transactionId: string
+  /** Id de transacción que el pedido ya tenía guardado, si había otro. */
+  storedTransactionId?: string | null
+  expectedCop: number
+  receivedCop: number
+  adminUrl: string
+}

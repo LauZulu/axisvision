@@ -117,6 +117,39 @@ export function clearCart() {
   emit()
 }
 
+// --- Carrito pendiente de pago ---
+//
+// El carrito NO se vacía al salir hacia Wompi, sino al confirmarse el pago. Si
+// se vaciara antes, un pago rechazado dejaría al cliente de vuelta en la tienda
+// con el carrito en blanco y su selección perdida — y como Wompi no deja
+// reutilizar una referencia ya usada, tendría que rehacer la compra entera.
+//
+// Se guarda la referencia del pedido que salió a pagar para vaciar el carrito
+// solo si es ESE el que se aprueba (una compra por "Comprar ahora" no debe
+// tocar un carrito que el cliente dejó armado para después).
+
+const PENDING_KEY = 'axis-pending-order'
+
+/** Marca que este carrito salió a pagar con esa referencia. */
+export function markCartPendingOrder(reference: string) {
+  try {
+    window.localStorage.setItem(PENDING_KEY, reference)
+  } catch {
+    /* modo privado o almacenamiento lleno: el carrito simplemente no se vacía solo */
+  }
+}
+
+/** Vacía el carrito si la referencia aprobada es la que salió a pagar. */
+export function clearCartIfPaid(reference: string) {
+  try {
+    if (window.localStorage.getItem(PENDING_KEY) !== reference) return
+    window.localStorage.removeItem(PENDING_KEY)
+  } catch {
+    return
+  }
+  clearCart()
+}
+
 function subscribe(listener: () => void) {
   listeners.add(listener)
   return () => listeners.delete(listener)

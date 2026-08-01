@@ -9,6 +9,7 @@
  */
 import type {
   AdminNewOrderData,
+  AdminPaymentAlertData,
   AdminOutOfStockData,
   AdminPasswordResetData,
   AdminWaitlistDigestData,
@@ -162,4 +163,15 @@ export const SAMPLE_ADMIN_RESET: AdminPasswordResetData = {
   resetUrl: siteUrl('/admin/clave?token=demo-token'),
   expiresMinutes: 30,
   requestIp: '186.29.14.203',
+}
+
+export const SAMPLE_ADMIN_PAYMENT_ALERT: AdminPaymentAlertData = {
+  kind: 'double_charge',
+  reference: SAMPLE_ORDER.reference,
+  orderStatus: 'paid',
+  transactionId: '113344-1690000000-55555',
+  storedTransactionId: '113344-1689999000-44444',
+  expectedCop: SAMPLE_ORDER.amountCop,
+  receivedCop: SAMPLE_ORDER.amountCop,
+  adminUrl: siteUrl('/admin/pedidos'),
 }

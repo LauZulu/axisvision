@@ -74,11 +74,19 @@ export async function getAllProducts(): Promise<ProductDTO[]> {
   return rows.map((p) => toDTO(p, counts.get(p.id) ?? 0))
 }
 
+/**
+ * Producto por slug para la TIENDA (ficha pública y `GET /api/products/[slug]`).
+ *
+ * Filtra por `active` a propósito: sin eso, el interruptor de visibilidad del
+ * admin solo escondía el producto del listado, y un modelo despublicado seguía
+ * sirviéndose entero —precio, fotos y copy— a quien entrara por la URL directa.
+ * El admin no pasa por aquí: edita con `getProductById`, que sí ve los ocultos.
+ */
 export async function getProductBySlug(slug: string): Promise<ProductDTO | null> {
   const db = await getDb()
   const p = await db
     .getRepository(AxisProduct)
-    .findOne({ where: { slug }, relations: { images: true } })
+    .findOne({ where: { slug, active: true }, relations: { images: true } })
   return p ? toDTO(p) : null
 }
 
