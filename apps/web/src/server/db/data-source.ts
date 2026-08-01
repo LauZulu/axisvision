@@ -15,6 +15,7 @@ import { InventoryAndLensOptions1720000000002 } from './migrations/1720000000002
 import { ImageLensVariants1720000000003 } from './migrations/1720000000003-ImageLensVariants'
 import { StockAlerts1720000000004 } from './migrations/1720000000004-StockAlerts'
 import { LensPrescriptionAddon1720000000005 } from './migrations/1720000000005-LensPrescriptionAddon'
+import { OrderIdempotency1720000000006 } from './migrations/1720000000006-OrderIdempotency'
 
 export const ENTITIES = [
   AxisUser,
@@ -57,6 +58,7 @@ export function buildDataSource(): DataSource {
       ImageLensVariants1720000000003,
       StockAlerts1720000000004,
       LensPrescriptionAddon1720000000005,
+      OrderIdempotency1720000000006,
     ],
     migrationsTableName: 'axis_migrations',
     // Resiliencia del pool: keepAlive evita que conexiones ociosas mueran en

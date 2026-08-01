@@ -31,6 +31,15 @@ export class AxisOrder {
   @Column({ type: 'varchar', length: 64 })
   reference!: string
 
+  /**
+   * Clave que manda el navegador para que un doble clic en "pagar" no cree dos
+   * pedidos. Única (los NULL no chocan entre sí en Postgres); nula en los
+   * pedidos anteriores a la migración `...006`.
+   */
+  @Index({ unique: true })
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  idempotencyKey!: string | null
+
   @Index()
   @Column({ type: 'uuid', nullable: true })
   userId!: string | null

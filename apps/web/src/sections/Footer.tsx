@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { TreeLogo } from '../components/ui/TreeLogo'
 import { useDict } from '../i18n/useDict'
 import { useScrollTo } from '../lib/scrollContext'
@@ -16,7 +17,22 @@ export function Footer() {
         <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5 text-gold">
-              <TreeLogo className="h-8 w-auto" />
+              {/* Puerta del panel: el árbol del pie es la única entrada a /admin sin
+                  teclear la URL. Para el cliente es el sello de marca de siempre; para
+                  el equipo, un toque. El mismo href sirve con y sin sesión — el
+                  middleware manda a /admin/login si no hay cookie de admin. El
+                  pseudo-elemento `after` agranda el área táctil a ~48px sin mover el
+                  layout (el logo mide 32px, muy poco para un dedo), y `prefetch={false}`
+                  evita que cada visitante que llega al pie dispare una petición a /admin. */}
+              <Link
+                href="/admin"
+                prefetch={false}
+                aria-label={t.footer.adminAccess}
+                title={t.footer.adminAccess}
+                className="relative inline-flex rounded-sm transition-opacity after:absolute after:-inset-x-2 after:-inset-y-3 after:content-[''] hover:opacity-70 focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-gold"
+              >
+                <TreeLogo className="h-8 w-auto" />
+              </Link>
               <span className="font-head text-sm tracking-[0.28em] text-warm-white">AXIS</span>
             </div>
             <p className="font-display mt-5 max-w-[28ch] text-xl text-warm-gray/80">

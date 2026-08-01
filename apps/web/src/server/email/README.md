@@ -87,6 +87,39 @@ de recuperación).
 Regla que se repite en todos: el envío ocurre **fuera** de la transacción de
 base de datos y con los errores contenidos. `sendEmail()` no lanza nunca.
 
+## Cómo se evita mandar el mismo correo dos veces
+
+Brevo acepta una **clave de idempotencia** dentro del objeto `headers` del
+cuerpo (`{"headers": {"idempotencyKey": "<uuid>"}}`). Con la misma clave no
+vuelve a enviar durante **30 minutos** y responde `duplicate_parameter`.
+
+`idempotencyKeyFrom(semilla)` (en `brevo.ts`) convierte un identificador estable
+—`pedido-pagado:<orderId>`, `reserva-disponible:<alertId>`— en un UUID v5
+determinista. Determinista es el punto: el reintento de un webhook produce la
+MISMA clave, así que Brevo descarta el segundo envío. Un UUID aleatorio no
+serviría de nada. `sendEmail()` trata el `duplicate_parameter` como éxito
+(`{ ok: true, duplicate: true }`): que no se enviara es exactamente lo buscado.
+
+Es la segunda línea de defensa. La primera es el claim atómico del webhook
+(`UPDATE … WHERE status = 'pending'`), que ya hace que solo una entrega procese
+el pedido.
+
+## Dos remitentes, a propósito
+
+Brevo **bloquea a un contacto por remitente**: quien se dé de baja de un correo
+deja de recibir los de ese buzón, no los de otro. Y Brevo añade la cabecera
+`List-Unsubscribe` a *todos* los correos, incluidos los transaccionales.
+
+Con un solo remitente eso significa que alguien que pulse "desuscribir" en un
+aviso de reserva dejaría de recibir la confirmación de pago de su propia compra
+—y reactivarlo a mano está prohibido por Brevo—. Por eso:
+
+- `BREVO_SENDER_EMAIL` → pedidos (`stream: 'transactional'`, el de por defecto)
+- `BREVO_LIST_SENDER_EMAIL` → reservas (`stream: 'list'`)
+
+Si no se define el segundo, se usa el primero: funciona, pero con el riesgo
+descrito. Conviene definirlo antes del primer envío real.
+
 ## Antes de enviar el primer correo
 
 1. **Cuenta de Brevo** y remitente `axisvision.co` verificado.

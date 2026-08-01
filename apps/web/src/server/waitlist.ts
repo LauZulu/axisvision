@@ -5,7 +5,7 @@ import { AxisProduct } from './db/entities/Product'
 import { AxisProductImage } from './db/entities/ProductImage'
 import { cdnUrl } from '../lib/cdn'
 import type { StockAlertDTO, StockAlertSourceDTO, StockAlertStatusDTO } from '../lib/waitlist'
-import { sendEmail, sendToAdmin } from './email/brevo'
+import { idempotencyKeyFrom, sendEmail, sendToAdmin } from './email/brevo'
 import { siteUrl } from './email/format'
 import {
   renderAdminOutOfStock,
@@ -160,7 +160,11 @@ async function sendSubscribeEmail(
     status === 'pending'
       ? renderWaitlistVerify({ ...base, verifyUrl: verifyUrl(token), expiresHours: VERIFY_EXPIRES_HOURS })
       : renderWaitlistConfirm(base)
-  await sendEmail({ email }, doc, ['reserva', status === 'pending' ? 'verificacion' : 'confirmacion'])
+  await sendEmail({ email }, doc, {
+    tags: ['reserva', status === 'pending' ? 'verificacion' : 'confirmacion'],
+    stream: 'list',
+    idempotencyKey: idempotencyKeyFrom(`reserva-alta:${token}`),
+  })
 }
 
 // ---------- Confirmación y baja ----------
@@ -187,7 +191,7 @@ export async function verifyStockAlert(token: string): Promise<boolean> {
         imageUrl: null,
         unsubscribeUrl: unsubscribeUrl(alert.token),
       }),
-      ['reserva', 'confirmacion'],
+      { tags: ['reserva', 'confirmacion'], stream: 'list' },
     )
   }
   return true
@@ -216,7 +220,7 @@ export async function unsubscribeStockAlert(token: string): Promise<boolean> {
         imageUrl: null,
         unsubscribeUrl: unsubscribeUrl(alert.token),
       }),
-      ['reserva', 'baja'],
+      { tags: ['reserva', 'baja'], stream: 'list' },
     )
   }
   return true
@@ -261,7 +265,14 @@ export async function notifyProductAvailable(productId: string): Promise<number>
             unitsLeft: product.stock,
             holdHours: null,
           }),
-          ['reserva', 'disponible'],
+          {
+            tags: ['reserva', 'disponible'],
+            stream: 'list',
+            // Determinista por reserva: si este aviso se dispara dos veces
+            // seguidas (inventario que baila, doble clic en el panel), Brevo
+            // descarta el segundo y nadie recibe el correo repetido.
+            idempotencyKey: idempotencyKeyFrom(`reserva-disponible:${alert.id}`),
+          },
         ),
       ),
     )
@@ -320,7 +331,10 @@ async function notifyAdminOutOfStock(productId: string): Promise<void> {
       waitingCount,
       adminUrl: siteUrl('/admin/inventario'),
     }),
-    ['inventario', 'agotado'],
+    {
+      tags: ['inventario', 'agotado'],
+      idempotencyKey: idempotencyKeyFrom(`inventario-agotado:${productId}`),
+    },
   )
 }
 

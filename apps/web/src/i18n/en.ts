@@ -294,6 +294,7 @@ export const en = {
     linksSupport: ['Warranty', 'FAQ', 'Contact'],
     rights: 'AXIS. All rights reserved.',
     registered: 'Registered trademark ®',
+    adminAccess: 'Admin access',
   },
 
   cart: {

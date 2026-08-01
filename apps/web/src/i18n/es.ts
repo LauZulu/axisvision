@@ -302,6 +302,7 @@ export const es = {
     linksSupport: ['Garantía', 'Preguntas', 'Contacto'],
     rights: 'AXIS. Todos los derechos reservados.',
     registered: 'Marca registrada ®',
+    adminAccess: 'Acceso administración',
   },
 
   cart: {

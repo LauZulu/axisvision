@@ -33,6 +33,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   En la DB `axis_product_image.imageKey` guarda la **clave S3**; el frontend usa la URL de CloudFront
 >   (`src/lib/cdn.ts`, `resolveProductSrc`). Verifica acceso con `pnpm s3:check`. **Falta CORS** en el
 >   bucket para que el navegador del admin haga PUT/DELETE (ver PLAN/README).
+> - **Doble clic al pagar (idempotencia del checkout):** el navegador genera un UUID por intento
+>   (`newAttemptId()` en `CheckoutClient`, guardado en `useRef` para que sobreviva a los re-render)
+>   y lo manda como `idempotencyKey`; `axis_order.idempotencyKey` tiene índice ÚNICO (migración
+>   `...006`) y `createGuestOrder()` devuelve el pedido existente en vez de crear otro (captura el
+>   `23505` para la carrera de dos peticiones simultáneas). Sin esto, dos clics = dos pedidos
+>   `pending` con dos referencias = posible doble cobro, doble descuento de stock y un correo de
+>   "compra sin terminar" a quien sí compró. Hay además un cerrojo `useRef` en el submit: el
+>   `disabled` por estado deja una ventana entre el clic y el re-render.
 > - **Checkout + Wompi (Fase 7, implementada — faltan llaves):** compra invitado con carrito
 >   localStorage (`src/lib/cart.ts`) o "Comprar ahora"; `POST /api/checkout` valida stock, crea
 >   `axis_order` `pending` con precios DESDE LA DB y responde parámetros FIRMADOS del Web Checkout
@@ -127,6 +135,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   (el inventario NO importa el correo; se pasa por el valor de retorno). Panel en
 >   `/admin/reservas` con botón "avisar ahora" (`POST /api/admin/reservas`) para el caso que la
 >   transición no cubre: gente apuntada con la tienda cerrada en modelos que ya tienen stock.
+>   **La baja NO se ejecuta en el GET**: `/api/reservas/baja` con GET solo redirige a
+>   `/reservas/baja`, una página con un botón que hace POST. Los escáneres de correo (Safe Links,
+>   antivirus corporativos) abren TODOS los enlaces de un mensaje; con la baja en el GET darían de
+>   baja en silencio a gente que nunca pulsó nada. El POST es además la forma que exige RFC 8058.
 >   Doble opt-in **apagado** por defecto (`WAITLIST_DOUBLE_OPT_IN=true` para encenderlo): con Brevo
 >   sin configurar dejaría a todos en `pending` para siempre.
 > - **Correo transaccional (Brevo, plantillas listas · envío PENDIENTE):** 17 plantillas HTML en
@@ -140,6 +152,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   (7, incl. fórmula médica y carrito abandonado), reserva/lista de espera (6) e internos (4).
 >   Reglas del medio: `<table>` + CSS inline, 600px, sin webfonts ni SVG ni `background-image`,
 >   siempre versión en texto plano, todo dato de fuera por `esc()`.
+>   **Idempotencia:** `sendEmail()` acepta `idempotencyKey` (cabecera documentada de Brevo, TTL 30
+>   min); `idempotencyKeyFrom('pedido-pagado:<id>')` da un UUID v5 determinista, así un reintento
+>   del webhook no manda dos comprobantes. **Dos remitentes:** Brevo bloquea al contacto POR
+>   REMITENTE y añade `List-Unsubscribe` también a los transaccionales, así que las reservas salen
+>   de `BREVO_LIST_SENDER_EMAIL` (`stream:'list'`) y los pedidos de `BREVO_SENDER_EMAIL` — con un
+>   solo buzón, quien se da de baja de un aviso pierde la confirmación de su propio pago.
 > - **Rutas:** landing `app/page.tsx`; tienda `app/tienda/**` (server, lee DB); admin `app/admin/**`
 >   (login + panel guardado por rol); reservas `app/reservas/gracias`; API en `app/api/**` (auth,
 >   products, admin, uploads/presign, checkout, reservas, wompi/webhook).

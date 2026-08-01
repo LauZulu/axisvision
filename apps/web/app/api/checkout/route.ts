@@ -29,6 +29,10 @@ const schema = z.object({
     )
     .min(1)
     .max(20),
+  // Identificador del intento de compra. Lo genera el navegador y lo repite en
+  // cada reenvío: es lo que hace que un doble clic devuelva el MISMO pedido en
+  // vez de crear otro con otra referencia (y otro cobro).
+  idempotencyKey: z.string().uuid().optional(),
 })
 
 export async function POST(req: Request) {

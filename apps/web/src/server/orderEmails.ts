@@ -3,7 +3,7 @@ import { getDb } from './db'
 import { AxisOrder } from './db/entities/Order'
 import { AxisOrderItem } from './db/entities/OrderItem'
 import { AxisProductUnit } from './db/entities/ProductUnit'
-import { sendEmail, sendToAdmin } from './email/brevo'
+import { idempotencyKeyFrom, sendEmail, sendToAdmin } from './email/brevo'
 import { siteUrl } from './email/format'
 import {
   renderAdminNewOrder,
@@ -86,7 +86,9 @@ export async function sendOrderPaidEmails(orderId: string): Promise<void> {
     await sendEmail(
       { email: order.customerEmail, name: order.customerName },
       renderOrderPaid(data),
-      ['pedido', 'pagado'],
+      // Clave determinista por pedido: aunque el webhook de Wompi llegue dos
+      // veces y el claim atómico fallara, Brevo no manda dos comprobantes.
+      { tags: ['pedido', 'pagado'], idempotencyKey: idempotencyKeyFrom(`pedido-pagado:${orderId}`) },
     )
 
     // Seriales de las unidades físicas que salieron con este pedido: es lo que
@@ -104,7 +106,7 @@ export async function sendOrderPaidEmails(orderId: string): Promise<void> {
         adminUrl: siteUrl('/admin/pedidos'),
         soldUnits: units.map((u) => u.code),
       }),
-      ['pedido', 'interno'],
+      { tags: ['pedido', 'interno'], idempotencyKey: idempotencyKeyFrom(`pedido-interno:${orderId}`) },
     )
 
     const prescriptionLines = data.lines.filter((l) => l.prescriptionNote)
@@ -117,7 +119,7 @@ export async function sendOrderPaidEmails(orderId: string): Promise<void> {
           lines: prescriptionLines,
           uploadUrl: null,
         }),
-        ['pedido', 'formula'],
+        { tags: ['pedido', 'formula'], idempotencyKey: idempotencyKeyFrom(`pedido-formula:${orderId}`) },
       )
     }
   } catch (err) {
@@ -138,7 +140,7 @@ export async function sendOrderFailedEmail(orderId: string, reason?: string | nu
         reason: reason ?? null,
         retryUrl: siteUrl('/tienda/carrito'),
       }),
-      ['pedido', 'rechazado'],
+      { tags: ['pedido', 'rechazado'], idempotencyKey: idempotencyKeyFrom(`pedido-rechazado:${orderId}`) },
     )
   } catch (err) {
     console.error('[correo] fallo enviando el correo de pago rechazado:', err)
@@ -153,7 +155,7 @@ export async function sendOrderCancelledEmail(orderId: string): Promise<void> {
     await sendEmail(
       { email: loaded.order.customerEmail, name: loaded.order.customerName },
       renderOrderCancelled(loaded.data),
-      ['pedido', 'anulado'],
+      { tags: ['pedido', 'anulado'], idempotencyKey: idempotencyKeyFrom(`pedido-anulado:${orderId}`) },
     )
   } catch (err) {
     console.error('[correo] fallo enviando el correo de anulación:', err)

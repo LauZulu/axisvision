@@ -40,6 +40,35 @@ type CheckoutLine = {
   prescription?: { id: string; name: string; extraPriceCop: number } | null
 }
 
+/**
+ * UUID v4 para identificar el intento de compra.
+ *
+ * `crypto.randomUUID()` solo existe en contexto seguro: en https y en localhost
+ * está, pero abriendo el dev por la IP de la red local (http://192.168.x.x) no,
+ * y ahí reventaría el checkout entero. El respaldo produce un UUID válido con
+ * `getRandomValues` o, en última instancia, con `Math.random` — que para
+ * distinguir dos clics del mismo formulario sobra.
+ */
+function newAttemptId(): string {
+  try {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID()
+    }
+  } catch {
+    /* contexto no seguro: sigue al respaldo */
+  }
+  const bytes = new Uint8Array(16)
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    crypto.getRandomValues(bytes)
+  } else {
+    for (let i = 0; i < 16; i += 1) bytes[i] = Math.floor(Math.random() * 256)
+  }
+  bytes[6] = (bytes[6] & 0x0f) | 0x40 // versión 4
+  bytes[8] = (bytes[8] & 0x3f) | 0x80 // variante RFC 4122
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+}
+
 const inputCls =
   'w-full rounded-md border border-line bg-carbon-900 px-3 py-2.5 text-warm-white outline-none focus:border-gold/60'
 
@@ -68,6 +97,21 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
   const [buyNowLine, setBuyNowLine] = useState<CheckoutLine | null>(null)
   const [loadingItem, setLoadingItem] = useState(Boolean(buyNowSlug))
   const [submitting, setSubmitting] = useState(false)
+  /**
+   * Cerrojo contra el doble clic. `submitting` es estado: entre el primer clic
+   * y el re-render que deshabilita el botón hay una ventana en la que un
+   * segundo clic ve todavía `submitting === false` y dispara otra compra. Un
+   * ref se actualiza en el acto, sin esperar al render.
+   */
+  const sending = useRef(false)
+  /**
+   * Identidad de ESTE intento de compra. El servidor la usa como clave de
+   * idempotencia: si el mismo formulario se envía dos veces (doble clic,
+   * reintento de red, botón atrás), devuelve el pedido que ya creó en vez de
+   * uno nuevo. Se genera una sola vez por montaje del checkout.
+   */
+  const attemptId = useRef<string>('')
+  if (!attemptId.current) attemptId.current = newAttemptId()
   const [payment, setPayment] = useState<PaymentParams | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -136,7 +180,8 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (lines.length === 0) return
+    if (lines.length === 0 || sending.current) return
+    sending.current = true
     setSubmitting(true)
     setError(null)
     try {
@@ -155,6 +200,7 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
             region: form.region.trim(),
             notes: form.notes.trim() || undefined,
           },
+          idempotencyKey: attemptId.current,
           items: lines.map((l) => ({
             productId: l.productId,
             quantity: l.quantity,
@@ -177,6 +223,7 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
                 ? c.errorPrescription
                 : (data?.error?.message ?? c.errorGeneric),
         )
+        sending.current = false
         setSubmitting(false)
         return
       }
@@ -184,6 +231,7 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
       const pay: PaymentParams | null = data?.order?.payment ?? null
       if (!pay) {
         setError(c.errorPaymentSetup)
+        sending.current = false
         setSubmitting(false)
         return
       }
@@ -192,6 +240,7 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
       setPayment(pay)
     } catch {
       setError(c.errorGeneric)
+      sending.current = false
       setSubmitting(false)
     }
   }
