@@ -6,6 +6,7 @@ import { TreeLogo } from '../components/ui/TreeLogo'
 import { Img } from '../components/ui/Img'
 import { empaqueAbierto as capabilitiesImg } from '../lib/siteImages'
 import { SectionHeading } from '../components/ui/SectionHeading'
+import { Reveal } from '../components/ui/Reveal'
 import { useDict } from '../i18n/useDict'
 import { EASE_OUT_EXPO } from '../lib/motion'
 
@@ -30,12 +31,23 @@ export function Capabilities() {
   return (
     <section id="capabilities" className="bg-[#f5f3ee] py-24 text-[#0a0a0a] md:py-36">
       <div className="container-axis">
-        <SectionHeading
-          light
-          eyebrow={t.capabilities.eyebrow}
-          title={t.capabilities.title}
-          intro={t.capabilities.intro}
-        />
+        {/* Manifiesto. Tenía sección propia ("¿Qué es AXIS?") con una rejilla de
+            cuatro pilares debajo, pero la frase enumera justo las capacidades
+            que se listan aquí abajo —"ven, escuchan, traducen y se gradúan"—,
+            así que la sección entera se fusionó en esta. */}
+        <Reveal>
+          <p className="font-display mx-auto max-w-[28ch] text-center text-[clamp(1.8rem,4vw,3rem)] leading-[1.12] text-[#0a0a0a]">
+            {t.capabilities.statement}
+          </p>
+        </Reveal>
+
+        <div className="mt-16 border-t border-[#0a0a0a]/10 pt-16">
+          <SectionHeading
+            light
+            eyebrow={t.capabilities.eyebrow}
+            title={t.capabilities.title}
+            intro={t.capabilities.intro}
+          />
 
         <div className="mt-14 grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12">
           {/* Lista de capacidades seleccionables */}
@@ -126,14 +138,15 @@ export function Capabilities() {
           </div>
         </div>
 
-        <div className="mt-12">
-          <Link
-            href="/tienda"
-            className="btn-axis !border-[#0a0a0a]/30 !text-[#0a0a0a] hover:!text-[#f5f3ee]"
-          >
-            {t.capabilities.cta}
-            <Icon name="arrow" size={18} />
-          </Link>
+          <div className="mt-12">
+            <Link
+              href="/tienda"
+              className="btn-axis !border-[#0a0a0a]/30 !text-[#0a0a0a] hover:!text-[#f5f3ee]"
+            >
+              {t.capabilities.cta}
+              <Icon name="arrow" size={18} />
+            </Link>
+          </div>
         </div>
       </div>
     </section>

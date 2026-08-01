@@ -3,9 +3,11 @@ import Link from 'next/link'
 import { useReducedMotion, useScroll } from 'framer-motion'
 import { TreeLogo } from '../components/ui/TreeLogo'
 import { Icon } from '../components/ui/Icon'
+import { Img } from '../components/ui/Img'
 import { Reveal } from '../components/ui/Reveal'
 import { Magnetic } from '../components/ui/Magnetic'
 import { MorphoSheen } from '../components/ui/MorphoSheen'
+import { gafasDeFrente as cierreImg } from '../lib/siteImages'
 import { useDict } from '../i18n/useDict'
 import { whatsappLink } from '../config/brand'
 
@@ -21,8 +23,18 @@ export function ContactCommercial() {
     <section
       ref={ref}
       id="contact"
-      className="relative overflow-hidden border-t border-line py-28 md:py-40"
+      className="relative isolate overflow-hidden border-t border-line py-28 md:py-40"
     >
+      {/* Foto de cierre a sangre. La heredó de la banda "Tuyas hoy" que se
+          retiró: aquel bloque repetía este mismo mensaje y este mismo botón
+          unas secciones antes, así que el momento de compra se cuenta una sola
+          vez y se queda con la imagen. Decorativa (alt=""): el mensaje va en el
+          titular. */}
+      <div aria-hidden className="absolute inset-0 -z-20">
+        <Img picture={cierreImg} alt="" fill sizes="100vw" className="object-cover object-center" />
+      </div>
+      <div aria-hidden className="closing-scrim absolute inset-0 -z-10" />
+
       {/* Sello árbol (dibujado por el scroll) + aura Morpho de fondo */}
       <TreeLogo
         progress={reduce ? undefined : scrollYProgress}

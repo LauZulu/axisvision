@@ -8,31 +8,28 @@ import { fadeUp, inView, stagger } from '../lib/motion'
 import {
   modelo06 as modelo06Mujer,
   modelo01,
-  modelo02,
   modelo05,
-  modelo03,
   modelo06Ciclista as ciclista,
   modelo04,
 } from '../lib/siteImages'
 
 /**
- * Galería de uso real. Solo fotos de gente llevando AXIS, que es lo que promete
- * el copy de la sección ("Personas reales llevando AXIS. Así se verá contigo").
- * Se quitaron las cuatro naturalezas muertas del estuche —tres eran la misma
- * idea, el estuche sobre una mesa de café— que además dejaban esta sección como
- * la más larga de la página con diferencia.
+ * Galería de uso real: cinco fotos, cada una con una situación distinta. Solo
+ * gente llevando AXIS, que es lo que promete el copy ("Personas reales llevando
+ * AXIS. Así se verá contigo"). Se fueron las cuatro naturalezas muertas del
+ * estuche —tres eran la misma idea, el estuche sobre una mesa de café— y dos
+ * fotos que repetían situación de otras: era la sección más larga con diferencia.
+ * Al añadir fotos, que aporten un contexto que no esté ya.
  *
  * `alt` es el índice dentro de t.alt.lifestyle: va explícito para que quitar o
  * reordenar fotos no desplace los textos alternativos.
  */
 const GALLERY = [
-  { pic: modelo06Mujer, alt: 0 },
-  { pic: modelo01, alt: 1 },
-  { pic: modelo02, alt: 3 },
-  { pic: modelo05, alt: 4 },
-  { pic: modelo03, alt: 6 },
-  { pic: ciclista, alt: 7 },
-  { pic: modelo04, alt: 9 },
+  { pic: modelo06Mujer, alt: 0 }, // mujer, gafas de sol, exterior
+  { pic: modelo01, alt: 1 }, // mujer, lente transparente, cafetería
+  { pic: modelo05, alt: 4 }, // hombre, gafas de sol, balcón
+  { pic: ciclista, alt: 7 }, // deporte, lente iridiscente
+  { pic: modelo04, alt: 9 }, // hombre, gafas de sol, restaurante
 ]
 
 export function Lifestyle() {

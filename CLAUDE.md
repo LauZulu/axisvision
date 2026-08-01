@@ -148,7 +148,9 @@ apps/web/src/
                    SectionHeading, Img, ImageCarousel
   components/store/  Tienda (ProductDetail, LensPicker, CartView, CheckoutClient…)
   components/admin/  Panel (ProductForm, InventoryView, LensOptionsView…)
-  sections/        Una por sección de la landing (Nav, Hero, WhatIsAxis, …, Footer)
+  sections/        Una por sección de la landing (Nav, Hero, StoreRail,
+                   ProductShowcase, Capabilities, Lifestyle, FaqCommercial,
+                   ContactCommercial, Footer)
   i18n/            es.ts, en.ts, index.ts (init i18next), useDict.ts
   lib/             SmoothScroll, motion, cart, products, lenses, cdn, siteImages
   config/          brand.ts (WhatsApp, correo, catálogo)
@@ -227,13 +229,20 @@ aclare la crema; el tema claro lleva su propio refuerzo porque el titular es car
 y cae justo sobre el producto oscuro de la foto. Si cambias la foto, revisa el
 contraste del titular **en los dos temas** antes de dar por bueno el cambio.
 
-**Sin repetir capacidades:** cada cosa que AXIS hace se cuenta **una sola vez**, en
-`Capabilities` (los 8 ítems de `t.capabilities.items`). `WhatIsAxis` es solo el
-statement — su rejilla de 4 pilares se retiró porque los cuatro estaban ya en esa
-lista (dos con el mismo título) y la propia frase los enumera. `ProductShowcase`
-habla solo de materiales y hechura, sin cámara ni audio. `Lifestyle` son 7 fotos de
-gente llevando AXIS, que es lo que promete su copy. Al añadir copy, comprueba que no
-vuelve a decirse lo mismo en otra sección: la página ya venía de 11,5 pantallas.
+**Nada se cuenta dos veces** (la landing venía de 11,5 pantallas de scroll y bajó a
+9,2). Siete secciones: hero → vitrina → diseño → manifiesto+capacidades → lifestyle →
+FAQ → cierre. Dos reglas, detalladas en el comentario de `app/page.tsx`:
+
+- Cada cosa que AXIS **hace** vive solo en `Capabilities` (los 8 `t.capabilities.items`),
+  encabezada por el manifiesto (`t.capabilities.statement`). Se retiró la sección
+  `WhatIsAxis`: sus 4 pilares estaban ya en esa lista —dos con el mismo título— y la
+  propia frase los enumera. `ProductShowcase` habla solo de materiales y hechura.
+- El **momento de compra** vive solo en `ContactCommercial`. Se retiró
+  `ShowcaseBanner` ("Tuyas hoy"), que repetía ese cierre y caía pegado al CTA de
+  `Capabilities`; su foto pasó al cierre como fondo (velo `.closing-scrim`). Entre
+  nav, hero, capacidades, cierre y `BuyBar` ya sobran CTAs: no añadas otra sección-CTA.
+- `Lifestyle` son 5 fotos, cada una con una situación distinta y **solo gente
+  llevando AXIS** (es lo que promete su copy). Si añades, que aporte contexto nuevo.
 
 **Revelados con `whileInView` (trampa real):** el trigger NUNCA va en un elemento
 que arranca desplazado fuera del recorte de su padre. El `IntersectionObserver`

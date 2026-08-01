@@ -252,6 +252,43 @@
       );
   }
 
+  /* Velo del cierre — misma idea que .hero-scrim pero simétrico: aquí la foto
+     tiene que fundirse por arriba con las preguntas y por abajo con el footer,
+     no dejar legible una barra de nav. También sobre --color-carbon-900, que se
+     invierte por tema. */
+  .closing-scrim {
+    background:
+      radial-gradient(
+        ellipse 85% 65% at 50% 50%,
+        color-mix(in srgb, var(--color-carbon-900) 72%, transparent) 0%,
+        transparent 85%
+      ),
+      linear-gradient(
+        to bottom,
+        var(--color-carbon-900) 0%,
+        color-mix(in srgb, var(--color-carbon-900) 55%, transparent) 30%,
+        color-mix(in srgb, var(--color-carbon-900) 55%, transparent) 70%,
+        var(--color-carbon-900) 100%
+      );
+  }
+
+  /* En claro la foto es crema y el titular carbón: hace falta más velo. */
+  :root[data-theme='light'] .closing-scrim {
+    background:
+      radial-gradient(
+        ellipse 90% 70% at 50% 50%,
+        color-mix(in srgb, var(--color-carbon-900) 82%, transparent) 0%,
+        transparent 88%
+      ),
+      linear-gradient(
+        to bottom,
+        var(--color-carbon-900) 0%,
+        color-mix(in srgb, var(--color-carbon-900) 68%, transparent) 30%,
+        color-mix(in srgb, var(--color-carbon-900) 68%, transparent) 70%,
+        var(--color-carbon-900) 100%
+      );
+  }
+
   /* Botón secundario — texto + subrayado dorado */
   .btn-ghost {
     display: inline-flex;

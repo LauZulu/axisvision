@@ -8,7 +8,6 @@ export const en = {
     productShowcase: 'AXIS clear-lens glasses resting on their leather case, lit with warm gold',
     capabilities: 'AXIS glasses next to their premium leather case on a light background',
     packaging: 'Open AXIS leather case: premium presentation',
-    frontBanner: 'Front view of the AXIS glasses on a light surface',
     lifestyle: [
       'Woman wearing AXIS sunglasses in front of a blossoming tree',
       'Woman using clear-lens AXIS glasses at a café',
@@ -52,10 +51,6 @@ export const en = {
     trust: ['Secure Wompi checkout', '6-month warranty', 'Home delivery'],
   },
 
-  banner: {
-    title: 'Yours today.',
-    cta: 'Buy now',
-  },
 
   storeRail: {
     eyebrow: 'Available now',
@@ -68,11 +63,6 @@ export const en = {
     note: 'Secure checkout · 6-month warranty · Home delivery',
   },
 
-  what: {
-    eyebrow: 'What is AXIS?',
-    statement:
-      'AXIS are glasses that see, hear, translate and adapt to your prescription — with the intelligence of AI and the design of a luxury object.',
-  },
 
   product: {
     eyebrow: 'Design',
@@ -88,6 +78,8 @@ export const en = {
   },
 
   capabilities: {
+    statement:
+      'AXIS are glasses that see, hear, translate and adapt to your prescription — with the intelligence of AI and the design of a luxury object.',
     eyebrow: 'Intelligence',
     title: 'Everything AXIS does for you.',
     intro: 'Tap each capability and discover it.',

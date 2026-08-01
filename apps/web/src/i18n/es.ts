@@ -10,7 +10,6 @@ export const es = {
       'Gafas AXIS de lente transparente sobre su estuche de cuero, con iluminación dorada',
     capabilities: 'Gafas AXIS junto a su estuche de cuero premium sobre fondo claro',
     packaging: 'Estuche de cuero AXIS abierto: presentación premium',
-    frontBanner: 'Vista frontal de las gafas AXIS sobre una superficie clara',
     lifestyle: [
       'Mujer con gafas de sol AXIS frente a un árbol en flor',
       'Mujer usando gafas AXIS de lente transparente en una cafetería',
@@ -54,10 +53,6 @@ export const es = {
     trust: ['Pago seguro con Wompi', '6 meses de garantía', 'Envío a domicilio'],
   },
 
-  banner: {
-    title: 'Tuyas hoy.',
-    cta: 'Comprar ahora',
-  },
 
   storeRail: {
     eyebrow: 'Disponibles ya',
@@ -70,13 +65,6 @@ export const es = {
     note: 'Pago seguro · Garantía 6 meses · Envío a casa',
   },
 
-  what: {
-    eyebrow: '¿Qué es AXIS?',
-    // Sin pilares: los cuatro que había aquí están en `capabilities.items`
-    // (dos con el mismo título) y la frase de arriba ya los enumera.
-    statement:
-      'AXIS son gafas que ven, escuchan, traducen y se gradúan a tu vista — con la inteligencia de una IA y el diseño de una pieza de lujo.',
-  },
 
   product: {
     eyebrow: 'Diseño',
@@ -94,6 +82,10 @@ export const es = {
   },
 
   capabilities: {
+    // El manifiesto encabeza esta sección: tenía sección propia ("¿Qué es
+    // AXIS?") pero enumeraba justo las capacidades que se listan aquí abajo.
+    statement:
+      'AXIS son gafas que ven, escuchan, traducen y se gradúan a tu vista — con la inteligencia de una IA y el diseño de una pieza de lujo.',
     eyebrow: 'Inteligencia',
     title: 'Todo lo que AXIS hace por ti.',
     intro: 'Toca cada capacidad y descúbrela.',
