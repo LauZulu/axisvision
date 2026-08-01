@@ -116,6 +116,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   la ficha cambia comprar por el formulario de reserva, la tarjeta lleva badge "Próximamente",
 >   el carrito esconde "ir a pagar" (pero NO se borra) y `/tienda/checkout` + `POST /api/checkout`
 >   responden cerrado. El front es maquillaje; la guarda de verdad es la del servidor.
+>   Ojo: la variable es `NEXT_PUBLIC_`, así que se hornea en el build — cambiarla exige
+>   reconstruir/redesplegar, no basta con editar el entorno del hosting.
 > - **Reservas / lista de espera:** tabla **`axis_stock_alert`** (migración `...004`) con único
 >   (productId, email); `src/server/waitlist.ts` es todo el flujo. Alta pública en
 >   `POST /api/reservas` (rate-limit + honeypot `website`), confirmación y baja por token opaco en

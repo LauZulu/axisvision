@@ -105,7 +105,7 @@ export function ProductDetail({
     // El aire de arriba lo pone ya el `pt-16 md:pt-[72px]` del layout (el hueco
     // de la nav fija): sumarle un `py-14` dejaba la ficha empezando a media
     // pantalla. Solo el respiro de abajo se mantiene.
-    <section className="pt-6 pb-14 md:pt-8 md:pb-20">
+    <section className="pt-3 pb-14 md:pt-4 md:pb-20">
       <div className="container-axis">
         <Link
           href="/tienda"
