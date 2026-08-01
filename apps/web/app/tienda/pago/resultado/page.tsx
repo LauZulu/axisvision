@@ -1,7 +1,7 @@
 import { getDb } from '../../../../src/server/db'
 import { AxisOrder } from '../../../../src/server/db/entities/Order'
 import { fetchTransaction } from '../../../../src/server/wompi'
-import { confirmPaidOrder } from '../../../../src/server/payments'
+import { confirmPaidOrder, rememberTransactionId } from '../../../../src/server/payments'
 import {
   PaymentResultView,
   type PaymentResult,
@@ -45,6 +45,12 @@ export default async function PaymentResultPage({
         // Transacción real pero de otra tienda (o referencia desconocida): se
         // trata como no encontrada en vez de mostrar datos que no son nuestros.
         if (order) {
+          // Se guarda el id de transacción aunque el pago aún no esté aprobado
+          // (PSE pasa por PENDING varios minutos). Sin ese id, si el webhook
+          // nunca llega el pedido no se puede conciliar: Wompi no deja buscar
+          // una transacción por nuestra referencia, solo por su id.
+          await rememberTransactionId(order.id, tx.id).catch(() => undefined)
+
           if (tx.status === 'APPROVED') {
             await confirmPaidOrder(tx.reference, {
               id: tx.id,

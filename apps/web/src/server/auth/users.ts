@@ -24,13 +24,7 @@ export async function findByEmailWithPassword(email: string): Promise<AxisUser |
     .getOne()
 }
 
-export async function findById(id: string): Promise<AxisUser | null> {
-  const db = await getDb()
-  return db.getRepository(AxisUser).findOne({ where: { id } })
-}
-
-export async function emailExists(email: string): Promise<boolean> {
-  const db = await getDb()
-  const count = await db.getRepository(AxisUser).count({ where: { email } })
-  return count > 0
-}
+// `findById` y `emailExists` vivían aquí para /api/auth/me y /api/auth/register.
+// Ambas rutas se eliminaron: la tienda es de invitado y el único que necesita
+// cuenta es el admin, que se crea con `scripts/seed.ts`. Si algún día hay
+// cuentas de cliente, se reponen junto con sus endpoints.

@@ -4,6 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > ## ⚠️ Estado actual: migración a plataforma full-stack (en curso)
 >
+> **Lo que falta por hacer vive en `PENDIENTES.md`** (raíz del repo), con quién puede hacer cada
+> cosa: 🔑 solo el usuario (paneles de Wompi/Brevo/DNS), 🤖 código, ⏳ código bloqueado por un 🔑.
+> Consúltalo antes de proponer trabajo nuevo y bórrale las tareas que se completen.
+>
 > El repo dejó de ser una app Vite de una sola carpeta. Ahora es un **monorepo pnpm**
 > con **Next.js** (App Router). El plan y las fases viven en **`PLAN-PLATAFORMA.md`**
 > (fuente de verdad para la evolución). Estado: **Fases 0-6 hechas y verificadas contra RDS+S3
@@ -33,6 +37,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   En la DB `axis_product_image.imageKey` guarda la **clave S3**; el frontend usa la URL de CloudFront
 >   (`src/lib/cdn.ts`, `resolveProductSrc`). Verifica acceso con `pnpm s3:check`. **Falta CORS** en el
 >   bucket para que el navegador del admin haga PUT/DELETE (ver PLAN/README).
+> - **Confirmación del pago — un solo camino (`src/server/payments.ts`):** `confirmPaidOrder()`
+>   concentra validar monto, claim atómico, inventario, correos y alertas; lo usan **el webhook Y la
+>   página de resultado**. Que la página también confirme no es redundancia: el webhook era el ÚNICO
+>   camino a `paid`, y con la URL de eventos mal puesta (o el servidor caído durante los 3 reintentos
+>   de 24 h) el cliente pagaba y el pedido quedaba `pending` para siempre. El claim admite venir de
+>   **`pending` o `failed`**: si un DECLINED marcó el pedido y después entra el pago, el dinero manda.
+>   Devuelve `applied | already | unknown_reference | amount_mismatch | double_charge`; los dos
+>   últimos NO se resuelven solos — mandan la plantilla `admin-payment-alert` al equipo (un APPROVED
+>   con un `transactionId` distinto al guardado = al cliente le cobraron dos veces). Antes esos casos
+>   eran un `console.error` silencioso.
+> - **El carrito NO se vacía al salir a Wompi**, sino en la página de resultado cuando el pago queda
+>   aprobado (`markCartPendingOrder()` / `clearCartIfPaid()` en `src/lib/cart.ts`). Vaciarlo antes
+>   dejaba sin selección a quien recibiera un rechazo — y como Wompi **no permite reutilizar una
+>   referencia** ya usada, tendría que rehacer la compra entera. Se guarda qué referencia salió a
+>   pagar para no vaciar un carrito ajeno tras una compra por "Comprar ahora".
 > - **Doble clic al pagar (idempotencia del checkout):** el navegador genera un UUID por intento
 >   (`newAttemptId()` en `CheckoutClient`, guardado en `useRef` para que sobreviva a los re-render)
 >   y lo manda como `idempotencyKey`; `axis_order.idempotencyKey` tiene índice ÚNICO (migración
@@ -47,7 +66,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   (`src/server/wompi.ts`: firma integridad SHA256 server-side + `expiration-time` 1h). El pago se
 >   confirma SOLO por `POST /api/wompi/webhook` (checksum timing-safe, idempotente, valida monto;
 >   APPROVED→paid+stock−, DECLINED→failed, VOIDED→cancelled+restock). Resultado en
->   `/tienda/pago/resultado` (verifica vía API). Descuentos: `compareAtPriceCop` (tachado + badge).
+>   `/tienda/pago/resultado` (verifica vía API de Wompi Y comprueba que la referencia sea nuestra:
+>   sin eso, pasar el id de una transacción ajena mostraba su referencia y su monto). Descuentos: `compareAtPriceCop` (tachado + badge).
 >   Prueba integral: `pnpm exec tsx scripts/test-wompi.mts`. PENDIENTE del usuario: añadir al `.env`
 >   `NEXT_PUBLIC_WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_EVENTS_SECRET`,
 >   `NEXT_PUBLIC_SITE_URL` y registrar la URL de eventos en el dashboard de Wompi.

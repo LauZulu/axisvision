@@ -145,11 +145,16 @@ Públicos marcados con 🌐; el resto requieren sesión; 🔒admin requiere rol 
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| 🌐 `POST` | `/api/auth/register` | crea `axis_user` (role `user`), hash bcrypt, devuelve token+user |
-| 🌐 `POST` | `/api/auth/login` | valida role `user`, bcrypt.compare, firma JWT 7d |
-| 🌐 `POST` | `/api/auth/login/admin` | igual pero exige role `admin` |
+| 🌐 `POST` | `/api/auth/login/admin` | valida role `admin`, bcrypt.compare, firma JWT 7d |
 | `POST` | `/api/auth/logout` | limpia cookie |
-| `GET` | `/api/auth/me` | sesión actual (desde token) |
+
+> **Auth de cliente: eliminada.** `POST /api/auth/register`, `POST /api/auth/login`
+> (role `user`) y `GET /api/auth/me` existieron y se borraron en la auditoría de
+> seguridad: la tienda es de invitado, el único que necesita cuenta es el admin, y
+> el frontend no consumía ninguna de las tres. Dejarlas abiertas solo aportaba
+> superficie que auditar y una vía para llenar `axis_user` de filas basura
+> (5/min/IP). El admin se crea con `scripts/seed.ts`. Si vuelven las cuentas de
+> cliente, se reponen junto con `findById`/`emailExists` en `src/server/auth/users.ts`.
 | 🌐 `GET` | `/api/products` | catálogo activo (tienda) |
 | 🌐 `GET` | `/api/products/[slug]` | detalle |
 | 🔒 `POST` | `/api/admin/products` | crear producto |

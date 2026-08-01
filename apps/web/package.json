@@ -14,6 +14,7 @@
     "images:sample": "tsx scripts/seed-sample-images.mts",
     "images:upload": "tsx scripts/upload-product-images.mts",
     "email:preview": "tsx scripts/email-preview.mts",
+    "payments:reconcile": "tsx scripts/reconcile-payments.mts",
     "s3:check": "tsx scripts/s3-check.ts"
   },
   "dependencies": {

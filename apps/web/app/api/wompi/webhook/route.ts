@@ -1,7 +1,7 @@
 import { getDb } from '../../../../src/server/db'
 import { AxisOrder } from '../../../../src/server/db/entities/Order'
 import { AxisOrderItem } from '../../../../src/server/db/entities/OrderItem'
-import { verifyEventChecksum, type WompiEvent } from '../../../../src/server/wompi'
+import { isSameEnvironment, verifyEventChecksum, type WompiEvent } from '../../../../src/server/wompi'
 import {
   hasUnits,
   releaseUnits,
@@ -43,7 +43,14 @@ export async function POST(req: Request) {
     return jsonError('INVALID_CHECKSUM', 'Firma del evento inválida.', 403)
   }
 
-  // 2) Solo nos interesa transaction.updated (otros eventos → 200 y listo).
+  // 2) El evento tiene que ser del mismo entorno que las llaves de la tienda.
+  //    200 y a otra cosa: no es un ataque, es una configuración cruzada.
+  if (!isSameEnvironment(event)) {
+    console.warn(`[wompi] evento de entorno "${event.environment}" descartado`)
+    return json({ ok: true, wrongEnvironment: true })
+  }
+
+  // 3) Solo nos interesa transaction.updated (otros eventos → 200 y listo).
   if (event.event !== 'transaction.updated') return json({ ok: true })
 
   const tx = (event.data as { transaction?: TxData })?.transaction

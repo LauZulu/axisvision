@@ -29,9 +29,14 @@ function eventsSecret(): string {
   return s
 }
 
+/** Entorno en el que está configurada la tienda, según el prefijo de la llave. */
+export function wompiEnvironment(): 'test' | 'prod' {
+  return wompiPublicKey().startsWith('pub_test_') ? 'test' : 'prod'
+}
+
 /** API base según el entorno de la llave pública (pub_test_ → sandbox). */
 export function wompiApiBase(): string {
-  return wompiPublicKey().startsWith('pub_test_')
+  return wompiEnvironment() === 'test'
     ? 'https://sandbox.wompi.co/v1'
     : 'https://production.wompi.co/v1'
 }
@@ -57,7 +62,22 @@ export type WompiEvent = {
   data: Record<string, unknown>
   sent_at?: string
   timestamp?: number
+  /** 'test' en Sandbox, 'prod' en producción. Lo manda Wompi en cada evento. */
+  environment?: string
   signature?: { checksum?: string; properties?: string[] }
+}
+
+/**
+ * ¿El evento viene del mismo entorno en el que está configurada la tienda?
+ *
+ * El checksum ya lo cubre casi todo (los secretos son distintos por entorno),
+ * pero esto atrapa el caso en que queden cruzadas las llaves de sandbox con el
+ * secreto de eventos de producción: sin este filtro, un pago de juguete podría
+ * marcar un pedido real como pagado. Si el evento no trae `environment`, pasa.
+ */
+export function isSameEnvironment(event: WompiEvent): boolean {
+  if (!event.environment) return true
+  return event.environment === wompiEnvironment()
 }
 
 /** Lee una ruta tipo "transaction.amount_in_cents" dentro de event.data. */

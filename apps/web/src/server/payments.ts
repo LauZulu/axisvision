@@ -20,6 +20,28 @@ import { renderAdminPaymentAlert } from './email/templates'
  * atómico, da igual quién llegue primero: solo uno aplica.
  */
 
+/**
+ * Guarda el id de transacción en un pedido que todavía no lo tiene.
+ *
+ * Se llama desde la página de resultado aunque el pago NO esté aprobado (PSE y
+ * Bancolombia pasan por PENDING durante minutos). Es lo único que hace posible
+ * conciliar después: Wompi **no ofrece ninguna forma de buscar una transacción
+ * por nuestra referencia**, solo por su id, así que un pedido del que nunca
+ * supimos el id solo se puede cuadrar a mano en su panel.
+ *
+ * El `WHERE ... IS NULL` evita pisar el id de un pedido ya pagado.
+ */
+export async function rememberTransactionId(orderId: string, transactionId: string): Promise<void> {
+  if (!transactionId) return
+  const db = await getDb()
+  await db
+    .createQueryBuilder()
+    .update(AxisOrder)
+    .set({ wompiTransactionId: transactionId })
+    .where('id = :id AND "wompiTransactionId" IS NULL', { id: orderId })
+    .execute()
+}
+
 export type PaidTransaction = {
   id: string
   amountInCents: number

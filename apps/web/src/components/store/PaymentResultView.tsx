@@ -1,10 +1,12 @@
 'use client'
 
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Icon } from '../ui/Icon'
 import { useDict } from '../../i18n/useDict'
 import { formatCop } from '../../lib/products'
+import { clearCartIfPaid } from '../../lib/cart'
 import { whatsappLink } from '../../config/brand'
 
 export type PaymentResult = {
@@ -22,6 +24,14 @@ export function PaymentResultView({ result }: { result: PaymentResult }) {
   const router = useRouter()
 
   const status = result.found ? result.status : undefined
+
+  // El carrito se vacía AQUÍ, no al salir hacia Wompi: si se vaciara antes, un
+  // pago rechazado dejaría al cliente sin su selección. Solo se vacía si la
+  // referencia aprobada es la que salió a pagar desde el carrito, para no tocar
+  // uno que quedó armado aparte tras una compra por "Comprar ahora".
+  useEffect(() => {
+    if (status === 'APPROVED' && result.reference) clearCartIfPaid(result.reference)
+  }, [status, result.reference])
   const view =
     status === 'APPROVED'
       ? { icon: 'check' as const, tone: 'text-gold', title: p.approvedTitle, body: p.approvedBody }
