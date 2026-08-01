@@ -2,7 +2,19 @@ import { getDb } from '../../../../src/server/db'
 import { AxisOrder } from '../../../../src/server/db/entities/Order'
 import { AxisOrderItem } from '../../../../src/server/db/entities/OrderItem'
 import { verifyEventChecksum, type WompiEvent } from '../../../../src/server/wompi'
-import { hasUnits, releaseUnits, sellUnits, syncStockFromUnits } from '../../../../src/server/inventory'
+import {
+  hasUnits,
+  releaseUnits,
+  sellUnits,
+  syncStockFromUnits,
+  type StockTransition,
+} from '../../../../src/server/inventory'
+import { handleStockTransitions } from '../../../../src/server/waitlist'
+import {
+  sendOrderCancelledEmail,
+  sendOrderFailedEmail,
+  sendOrderPaidEmails,
+} from '../../../../src/server/orderEmails'
 import { json, jsonError } from '../../../../src/server/http'
 
 export const runtime = 'nodejs'
@@ -19,6 +31,8 @@ type TxData = {
   amount_in_cents?: number
   currency?: string
   payment_method_type?: string
+  /** Motivo del rechazo que reporta la pasarela; se le reenvía al comprador. */
+  status_message?: string
 }
 
 export async function POST(req: Request) {
@@ -56,6 +70,9 @@ export async function POST(req: Request) {
         }
         // 4) Claim atómico pending→paid: si dos entregas llegan a la vez, solo
         //    una gana y descuenta stock; la otra no afecta filas y termina aquí.
+        //    `claimed` decide quién manda los correos: solo el que ganó.
+        let claimed = false
+        const transitions = new Map<string, StockTransition>()
         await db.transaction(async (manager) => {
           const claim = await manager
             .createQueryBuilder()
@@ -70,6 +87,7 @@ export async function POST(req: Request) {
             .execute()
 
           if ((claim.affected ?? 0) === 1) {
+            claimed = true
             const items = await manager.find(AxisOrderItem, { where: { orderId: order.id } })
             for (const item of items) {
               if (!item.productId) continue
@@ -82,7 +100,9 @@ export async function POST(req: Request) {
                     `[wompi] ${order.reference}: solo ${sold}/${item.quantity} unidades de ${item.productName}`,
                   )
                 }
-                await syncStockFromUnits(manager, item.productId)
+                for (const [id, t] of await syncStockFromUnits(manager, item.productId)) {
+                  transitions.set(id, t)
+                }
               } else {
                 await manager.query(
                   `UPDATE "axis_product" SET "stock" = GREATEST("stock" - $1, 0) WHERE "id" = $2`,
@@ -92,17 +112,33 @@ export async function POST(req: Request) {
             }
           }
         })
+
+        // Fuera de la transacción a propósito: los correos y el aviso de stock
+        // no pueden alargarla ni tumbarla (las tres llamadas tragan sus errores).
+        if (claimed) {
+          await sendOrderPaidEmails(order.id)
+          await handleStockTransitions(transitions)
+        }
         return json({ ok: true })
       }
 
       case 'DECLINED':
       case 'ERROR': {
-        await orderRepo.update({ id: order.id, status: 'pending' }, { status: 'failed', wompiTransactionId: tx.id ?? null })
+        const failed = await orderRepo.update(
+          { id: order.id, status: 'pending' },
+          { status: 'failed', wompiTransactionId: tx.id ?? null },
+        )
+        if ((failed.affected ?? 0) === 1) {
+          await sendOrderFailedEmail(order.id, tx.status_message)
+        }
         return json({ ok: true })
       }
 
       case 'VOIDED': {
         // Anulación: si estaba pagada, devolver el stock (una sola vez, claim atómico).
+        // Devolver unidades puede sacar al modelo del 0 → hay lista que avisar.
+        let cancelled = false
+        const transitions = new Map<string, StockTransition>()
         await db.transaction(async (manager) => {
           const claim = await manager
             .createQueryBuilder()
@@ -111,13 +147,16 @@ export async function POST(req: Request) {
             .where('id = :id AND status IN (:...from)', { id: order.id, from: ['pending', 'paid'] })
             .execute()
 
+          if ((claim.affected ?? 0) === 1) cancelled = true
           if ((claim.affected ?? 0) === 1 && order.status === 'paid') {
             const items = await manager.find(AxisOrderItem, { where: { orderId: order.id } })
             for (const item of items) {
               if (!item.productId) continue
               if (await hasUnits(manager, item.productId)) {
                 await releaseUnits(manager, item.id)
-                await syncStockFromUnits(manager, item.productId)
+                for (const [id, t] of await syncStockFromUnits(manager, item.productId)) {
+                  transitions.set(id, t)
+                }
               } else {
                 await manager.query(
                   `UPDATE "axis_product" SET "stock" = "stock" + $1 WHERE "id" = $2`,
@@ -127,6 +166,11 @@ export async function POST(req: Request) {
             }
           }
         })
+
+        if (cancelled) {
+          await sendOrderCancelledEmail(order.id)
+          await handleStockTransitions(transitions)
+        }
         return json({ ok: true })
       }
 

@@ -25,6 +25,8 @@ import {
   type LensOptionDTO,
 } from '../../lib/lenses'
 import { LensPicker } from './LensPicker'
+import { WaitlistForm } from './WaitlistForm'
+import { canBuy } from '../../lib/storeMode'
 import { whatsappLink } from '../../config/brand'
 
 /** Detalle de producto (cliente). Datos desde la DB (DTO). */
@@ -38,6 +40,11 @@ export function ProductDetail({
   const { t, lang } = useDict()
   const router = useRouter()
   const soldOut = product.stock <= 0
+  // Dos motivos distintos para no poder comprar, y cada uno se explica distinto:
+  // el modelo se agotó, o la tienda todavía no acepta pagos (Wompi sin llaves).
+  // En ambos el sitio no se queda mudo: ofrece dejar el correo.
+  const storeOpen = canBuy()
+  const canPurchase = storeOpen && !soldOut
   const maxQty = Math.max(1, Math.min(product.stock, 20))
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
@@ -133,9 +140,11 @@ export function ProductDetail({
               {productDescription(product, lang)}
             </p>
 
-            {!soldOut && (
-              <LensPicker options={lensOptions} value={lens} onChange={setLens} />
-            )}
+            {/* El selector se queda aunque la tienda esté cerrada: no es solo
+                para comprar, es lo que cambia la galería entre lente de sol,
+                oftálmico y filtro amarillo. Sin él, media colección de fotos
+                queda inalcanzable. */}
+            {!soldOut && <LensPicker options={lensOptions} value={lens} onChange={setLens} />}
 
             {/* Total con el lente elegido: el precio de arriba es el del armazón. */}
             {!soldOut && lens && lens.extraPriceCop > 0 && (
@@ -145,7 +154,7 @@ export function ProductDetail({
               </p>
             )}
 
-            {!soldOut && (
+            {canPurchase && (
               <div className="mt-8 flex items-center gap-4">
                 <span className="text-sm text-warm-gray/70">{t.store.quantity}</span>
                 <div className="inline-flex items-center gap-1.5">
@@ -173,7 +182,7 @@ export function ProductDetail({
             )}
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              {!soldOut && (
+              {canPurchase && (
                 <>
                   <button type="button" onClick={onBuyNow} className="btn-axis">
                     {t.store.buyNow}
@@ -190,6 +199,22 @@ export function ProductDetail({
                 </>
               )}
             </div>
+
+            {!canPurchase && (
+              <div className="mt-8">
+                <h2 className="font-head text-xl font-medium text-warm-white">
+                  {storeOpen ? t.store.waitlist.titleSoldOut : t.store.preview.title}
+                </h2>
+                <p className="mt-2 leading-relaxed text-warm-gray/75">
+                  {storeOpen ? t.store.waitlist.bodySoldOut : t.store.preview.body}
+                </p>
+                <WaitlistForm
+                  productId={product.id}
+                  source={storeOpen ? 'sold_out' : 'preview'}
+                  className="mt-5"
+                />
+              </div>
+            )}
 
             <a
               href={whatsappLink('general', reserveMsg)}

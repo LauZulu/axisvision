@@ -90,8 +90,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   con `key` al cambiar de lente. Realidad del catálogo: Origin y Eclypse tienen sol + oftálmica;
 >   Shadow y Ocean solo sol; **Crystal solo oftálmica** (lente transparente); **Apex es deportivo con
 >   lentes intercambiables** (espejado + amarillo), sin fotos oftálmicas.
+> - **Modo tienda (`NEXT_PUBLIC_STORE_MODE`):** interruptor que decide si se puede COMPRAR.
+>   `live` = compra abierta; **cualquier otro valor o sin definir = `preview`** (solo reservar) — el
+>   default inseguro sería cobrar sin pasarela, así que el fallback es no cobrar. Cliente:
+>   `canBuy()` (`src/lib/storeMode.ts`, puro, se puede importar en componentes). Servidor:
+>   `canCheckout()` (`src/server/storeMode.ts`), que además exige que estén las 4 variables de Wompi
+>   — encender la bandera con una llave a medias dejaría un botón que lleva a un 500. En preview:
+>   la ficha cambia comprar por el formulario de reserva, la tarjeta lleva badge "Próximamente",
+>   el carrito esconde "ir a pagar" (pero NO se borra) y `/tienda/checkout` + `POST /api/checkout`
+>   responden cerrado. El front es maquillaje; la guarda de verdad es la del servidor.
+> - **Reservas / lista de espera:** tabla **`axis_stock_alert`** (migración `...004`) con único
+>   (productId, email); `src/server/waitlist.ts` es todo el flujo. Alta pública en
+>   `POST /api/reservas` (rate-limit + honeypot `website`), confirmación y baja por token opaco en
+>   `/api/reservas/confirmar|baja` → redirigen a `/reservas/gracias`. **El aviso lo dispara el
+>   inventario**: `syncStockFromUnits()` devuelve `{stock, previous}` por producto y
+>   `handleStockTransitions()` convierte 0→>0 en correos a la lista y >0→0 en aviso al equipo
+>   (el inventario NO importa el correo; se pasa por el valor de retorno). Panel en
+>   `/admin/reservas` con botón "avisar ahora" (`POST /api/admin/reservas`) para el caso que la
+>   transición no cubre: gente apuntada con la tienda cerrada en modelos que ya tienen stock.
+>   Doble opt-in **apagado** por defecto (`WAITLIST_DOUBLE_OPT_IN=true` para encenderlo): con Brevo
+>   sin configurar dejaría a todos en `pending` para siempre.
+> - **Correo transaccional (Brevo, plantillas listas · envío PENDIENTE):** 17 plantillas HTML en
+>   **`src/server/email/`** (`theme/format/components/layout/types` + `templates/`, una por archivo,
+>   registro con su disparador en `templates/index.ts`). Son **funciones puras** `datos → {subject,
+>   preheader, html, text}`: no leen la DB ni entidades de TypeORM, así que se revisan sin cuenta y
+>   sin mandar nada con **`pnpm email:preview`** (escribe `.email-preview/`, ignorado por git).
+>   **Todo en español** (solo vendemos en Colombia; nada de correos bilingües apilados) — cómo
+>   añadir inglés sin reescribir: `src/server/email/README.md`, que además trae el checklist de
+>   Brevo (SPF/DKIM/DMARC, variables `.env`, no bloquear el webhook de Wompi). Grupos: compra
+>   (7, incl. fórmula médica y carrito abandonado), reserva/lista de espera (6) e internos (4).
+>   Reglas del medio: `<table>` + CSS inline, 600px, sin webfonts ni SVG ni `background-image`,
+>   siempre versión en texto plano, todo dato de fuera por `esc()`.
 > - **Rutas:** landing `app/page.tsx`; tienda `app/tienda/**` (server, lee DB); admin `app/admin/**`
->   (login + panel guardado por rol); API en `app/api/**` (auth, products, admin, uploads/presign, checkout).
+>   (login + panel guardado por rol); reservas `app/reservas/gracias`; API en `app/api/**` (auth,
+>   products, admin, uploads/presign, checkout, reservas, wompi/webhook).
+> - **Variables de entorno:** el `.env` real vive en `apps/web/.env` (NO leerlo); los nombres y para
+>   qué sirve cada uno están en **`apps/web/.env.example`** (versionado, sin valores).
 > - Buena parte de lo de abajo (Vite, `index.html`, `src/index.css`) describe la etapa
 >   **anterior a la migración**; para rutas/estructura usa esta nota y `PLAN-PLATAFORMA.md`.
 

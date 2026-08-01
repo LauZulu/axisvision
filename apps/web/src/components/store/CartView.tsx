@@ -7,6 +7,7 @@ import { useDict } from '../../i18n/useDict'
 import { formatCop } from '../../lib/products'
 import { resolveProductSrc } from '../../lib/productImages'
 import { useCart, setCartQuantity, removeFromCart, cartTotalCop, lineId } from '../../lib/cart'
+import { canBuy } from '../../lib/storeMode'
 
 /** Carrito (localStorage). Los precios finales los recalcula el servidor al pagar. */
 export function CartView() {
@@ -115,12 +116,25 @@ export function CartView() {
             >
               {t.cart.continueShopping}
             </Link>
-            <Link href="/tienda/checkout" className="btn-axis">
-              {t.cart.checkout}
-              <Icon name="arrow" size={18} />
-            </Link>
+            {canBuy() && (
+              <Link href="/tienda/checkout" className="btn-axis">
+                {t.cart.checkout}
+                <Icon name="arrow" size={18} />
+              </Link>
+            )}
           </div>
         </div>
+
+        {/* El carrito se conserva con la tienda cerrada: cuando abramos, sigue
+            ahí. Lo que desaparece es el camino a un pago que no existe. */}
+        {!canBuy() && (
+          <div className="mt-6 rounded-xl border border-gold/40 bg-carbon-800/60 p-5">
+            <p className="font-head text-warm-white">{t.store.preview.cartTitle}</p>
+            <p className="mt-2 text-sm leading-relaxed text-warm-gray/75">
+              {t.store.preview.cartBody}
+            </p>
+          </div>
+        )}
       </div>
     </section>
   )

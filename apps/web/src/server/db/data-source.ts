@@ -8,10 +8,12 @@ import { AxisOrderItem } from './entities/OrderItem'
 import { AxisFavorite } from './entities/Favorite'
 import { AxisProductUnit } from './entities/ProductUnit'
 import { AxisLensOption } from './entities/LensOption'
+import { AxisStockAlert } from './entities/StockAlert'
 import { InitAxisSchema1720000000000 } from './migrations/1720000000000-InitAxisSchema'
 import { WompiAndDiscounts1720000000001 } from './migrations/1720000000001-WompiAndDiscounts'
 import { InventoryAndLensOptions1720000000002 } from './migrations/1720000000002-InventoryAndLensOptions'
 import { ImageLensVariants1720000000003 } from './migrations/1720000000003-ImageLensVariants'
+import { StockAlerts1720000000004 } from './migrations/1720000000004-StockAlerts'
 
 export const ENTITIES = [
   AxisUser,
@@ -22,6 +24,7 @@ export const ENTITIES = [
   AxisOrder,
   AxisOrderItem,
   AxisFavorite,
+  AxisStockAlert,
 ]
 
 /**
@@ -51,6 +54,7 @@ export function buildDataSource(): DataSource {
       WompiAndDiscounts1720000000001,
       InventoryAndLensOptions1720000000002,
       ImageLensVariants1720000000003,
+      StockAlerts1720000000004,
     ],
     migrationsTableName: 'axis_migrations',
     // Resiliencia del pool: keepAlive evita que conexiones ociosas mueran en

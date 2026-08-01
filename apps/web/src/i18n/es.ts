@@ -212,6 +212,33 @@ export const es = {
     addToCart: 'Añadir al carrito',
     addedToCart: 'Añadido ✓',
     discountBadge: '−{pct}%',
+    // Tienda cerrada (NEXT_PUBLIC_STORE_MODE != 'live'): el catálogo se ve, la
+    // compra no está disponible y el correo de reserva ocupa su lugar.
+    preview: {
+      badge: 'Próximamente',
+      title: 'La tienda abre muy pronto.',
+      body: 'Estamos terminando de conectar los pagos en línea. Déjanos tu correo y te escribimos el día que abramos, antes que a nadie.',
+      cartTitle: 'Todavía no podemos cobrarte.',
+      cartBody: 'Guardamos tu selección. Déjanos tu correo en cualquier modelo y te avisamos apenas se abran los pagos.',
+    },
+    waitlist: {
+      titleSoldOut: 'Agotado por ahora.',
+      bodySoldOut:
+        'Cada AXIS es una unidad física de nuestro inventario. Déjanos tu correo y te avisamos apenas entren unidades de este modelo.',
+      emailLabel: 'Tu correo',
+      emailPlaceholder: 'tucorreo@ejemplo.com',
+      submit: 'Avísenme',
+      sending: 'Guardando…',
+      okTitle: 'Listo, te avisamos.',
+      okBody: 'Te escribimos a {email} apenas haya unidades.',
+      alreadyTitle: 'Ya estabas en la lista.',
+      alreadyBody: 'No te vamos a escribir dos veces por el mismo modelo.',
+      pendingTitle: 'Revisa tu correo.',
+      pendingBody: 'Te mandamos un enlace a {email} para confirmar que eres tú.',
+      error: 'No pudimos guardar tu correo. Inténtalo de nuevo.',
+      invalidEmail: 'Escribe un correo válido.',
+      privacy: 'Solo lo usamos para avisarte de este modelo. Puedes darte de baja en un clic.',
+    },
     lens: {
       title: 'Elige tu lente',
       help: 'Tus AXIS vienen con lente de sol polarizado. Si prefieres otro, lo montamos con nuestra óptica aliada antes de enviártelas.',
@@ -338,7 +365,28 @@ export const es = {
   },
 
   admin: {
-    nav: { dashboard: 'Dashboard', products: 'Productos', inventory: 'Inventario', lenses: 'Lentes', orders: 'Pedidos', viewSite: 'Ver sitio', logout: 'Salir' },
+    nav: { dashboard: 'Dashboard', products: 'Productos', inventory: 'Inventario', lenses: 'Lentes', orders: 'Pedidos', waitlist: 'Reservas', viewSite: 'Ver sitio', logout: 'Salir' },
+    waitlist: {
+      title: 'Reservas',
+      subtitle: 'Quién está esperando cada modelo. Los de arriba son los que hay que reponer primero.',
+      empty: 'Todavía nadie ha dejado su correo.',
+      waiting: 'esperando',
+      stock: 'Stock',
+      notifyNow: 'Avisar ahora',
+      notifying: 'Enviando…',
+      notifyResult: '{n} avisos enviados.',
+      colEmail: 'Correo',
+      colProduct: 'Modelo',
+      colSource: 'Origen',
+      colStatus: 'Estado',
+      colDate: 'Fecha',
+      sourceSoldOut: 'Agotado',
+      sourcePreview: 'Tienda cerrada',
+      statusActive: 'En espera',
+      statusPending: 'Sin confirmar',
+      statusNotified: 'Avisado',
+      statusUnsubscribed: 'De baja',
+    },
     login: {
       title: 'Iniciar sesión',
       subtitle: 'Acceso restringido al equipo AXIS.',

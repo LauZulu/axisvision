@@ -33,3 +33,6 @@ next-env.d.ts
 # Buzón local de fotos originales (se suben a S3, no se versionan)
 fotos-para-subir/*/*
 !fotos-para-subir/*/.gitkeep
+
+# Salida de `pnpm email:preview` (HTML generado de las plantillas de correo)
+.email-preview/

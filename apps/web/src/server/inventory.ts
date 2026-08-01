@@ -3,9 +3,13 @@ import { getDb } from './db'
 import { AxisProductUnit } from './db/entities/ProductUnit'
 import type { UnitLensType, UnitLocation } from './db/entities/ProductUnit'
 import { AxisProduct } from './db/entities/Product'
+import { handleStockTransitions } from './waitlist'
 
 /** Ubicaciones cuyas unidades cuentan como disponibles para vender. */
 export const SELLABLE_LOCATIONS = ['casa', 'local'] as const
+
+/** Cómo quedó el stock de un producto tras sincronizar, y cómo estaba antes. */
+export type StockTransition = { stock: number; previous: number }
 
 /**
  * Recalcula `axis_product.stock` contando las unidades físicas disponibles
@@ -15,12 +19,16 @@ export const SELLABLE_LOCATIONS = ['casa', 'local'] as const
  * Si `productId` se omite, sincroniza todos los productos QUE TENGAN unidades:
  * los que no tienen inventario cargado conservan su `stock` manual.
  *
- * Devuelve el nuevo stock por producto.
+ * Devuelve, por producto, el stock nuevo y el anterior. La transición 0 → >0 es
+ * la que dispara los avisos de la lista de espera, y este es el único punto del
+ * sistema por donde el stock sube: pasarla por el valor de retorno evita que el
+ * inventario tenga que saber que existe el correo (lo resuelve
+ * `handleStockTransitions()` en src/server/waitlist.ts).
  */
 export async function syncStockFromUnits(
   db: DataSource | EntityManager,
   productId?: string,
-): Promise<Map<string, number>> {
+): Promise<Map<string, StockTransition>> {
   const manager = 'manager' in db ? db.manager : db
 
   const qb = manager
@@ -49,10 +57,25 @@ export async function syncStockFromUnits(
 
   for (const { productId: id } of withUnits) if (!counts.has(id)) counts.set(id, 0)
 
+  // Stock ANTES de escribir: sin esto no hay forma de saber si el producto
+  // acaba de reaparecer (0 → >0) o de agotarse (>0 → 0).
+  const ids = [...counts.keys()]
+  const previous = new Map<string, number>()
+  if (ids.length > 0) {
+    const rows = await manager
+      .createQueryBuilder(AxisProduct, 'p')
+      .select(['p.id AS id', 'p.stock AS stock'])
+      .where('p.id IN (:...ids)', { ids })
+      .getRawMany<{ id: string; stock: number }>()
+    for (const row of rows) previous.set(row.id, Number(row.stock))
+  }
+
+  const transitions = new Map<string, StockTransition>()
   for (const [id, stock] of counts) {
     await manager.update(AxisProduct, { id }, { stock })
+    transitions.set(id, { stock, previous: previous.get(id) ?? stock })
   }
-  return counts
+  return transitions
 }
 
 /**
@@ -166,6 +189,11 @@ export type ProductUnitPatch = {
 /**
  * Edita una unidad desde el panel y resincroniza el stock del producto (moverla
  * de ubicación o marcarla no vendible cambia el stock publicado).
+ *
+ * Es el camino habitual por el que un modelo agotado vuelve a tener stock —el
+ * admin mete la unidad nueva y la pone en casa/local—, así que aquí se dispara
+ * el aviso a la lista de espera. El envío va después de guardar y con sus
+ * errores contenidos: un fallo de correo no puede impedir mover inventario.
  */
 export async function updateProductUnit(
   id: string,
@@ -177,6 +205,9 @@ export async function updateProductUnit(
   if (!unit) return false
   Object.assign(unit, patch)
   await repo.save(unit)
-  await syncStockFromUnits(db, unit.productId)
+  const transitions = await syncStockFromUnits(db, unit.productId)
+  await handleStockTransitions(transitions).catch((err) =>
+    console.error('[inventario] no se pudo avisar a la lista de espera:', err),
+  )
   return true
 }

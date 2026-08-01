@@ -9,12 +9,16 @@ import { fadeUp } from '../../lib/motion'
 import { fill } from '../../lib/format'
 import { resolveProductSrc } from '../../lib/productImages'
 import { discountPct, formatCop, hasDiscount, productTagline, type ProductDTO } from '../../lib/products'
+import { canBuy } from '../../lib/storeMode'
 
 /** Tarjeta de producto para la rejilla de la tienda. Datos desde la DB (DTO). */
 export function ProductCard({ product }: { product: ProductDTO }) {
   const { t, lang } = useDict()
   const cover = resolveProductSrc(product.images[0] ?? { key: '', url: null })
   const soldOut = product.stock <= 0
+  // Tienda sin pagos abiertos: la rejilla lo dice desde la tarjeta para que
+  // nadie entre a la ficha esperando un botón de comprar que no está.
+  const preview = !canBuy()
 
   return (
     <motion.div variants={fadeUp} className="h-full">
@@ -35,7 +39,12 @@ export function ProductCard({ product }: { product: ProductDTO }) {
               {t.store.soldOut}
             </span>
           )}
-          {!soldOut && hasDiscount(product) && (
+          {!soldOut && preview && (
+            <span className="absolute left-2 top-2 rounded-full border border-gold/50 bg-carbon-900/85 px-3 py-1 font-mono text-[0.65rem] tracking-widest text-gold backdrop-blur sm:left-3 sm:top-3">
+              {t.store.preview.badge}
+            </span>
+          )}
+          {!soldOut && !preview && hasDiscount(product) && (
             <span className="absolute left-2 top-2 rounded-full bg-gold px-2.5 py-1 font-mono text-[0.65rem] tracking-widest text-carbon-900 sm:left-3 sm:top-3">
               {fill(t.store.discountBadge, { pct: discountPct(product) })}
             </span>

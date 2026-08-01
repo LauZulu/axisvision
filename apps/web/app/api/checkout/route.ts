@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { createGuestOrder } from '../../../src/server/checkout'
 import { json, jsonError, clientIp } from '../../../src/server/http'
 import { rateLimit } from '../../../src/server/rateLimit'
+import { canCheckout, previewReason } from '../../../src/server/storeMode'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -29,6 +30,18 @@ const schema = z.object({
 })
 
 export async function POST(req: Request) {
+  // Guarda dura del modo tienda. El front ya esconde el botón de comprar cuando
+  // la tienda está en modo reserva, pero eso es maquillaje: sin esta línea,
+  // cualquiera con curl crearía pedidos que nadie puede pagar.
+  if (!canCheckout()) {
+    console.warn(`[checkout] rechazado — tienda en modo reserva (${previewReason()})`)
+    return jsonError(
+      'STORE_PREVIEW',
+      'La tienda todavía no acepta pagos en línea. Déjanos tu correo y te avisamos apenas abramos.',
+      503,
+    )
+  }
+
   if (!rateLimit(`checkout:${clientIp(req)}`, 10, 60_000)) {
     return jsonError('RATE_LIMITED', 'Demasiados intentos. Espera un minuto.', 429)
   }
