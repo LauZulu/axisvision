@@ -30,6 +30,36 @@ export const ENTITIES = [
 ]
 
 /**
+ * Falta configuración, no falla la base. Es un tipo aparte a propósito: permite
+ * distinguir "al despliegue le faltan variables" de "no se pudo conectar", que
+ * desde fuera se ven igual (un 503) y se arreglan en sitios distintos —el panel
+ * del hosting o la red/security group de la RDS.
+ */
+export class DbConfigError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'DbConfigError'
+  }
+}
+
+/**
+ * Sin esta comprobación, un despliegue al que se le olvidó alguna variable
+ * intenta conectar a `undefined:5432` y muere con un error de red genérico
+ * ("getaddrinfo ENOTFOUND undefined" o un timeout), que se parece demasiado a
+ * "la base está caída" y manda a depurar la RDS en vez del panel del hosting.
+ */
+function assertDbEnv(): void {
+  const missing = (['POSTGRES_HOST', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB'] as const)
+    .filter((k) => !process.env[k])
+  if (missing.length) {
+    throw new DbConfigError(
+      `Faltan variables de entorno de la base de datos: ${missing.join(', ')}. ` +
+        'En local van en apps/web/.env; en el hosting, en su panel de variables.',
+    )
+  }
+}
+
+/**
  * Config de conexión a Postgres (RDS). Reglas de seguridad del repo:
  *  - `synchronize: FALSE` SIEMPRE (nunca auto-sync contra la RDS compartida).
  *  - SSL con `rejectUnauthorized:false` (RDS exige SSL con cert no estricto),
@@ -39,25 +69,6 @@ export const ENTITIES = [
  * En local, la RDS suele llegar por un túnel: fijar POSTGRES_HOST=localhost y
  * POSTGRES_PORT=5433 vía `.env.local` (tiene prioridad sobre `.env`).
  */
-/**
- * Falla con un mensaje que se entiende cuando falta configuración.
- *
- * Sin esto, un despliegue al que se le olvidó alguna variable intenta conectar
- * a `undefined:5432` y muere con un error de red genérico ("getaddrinfo ENOTFOUND
- * undefined" o un timeout), que se parece demasiado a "la base está caída" y
- * manda a depurar la RDS en vez del panel del hosting.
- */
-function assertDbEnv(): void {
-  const missing = (['POSTGRES_HOST', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB'] as const)
-    .filter((k) => !process.env[k])
-  if (missing.length) {
-    throw new Error(
-      `Faltan variables de entorno de la base de datos: ${missing.join(', ')}. ` +
-        'En local van en apps/web/.env; en el hosting, en su panel de variables.',
-    )
-  }
-}
-
 export function buildDataSource(): DataSource {
   assertDbEnv()
   return new DataSource({
