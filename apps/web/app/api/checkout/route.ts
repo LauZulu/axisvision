@@ -65,7 +65,8 @@ export async function POST(req: Request) {
     // La pasarela de pago (Wompi) se enganchará aquí en la Fase 7, usando
     // result.order.reference y amountCop para iniciar la transacción.
     return json({ order: result.order }, 201)
-  } catch {
+  } catch (err) {
+    console.error('[checkout] fallo creando el pedido:', err)
     return jsonError('SERVICE_UNAVAILABLE', 'No se pudo procesar la compra. Inténtalo más tarde.', 503)
   }
 }

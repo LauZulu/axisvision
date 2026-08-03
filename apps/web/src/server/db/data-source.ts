@@ -39,7 +39,27 @@ export const ENTITIES = [
  * En local, la RDS suele llegar por un túnel: fijar POSTGRES_HOST=localhost y
  * POSTGRES_PORT=5433 vía `.env.local` (tiene prioridad sobre `.env`).
  */
+/**
+ * Falla con un mensaje que se entiende cuando falta configuración.
+ *
+ * Sin esto, un despliegue al que se le olvidó alguna variable intenta conectar
+ * a `undefined:5432` y muere con un error de red genérico ("getaddrinfo ENOTFOUND
+ * undefined" o un timeout), que se parece demasiado a "la base está caída" y
+ * manda a depurar la RDS en vez del panel del hosting.
+ */
+function assertDbEnv(): void {
+  const missing = (['POSTGRES_HOST', 'POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB'] as const)
+    .filter((k) => !process.env[k])
+  if (missing.length) {
+    throw new Error(
+      `Faltan variables de entorno de la base de datos: ${missing.join(', ')}. ` +
+        'En local van en apps/web/.env; en el hosting, en su panel de variables.',
+    )
+  }
+}
+
 export function buildDataSource(): DataSource {
+  assertDbEnv()
   return new DataSource({
     type: 'postgres',
     host: process.env.POSTGRES_HOST,

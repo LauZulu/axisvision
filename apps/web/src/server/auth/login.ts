@@ -30,7 +30,8 @@ export async function handleLogin(req: Request, expectedRole: UserRole) {
   let user
   try {
     user = await findByEmailWithPassword(email)
-  } catch {
+  } catch (err) {
+    console.error('[auth] no se pudo consultar el usuario:', err)
     return jsonError('SERVICE_UNAVAILABLE', 'Servicio no disponible. Inténtalo más tarde.', 503)
   }
   const passwordOk =

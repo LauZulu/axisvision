@@ -12,7 +12,8 @@ export async function GET() {
   if (gate.response) return gate.response
   try {
     return json({ products: await getAllProducts() })
-  } catch {
+  } catch (err) {
+    console.error('[admin/productos] no se pudo cargar el catálogo:', err)
     return jsonError('DB_UNAVAILABLE', 'No se pudo cargar el catálogo.', 503)
   }
 }
@@ -28,7 +29,8 @@ export async function POST(req: Request) {
   try {
     const id = await createProduct(parsed.data)
     return json({ id }, 201)
-  } catch {
+  } catch (err) {
+    console.error('[admin/productos] no se pudo crear el producto:', err)
     return jsonError('DB_ERROR', 'No se pudo crear el producto.', 500)
   }
 }

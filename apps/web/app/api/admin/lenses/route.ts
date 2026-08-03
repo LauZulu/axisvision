@@ -11,7 +11,8 @@ export async function GET() {
   if (gate.response) return gate.response
   try {
     return json({ options: await getAllLensOptions() })
-  } catch {
+  } catch (err) {
+    console.error('[admin/lentes] no se pudieron cargar las opciones:', err)
     return jsonError('DB_UNAVAILABLE', 'No se pudieron cargar las opciones de lente.', 503)
   }
 }
@@ -26,7 +27,8 @@ export async function POST(req: Request) {
   }
   try {
     return json({ id: await createLensOption(parsed.data) }, 201)
-  } catch {
+  } catch (err) {
+    console.error('[admin/lentes] no se pudo crear la opción:', err)
     return jsonError('DB_ERROR', 'No se pudo crear la opción.', 500)
   }
 }

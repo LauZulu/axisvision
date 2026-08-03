@@ -10,7 +10,8 @@ export async function GET() {
   if (gate.response) return gate.response
   try {
     return json({ orders: await getAllOrders() })
-  } catch {
+  } catch (err) {
+    console.error('[admin/pedidos] no se pudieron cargar los pedidos:', err)
     return jsonError('DB_UNAVAILABLE', 'No se pudieron cargar los pedidos.', 503)
   }
 }
