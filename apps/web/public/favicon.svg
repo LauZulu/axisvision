@@ -1,12 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="14" fill="#0A0A0A"/>
-  <g fill="none" stroke="#C8A96E" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="miter"
-     transform="translate(6.8 7) scale(0.49)">
-    <path d="M50 98 V57"/>
-    <path d="M50 57 L13 21"/>
-    <path d="M50 57 L88 12"/>
-    <path d="M50 57 L64 34"/>
-    <path d="M54 16 L64 34 L77 16"/>
-    <path d="M60 20 L66 31 L73 20"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="2 1.7 60 60" width="64" height="64">
+  <!-- Símbolo oficial AXIS. MISMOS EJES que TreeLogo.tsx (contorno en logo-axis.svg):
+       los `d` no se tocan, son la geometría del cliente.
+
+       Lo que sí cambia aquí es el AJUSTE ÓPTICO para la pestaña: el trazo va
+       1.7× más grueso. A tamaño real de pestaña (16px) el grosor original cae a
+       ~0.6px y el logo se deshace en una mancha. Es la excepción deliberada al
+       "no tocar la geometría": las proporciones internas se respetan (el chevron
+       sigue siendo 8.449/12.19 = 0.693 del árbol), solo se escala el peso.
+
+       SIN PLACA: el fondo es transparente, así que la marca se recorta contra la
+       barra de pestañas del navegador en vez de flotar en un cuadrado carbón.
+       Por eso el viewBox va ceñido a la tinta (medida real: x 6.5→57.5,
+       y 3.375→60) con un margen mínimo: sin placa detrás no hace falta reservar
+       aire, y el árbol llena el hueco de 16px en vez de quedarse al 88%.
+
+       El color sigue el MISMO mapeo de tokens que el sitio (`globals.css`):
+       gris cálido claro sobre oscuro, gris cálido oscuro sobre claro. Un solo
+       color fijo desaparecería en la mitad de los navegadores — el gris claro
+       es invisible sobre una barra de pestañas en tema claro. -->
+  <style>
+    .axis-mark { stroke: #d8d6cf; }
+    @media (prefers-color-scheme: light) {
+      .axis-mark { stroke: #3f3d38; }
+    }
+  </style>
+  <g class="axis-mark" fill="none" stroke="#d8d6cf" stroke-linecap="butt" stroke-linejoin="miter"
+     transform="translate(7.213 4) scale(0.2199)">
+    <g stroke-width="20.723">
+      <path d="M112.697 254.656 V115.187"/>
+      <path d="M112.697 115.187 L4.303 6.28"/>
+      <path d="M112.697 115.187 L221.135 6.28"/>
+      <path d="M160.155 67.534 L97.388 4.482"/>
+    </g>
+    <path stroke-width="14.363" d="M130.363 2.994 L158.605 31.365 L186.847 2.994"/>
   </g>
 </svg>

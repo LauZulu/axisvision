@@ -140,7 +140,6 @@ Plantillas ya escritas, sin nada que las dispare:
 
 ### 🔑 Cosas que solo el cliente tiene
 
-- Logo árbol en SVG oficial (hoy `TreeLogo` es una reconstrucción vectorial)
 - Catálogo PDF → subirlo y ajustar `CATALOG_URL` en `src/config/brand.ts`
 - Imagen Open Graph 1200×630 → referenciarla desde `app/layout.tsx`
 - Datos reales de garantía, aliado clínico y registro de marca → `src/i18n/*.ts`

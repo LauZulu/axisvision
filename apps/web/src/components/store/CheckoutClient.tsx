@@ -268,7 +268,11 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
         <h1 className="font-head text-2xl text-warm-white md:text-3xl">{c.title}</h1>
         <p className="mt-2 text-warm-gray/60">{c.subtitle}</p>
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_380px]">
+        {/* `grid-cols-1` explícito: la pista `auto` de móvil toma como mínimo el
+            min-content de sus hijos, así que cualquier fila ancha (una miniatura
+            junto a un nombre largo) estiraría la columna y desbordaría la página
+            entera. `minmax(0,1fr)` la deja en el ancho de la pantalla. */}
+        <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_380px]">
           {/* Formulario invitado */}
           <form onSubmit={onSubmit} className="order-2 lg:order-1">
             <h2 className="eyebrow text-gold">{c.contactTitle}</h2>

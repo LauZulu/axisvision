@@ -117,8 +117,15 @@ export function ProductDetail({
 
         {/* La galería va `sticky`: la columna de la derecha (configurador, compra,
             qué incluye) siempre es más larga que la foto, y sin esto el cliente
-            elegía el lente mirando una franja vacía. */}
-        <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-start lg:gap-14">
+            elegía el lente mirando una franja vacía.
+
+            `grid-cols-1` NO es decorativo: sin él, la única columna de móvil es
+            una pista `auto`, cuyo mínimo es el min-content de sus hijos. La tira
+            de miniaturas mide ahí 6×64 + 5×8 = 424px, así que la pista crecía a
+            424 en una pantalla de 390 y se llevaba por delante la página entera
+            (título, precio, selector: todo desbordado y cortado por la derecha).
+            `grid-cols-1` la vuelve `minmax(0,1fr)` y el mínimo pasa a ser 0. */}
+        <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-start lg:gap-14">
           <ProductGallery
             // Cambiar de lente reinicia la galería en su portada.
             key={lens?.imageVariant ?? 'all'}

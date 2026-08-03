@@ -287,7 +287,6 @@ máxima resolución (ideal ≥2400px de ancho); `next/image` genera las variante
 
 ## Pendiente (assets reales del cliente · `TODO[AXIS]`)
 
-- **Logo árbol SVG oficial** → hoy `TreeLogo` es una reconstrucción vectorial; si llega el SVG exacto, reemplaza los trazos manteniendo el `viewBox`.
 - **Catálogo PDF** → subir y ajustar `CATALOG_URL` en `src/config/brand.ts`.
 - **Imagen Open Graph** → falta (1200×630), referenciar desde `app/layout.tsx`.
 - **Datos reales** de garantía, aliado clínico y registro de marca → `src/i18n/*.ts`.
@@ -303,8 +302,22 @@ Identidad visual no negociable (detalle y reglas de uso en `PLAN-AXIS.md` §7):
 - **Gris cálido** `#D8D6CF` — texto cuerpo, 18-20px, line-height 1.6.
 - **Iridiscencia Morpho** (el azul elegante, firma cromática distintiva) — gradiente `#1A3A8A → #2A5ADA → #2A1A4A → #0A0A1F`. **Único color vibrante** sobre carbón+dorado. Uso **raro = magia** (2-4 veces en toda la página): destello del hero, hover de CTAs, momentos clave. Nunca fondo plano dominante, nunca decoración floral.
 
-**Logo / sello recurrente:** el **símbolo dorado de AXIS** — un **árbol-runa** (tronco en Y, rama izquierda larga y un doble chevron anidado en la rama derecha), implementado como SVG en `src/components/ui/TreeLogo.tsx` (con animación de dibujado del trazo y `currentColor` para heredar el dorado). Es el sello central (nav, footer, watermark de contacto; el hero ya no lo lleva —
-la portada es una foto a sangre y el árbol competiría con el producto). El alma de origen (evolución, "una nueva forma de ver el mundo") vive como ADN sutil en el logo y la elegancia, **no** como decoración. *Nota:* el `TreeLogo` actual es una reconstrucción vectorial fiel; si llega el SVG oficial exacto, sustituir los trazos manteniendo el `viewBox`.
+**Logo / sello recurrente:** el **símbolo dorado de AXIS** — un **árbol-runa** (tronco en Y,
+rama izquierda larga, y una rama derecha de la que nace una rama interior, con **un** chevron
+suelto encima), implementado como SVG en `src/components/ui/TreeLogo.tsx` (con animación de
+dibujado del trazo y `currentColor` para heredar el dorado). Es el sello central (nav, footer,
+watermark de contacto; el hero ya no lo lleva — la portada es una foto a sangre y el árbol
+competiría con el producto). El alma de origen (evolución, "una nueva forma de ver el mundo")
+vive como ADN sutil en el logo y la elegancia, **no** como decoración.
+
+**La geometría es la OFICIAL y no se toca a ojo.** Sale del vectorial de Illustrator del cliente
+(`CORTES OPTICA.pdf`): el contorno relleno tal cual está en `apps/web/public/logo-axis.svg`, y
+`TreeLogo`/`favicon.svg` usan el **eje central** de cada trazo (bisectriz de sus dos bordes
+paralelos) porque necesitan `stroke` para animar el dibujado. Dos detalles que la reconstrucción
+anterior tenía mal y conviene no volver a introducir: hay **un** chevron, no dos anidados, y ese
+chevron es **más fino** que el árbol (8.449 vs 12.19 unidades del `viewBox`, de ahí
+`CHEVRON_RATIO`). Redibujarlo a mano rompe la identidad; si hay que reescalar, cambia
+`strokeWidth`, no los números de los `d`.
 
 **Portada (hero):** foto **a sangre** ocupando el viewport (`min-h-[100svh]`), con el
 titular, el subtítulo y los CTA **centrados** encima. La misma composición existe en

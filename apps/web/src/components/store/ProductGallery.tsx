@@ -16,8 +16,22 @@ export type GallerySlide = { src: string; alt: string }
  * a cualquiera de un clic en vez de esperar el turno de la rotación.
  *
  * Todas las slides quedan montadas y se cruzan por opacidad (sin recargas → sin
- * parpadeo). En `lg` la altura manda sobre la proporción para que la columna
- * entera quepa en pantalla de portátil y el `sticky` del padre sirva de algo.
+ * parpadeo).
+ *
+ * Tamaño de la foto grande, por tramos:
+ *  - `lg` (dos columnas): manda la ALTURA, para que la columna entera quepa en
+ *    un portátil y el `sticky` del padre sirva de algo.
+ *  - por debajo (una columna): la proporción es 4/5, pero con dos topes. El de
+ *    alto (`max-h`) porque a ancho completo en un móvil son ~430px de foto —
+ *    casi dos tercios de la pantalla— antes de que aparezca ni el nombre del
+ *    modelo; recorta arriba y abajo, que en estas fotos es fondo vacío. El de
+ *    ancho (`max-w`) para la tablet: sin él la foto ocupaba los 688px de ancho
+ *    y el tope de alto la dejaba en una franja apaisada de 1.8:1, que de una
+ *    foto vertical de gafas enseña poco más que las lentes.
+ *
+ * `min-w-0` es obligatorio: la tira de miniaturas no cabe a lo ancho en móvil y
+ * sin él su min-content estira la columna del padre y desborda la página — así
+ * se salía de la pantalla la ficha entera, no solo la galería.
  */
 export function ProductGallery({
   slides,
@@ -41,8 +55,8 @@ export function ProductGallery({
   const go = (delta: number) => setIndex((i) => (i + delta + slides.length) % slides.length)
 
   return (
-    <div className={className}>
-      <div className="group relative w-full overflow-hidden rounded-2xl border border-line bg-carbon-900 aspect-[4/5] lg:aspect-auto lg:h-[min(64vh,38rem)]">
+    <div className={`min-w-0 ${className ?? ''}`}>
+      <div className="group relative mx-auto w-full max-w-[26rem] overflow-hidden rounded-2xl border border-line bg-carbon-900 aspect-[4/5] max-h-[min(52vh,24rem)] lg:mx-0 lg:aspect-auto lg:max-h-none lg:max-w-none lg:h-[min(64vh,38rem)]">
         {slides.map((slide, i) => (
           <motion.div
             key={slide.src}
@@ -87,7 +101,9 @@ export function ProductGallery({
         // En escritorio envuelven en varias filas: el objetivo es ver TODAS las
         // fotos de un vistazo, y una tira recortada esconde justo las últimas.
         // En móvil no cabe una rejilla, así que ahí sí se desliza.
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1 lg:flex-wrap lg:overflow-x-visible">
+        // El mismo `max-w` que la foto grande, para que la tira quede alineada
+        // con ella y no arrancando a su izquierda cuando la foto va centrada.
+        <div className="mt-3 mx-auto flex w-full max-w-[26rem] gap-2 overflow-x-auto pb-1 lg:mx-0 lg:max-w-none lg:flex-wrap lg:overflow-x-visible">
           {slides.map((slide, i) => (
             <button
               key={slide.src}
@@ -95,9 +111,11 @@ export function ProductGallery({
               onClick={() => setIndex(i)}
               aria-label={`Ver foto ${i + 1} de ${slides.length}`}
               aria-current={i === index}
-              // En `lg` van más pequeñas para que las 7 fotos de un modelo
-              // quepan en UNA fila y la foto grande se lleve el alto restante.
-              className={`relative aspect-square w-16 shrink-0 overflow-hidden rounded-lg border transition-colors lg:w-14 ${
+              // Pequeñas a propósito: en `lg` para que las 7 fotos de un modelo
+              // quepan en UNA fila y la foto grande se lleve el alto restante, y
+              // en móvil para que se vea que hay más a la derecha (con 64px la
+              // sexta quedaba justo en el borde y parecía el final de la tira).
+              className={`relative aspect-square w-14 shrink-0 overflow-hidden rounded-lg border transition-colors ${
                 i === index ? 'border-gold' : 'border-line hover:border-gold/50'
               }`}
             >
