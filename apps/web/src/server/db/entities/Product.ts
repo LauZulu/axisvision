@@ -7,8 +7,16 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm'
-// import de TIPO (se borra al compilar) + relación por NOMBRE de entidad, para
+// import de TIPO (se borra al compilar) + relación por NOMBRE DE TABLA, para
 // romper el ciclo de imports de valor Product↔ProductImage (evita TDZ al bundlear).
+//
+// OJO: el nombre en la relación tiene que ser el de la TABLA ('axis_product_image'),
+// NO el de la clase ('AxisProductImage'). TypeORM resuelve la cadena contra
+// `metadata.name` (el nombre de la clase) o `metadata.tableName`, y en el build de
+// producción Next MINIFICA el código del servidor: la clase pasa a llamarse `h` y
+// la cadena con el nombre original ya no encuentra nada ("Entity metadata for
+// h#images was not found"). El nombre de tabla es un dato, no un identificador,
+// así que el minificador no lo toca. En dev no se minifica y el fallo no aparece.
 import type { AxisProductImage } from './ProductImage'
 import type { AxisProductUnit } from './ProductUnit'
 
@@ -83,10 +91,10 @@ export class AxisProduct {
   @Column({ type: 'integer', default: 0 })
   position!: number
 
-  @OneToMany('AxisProductImage', 'product', { cascade: true })
+  @OneToMany('axis_product_image', 'product', { cascade: true })
   images!: AxisProductImage[]
 
-  @OneToMany('AxisProductUnit', 'product')
+  @OneToMany('axis_product_unit', 'product')
   units!: AxisProductUnit[]
 
   @CreateDateColumn({ type: 'timestamptz' })

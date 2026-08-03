@@ -47,7 +47,8 @@ export class AxisStockAlert {
   @Column({ type: 'uuid' })
   productId!: string
 
-  @ManyToOne('AxisProduct', { onDelete: 'CASCADE' })
+  // Por NOMBRE DE TABLA, no de clase (ver la nota en Product.ts).
+  @ManyToOne('axis_product', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'productId' })
   product!: AxisProduct
 

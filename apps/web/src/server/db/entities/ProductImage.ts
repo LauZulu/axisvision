@@ -26,7 +26,9 @@ export class AxisProductImage {
   @Column({ type: 'uuid' })
   productId!: string
 
-  @ManyToOne('AxisProduct', 'images', { onDelete: 'CASCADE' })
+  // Por NOMBRE DE TABLA, no de clase: la minificación del build de producción
+  // renombra las clases y rompe la resolución (ver la nota en Product.ts).
+  @ManyToOne('axis_product', 'images', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'productId' })
   product!: AxisProduct
 

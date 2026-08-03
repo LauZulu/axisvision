@@ -22,7 +22,8 @@ export class AxisOrderItem {
   @Column({ type: 'uuid' })
   orderId!: string
 
-  @ManyToOne('AxisOrder', 'items', { onDelete: 'CASCADE' })
+  // Por NOMBRE DE TABLA, no de clase (ver la nota en Product.ts).
+  @ManyToOne('axis_order', 'items', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'orderId' })
   order!: AxisOrder
 

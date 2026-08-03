@@ -40,7 +40,8 @@ export class AxisProductUnit {
   @Column({ type: 'uuid' })
   productId!: string
 
-  @ManyToOne('AxisProduct', 'units', { onDelete: 'CASCADE' })
+  // Por NOMBRE DE TABLA, no de clase (ver la nota en Product.ts).
+  @ManyToOne('axis_product', 'units', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'productId' })
   product!: AxisProduct
 

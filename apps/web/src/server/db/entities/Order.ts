@@ -77,7 +77,8 @@ export class AxisOrder {
   @Column({ type: 'timestamptz', nullable: true })
   paidAt!: Date | null
 
-  @OneToMany('AxisOrderItem', 'order', { cascade: true })
+  // Por NOMBRE DE TABLA, no de clase (ver la nota en Product.ts).
+  @OneToMany('axis_order_item', 'order', { cascade: true })
   items!: AxisOrderItem[]
 
   @CreateDateColumn({ type: 'timestamptz' })
