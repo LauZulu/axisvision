@@ -300,7 +300,7 @@ Identidad visual no negociable (detalle y reglas de uso en `PLAN-AXIS.md` §7):
 - **Dorado profundo** `#8B6B35` — detalle.
 - **Blanco cálido** `#F5F3EE` — una **única** sección de "luz" (zona técnica/comercial).
 - **Gris cálido** `#D8D6CF` — texto cuerpo, 18-20px, line-height 1.6.
-- **Iridiscencia Morpho** (el azul elegante, firma cromática distintiva) — gradiente `#1A3A8A → #2A5ADA → #2A1A4A → #0A0A1F`. **Único color vibrante** sobre carbón+dorado. Uso **raro = magia** (2-4 veces en toda la página): destello del hero, hover de CTAs, momentos clave. Nunca fondo plano dominante, nunca decoración floral.
+- **Iridiscencia Morpho** (el azul elegante, firma cromática distintiva) — gradiente `#1A3A8A → #2A5ADA → #2A1A4A → #0A0A1F`. **Único color vibrante** sobre carbón+dorado. Uso **raro = magia** (2-4 veces en toda la página): destello del hero, `MorphoSheen` que cruza el CTA una sola vez al entrar en viewport, momentos clave. **El hover del `.btn-axis` YA NO es Morpho**: se rellena con `--gradient-gold` (bronce profundo + barrido de luz dorada) y el texto pasa a `--color-on-gold` — el azul a pantalla completa en el botón se comía la elegancia carbón+dorado. El gradiente pesa hacia `--color-gold-deep` a propósito: sobre el dorado claro el texto blanco se queda en ~2:1 de contraste. Nunca fondo plano dominante, nunca decoración floral.
 
 **Logo / sello recurrente:** el **símbolo dorado de AXIS** — un **árbol-runa** (tronco en Y,
 rama izquierda larga, y una rama derecha de la que nace una rama interior, con **un** chevron

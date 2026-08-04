@@ -51,6 +51,22 @@
     var(--color-morpho-3) 72%,
     var(--color-morpho-4) 100%
   );
+
+  /* Relleno dorado del botón primario al hover. Pesa hacia el dorado PROFUNDO
+     a propósito: sobre el dorado claro (#c8a96e) el texto blanco se queda en
+     ~2:1 de contraste, ilegible. El dorado claro entra solo como barrido de luz
+     en una esquina, que es lo que le da el aire metálico. */
+  --gradient-gold: linear-gradient(
+    120deg,
+    #6d5326 0%,
+    var(--color-gold-deep) 42%,
+    #a6843e 74%,
+    #7f6230 100%
+  );
+
+  /* Texto sobre el dorado — literal, no el token: --color-warm-white se invierte
+     a carbón en tema claro y el relleno dorado es el mismo en los dos temas. */
+  --color-on-gold: #f7f4ec;
 }
 
 /* ============================================================
@@ -167,7 +183,7 @@
     border-color: color-mix(in srgb, var(--color-gold) 28%, transparent);
   }
 
-  /* Botón primario — borde dorado + barrido Morpho al hover */
+  /* Botón primario — borde dorado + relleno dorado al hover */
   .btn-axis {
     position: relative;
     isolation: isolate;
@@ -189,6 +205,7 @@
     transition:
       border-color 0.4s var(--ease-out-expo),
       color 0.4s var(--ease-out-expo),
+      box-shadow 0.4s var(--ease-out-expo),
       transform 0.4s var(--ease-out-expo);
   }
   .btn-axis::before {
@@ -196,18 +213,22 @@
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: var(--gradient-morpho);
+    background: var(--gradient-gold);
     opacity: 0;
     transform: translateY(101%);
     transition:
       transform 0.5s var(--ease-out-expo),
       opacity 0.5s var(--ease-out-expo);
   }
-  .btn-axis:hover {
-    border-color: transparent;
+  .btn-axis:hover,
+  .btn-axis:focus-visible {
+    color: var(--color-on-gold);
+    border-color: color-mix(in srgb, var(--color-gold) 85%, transparent);
     transform: translateY(-1px);
+    box-shadow: 0 10px 26px -14px color-mix(in srgb, var(--color-gold-deep) 90%, transparent);
   }
-  .btn-axis:hover::before {
+  .btn-axis:hover::before,
+  .btn-axis:focus-visible::before {
     opacity: 1;
     transform: translateY(0);
   }
