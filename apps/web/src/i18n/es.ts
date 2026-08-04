@@ -393,6 +393,8 @@ export const es = {
       subtitle: 'Acceso restringido al equipo AXIS.',
       email: 'Correo',
       password: 'Contraseña',
+      showPassword: 'Mostrar contraseña',
+      hidePassword: 'Ocultar contraseña',
       enter: 'Entrar',
       entering: 'Entrando…',
       error: 'No se pudo iniciar sesión.',

@@ -3,14 +3,20 @@ import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Icon } from './Icon'
 import { useDict } from '../../i18n/useDict'
+import { useMenuOpen } from '../../lib/menuOpen'
 import { EASE_OUT_EXPO } from '../../lib/motion'
 
 /**
  * Barra de compra fija (solo mobile) — aparece al pasar el hero, donde el CTA
  * del Nav no existe. Anima solo transform/opacity: cero layout shift.
+ *
+ * Se retira con el menú móvil abierto: el menú trae su propio "Comprar AXIS"
+ * al pie y los dos son `fixed` abajo con el mismo z-index, así que se veían
+ * solapados (el panel es semitransparente: bajarle el z-index no bastaba).
  */
 export function BuyBar() {
   const { t } = useDict()
+  const menuOpen = useMenuOpen()
   const [show, setShow] = useState(false)
 
   useEffect(() => {
@@ -22,7 +28,7 @@ export function BuyBar() {
 
   return (
     <AnimatePresence>
-      {show && (
+      {show && !menuOpen && (
         <motion.div
           initial={{ y: '110%' }}
           animate={{ y: 0 }}

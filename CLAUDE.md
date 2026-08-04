@@ -345,6 +345,13 @@ FAQ → cierre. Dos reglas, detalladas en el comentario de `app/page.tsx`:
   `ShowcaseBanner` ("Tuyas hoy"), que repetía ese cierre y caía pegado al CTA de
   `Capabilities`; su foto pasó al cierre como fondo (velo `.closing-scrim`). Entre
   nav, hero, capacidades, cierre y `BuyBar` ya sobran CTAs: no añadas otra sección-CTA.
+  **Nunca dos "Comprar AXIS" a la vez:** la `BuyBar` (fija abajo, solo móvil) y el
+  pie del menú hamburguesa son ambos `fixed` con el mismo z-index, así que la barra
+  se esconde mientras el menú está abierto — el estado del menú vive en
+  `src/lib/menuOpen.ts` (store externo, no `useState`, porque los dos componentes
+  están en ramas distintas del árbol). Y **dentro de `/tienda/**` el Nav no pinta
+  el CTA**: lleva a donde el usuario ya está y en la ficha compite con el botón de
+  comprar de verdad.
 - `Lifestyle` son 5 fotos, cada una con una situación distinta y **solo gente
   llevando AXIS** (es lo que promete su copy). Si añades, que aporte contexto nuevo.
 

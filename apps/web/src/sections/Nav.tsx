@@ -10,6 +10,7 @@ import { useDict } from '../i18n/useDict'
 import { useScrollTo } from '../lib/scrollContext'
 import { useTheme } from '../lib/useTheme'
 import { useCart, cartCount } from '../lib/cart'
+import { useMenuOpen, setMenuOpen } from '../lib/menuOpen'
 import { EASE_OUT_EXPO } from '../lib/motion'
 
 /** Hamburguesa animada: las líneas exteriores se pliegan en X y la central se disuelve. */
@@ -45,8 +46,13 @@ export function Nav() {
   const router = useRouter()
   const reducedMotion = useReducedMotion()
   const [scrolled, setScrolled] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const menuOpen = useMenuOpen()
   const itemCount = cartCount(useCart())
+
+  // Dentro de la tienda el CTA "Comprar AXIS" (que lleva a /tienda) sobra: el
+  // usuario ya está comprando. En la ficha de producto compite además con el
+  // botón de añadir al carrito, que es el que importa.
+  const inStore = pathname.startsWith('/tienda')
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -73,7 +79,12 @@ export function Nav() {
     }
   }, [menuOpen])
 
-  useEffect(() => setMenuOpen(false), [pathname])
+  // El estado vive fuera de React: cerrar al cambiar de ruta y también al
+  // desmontar el Nav, o quedaría abierto para el siguiente que lo monte.
+  useEffect(() => {
+    setMenuOpen(false)
+    return () => setMenuOpen(false)
+  }, [pathname])
 
   const links: Array<[string, string]> = [
     ['#product', t.nav.product],
@@ -220,15 +231,17 @@ export function Nav() {
             )}
           </Link>
 
-          <Link href="/tienda" className="btn-axis hidden md:inline-flex">
-            {t.nav.cta}
-          </Link>
+          {!inStore && (
+            <Link href="/tienda" className="btn-axis hidden md:inline-flex">
+              {t.nav.cta}
+            </Link>
+          )}
 
           <button
             className="-mr-1 p-1 text-warm-white transition-colors hover:text-gold md:hidden"
             aria-label={menuOpen ? t.nav.menuClose : t.nav.menuOpen}
             aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((v) => !v)}
+            onClick={() => setMenuOpen(!menuOpen)}
           >
             <BurgerIcon open={menuOpen} />
           </button>
@@ -293,14 +306,18 @@ export function Nav() {
               variants={footV}
               className="container-axis pb-[max(2.5rem,env(safe-area-inset-bottom))]"
             >
-              <Link
-                href="/tienda"
-                onClick={() => setMenuOpen(false)}
-                className="btn-axis w-full"
+              {!inStore && (
+                <Link
+                  href="/tienda"
+                  onClick={() => setMenuOpen(false)}
+                  className="btn-axis w-full"
+                >
+                  {t.nav.cta}
+                </Link>
+              )}
+              <div
+                className={`flex items-center justify-between ${inStore ? '' : 'mt-6'}`}
               >
-                {t.nav.cta}
-              </Link>
-              <div className="mt-6 flex items-center justify-between">
                 <p className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-warm-gray/50">
                   {t.hero.eyebrow}
                 </p>

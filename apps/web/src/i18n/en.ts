@@ -385,6 +385,8 @@ export const en = {
       subtitle: 'Restricted access — AXIS team only.',
       email: 'Email',
       password: 'Password',
+      showPassword: 'Show password',
+      hidePassword: 'Hide password',
       enter: 'Enter',
       entering: 'Signing in…',
       error: 'Could not sign in.',
