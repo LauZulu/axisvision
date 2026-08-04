@@ -62,16 +62,45 @@ export function InventoryView({ units: initial }: { units: ProductUnitDTO[] }) {
     setSavingId(null)
   }
 
+  const locationSelect = (u: ProductUnitDTO, extra = '') => (
+    <select
+      value={u.location}
+      onChange={(e) => patch(u.id, { location: e.target.value })}
+      aria-label={inv.location}
+      className={`rounded-md border border-line bg-carbon-900 px-2 py-2 text-base text-warm-white outline-none focus:border-gold/60 lg:py-1.5 lg:text-sm ${extra}`}
+    >
+      {LOCATIONS.map((loc) => (
+        <option key={loc} value={loc}>
+          {locationLabel[loc]}
+        </option>
+      ))}
+    </select>
+  )
+
+  const noteInput = (u: ProductUnitDTO, extra: string) => (
+    <input
+      defaultValue={u.note ?? ''}
+      aria-label={inv.note}
+      placeholder={inv.note}
+      onBlur={(e) => {
+        const note = e.target.value.trim() || null
+        if (note !== u.note) patch(u.id, { note })
+      }}
+      className={`w-full rounded-md px-2 py-1 text-warm-gray/75 outline-none focus:border-gold/60 ${extra}`}
+    />
+  )
+
   return (
     <div>
-      <h1 className="font-head text-2xl text-warm-white">{inv.title}</h1>
-      <p className="mt-1 text-warm-gray/60">{inv.subtitle}</p>
+      <h1 className="font-head text-xl text-warm-white sm:text-2xl">{inv.title}</h1>
+      <p className="mt-1 text-sm text-warm-gray/60 sm:text-base">{inv.subtitle}</p>
 
-      <div className="mt-6 flex flex-wrap items-center gap-4">
+      <div className="mt-5 flex flex-wrap items-center gap-3 sm:mt-6 sm:gap-4">
         <select
           value={model}
           onChange={(e) => setModel(e.target.value)}
-          className="rounded-md border border-line bg-carbon-900 px-3 py-2 text-sm text-warm-white outline-none focus:border-gold/60"
+          aria-label={inv.model}
+          className="w-full rounded-md border border-line bg-carbon-900 px-3 py-2.5 text-base text-warm-white outline-none focus:border-gold/60 sm:w-auto sm:py-2 sm:text-sm"
         >
           <option value="">{inv.filterAll}</option>
           {models.map(([id, name]) => (
@@ -90,8 +119,53 @@ export function InventoryView({ units: initial }: { units: ProductUnitDTO[] }) {
       {visible.length === 0 ? (
         <p className="mt-10 text-warm-gray/60">{inv.empty}</p>
       ) : (
-        <div className="mt-6 overflow-x-auto rounded-xl border border-line">
-          <table className="w-full min-w-[52rem] text-sm">
+        <>
+        {/* Móvil/tableta: una ficha por unidad. Siete columnas no caben en un
+            teléfono, y esta es la vista que se usa gafa en mano. */}
+        <ul className="mt-5 space-y-3 lg:hidden">
+          {visible.map((u) => (
+            <li
+              key={u.id}
+              className={`rounded-2xl border border-line bg-carbon-850 p-4 transition-opacity ${
+                savingId === u.id ? 'opacity-50' : ''
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="font-mono text-warm-white">{u.code}</div>
+                  <div className="truncate text-sm text-warm-gray/70">
+                    {u.productName}
+                    {u.modelCode && (
+                      <span className="ml-2 font-mono text-[0.7rem] text-warm-gray/45">
+                        {u.modelCode}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-0.5 font-mono text-xs text-warm-gray/45">
+                    {inv.unit} {u.unitNumber} ·{' '}
+                    {u.lensType === 'ophthalmic' ? inv.lensOphthalmic : inv.lensSun}
+                  </div>
+                </div>
+                {locationSelect(u, 'shrink-0')}
+              </div>
+
+              <label className="mt-3 flex items-center gap-2.5 text-sm text-warm-gray/80">
+                <input
+                  type="checkbox"
+                  checked={u.sellable}
+                  onChange={(e) => patch(u.id, { sellable: e.target.checked })}
+                  className="h-5 w-5 accent-[#c8a96e]"
+                />
+                {inv.sellable}
+              </label>
+
+              <div className="mt-3">{noteInput(u, 'border border-line bg-carbon-900 py-2 text-base')}</div>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-6 hidden overflow-x-auto rounded-xl border border-line lg:block">
+          <table className="w-full text-sm">
             <thead className="bg-carbon-900 text-left font-mono text-[0.7rem] tracking-widest text-warm-gray/60">
               <tr>
                 <th className="px-4 py-3">{inv.code}</th>
@@ -122,42 +196,25 @@ export function InventoryView({ units: initial }: { units: ProductUnitDTO[] }) {
                   <td className="px-4 py-2.5 text-warm-gray/70">
                     {u.lensType === 'ophthalmic' ? inv.lensOphthalmic : inv.lensSun}
                   </td>
-                  <td className="px-4 py-2.5">
-                    <select
-                      value={u.location}
-                      onChange={(e) => patch(u.id, { location: e.target.value })}
-                      className="rounded-md border border-line bg-carbon-900 px-2 py-1.5 text-sm text-warm-white outline-none focus:border-gold/60"
-                    >
-                      {LOCATIONS.map((loc) => (
-                        <option key={loc} value={loc}>
-                          {locationLabel[loc]}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
+                  <td className="px-4 py-2.5">{locationSelect(u)}</td>
                   <td className="px-4 py-2.5">
                     <input
                       type="checkbox"
                       checked={u.sellable}
                       onChange={(e) => patch(u.id, { sellable: e.target.checked })}
+                      aria-label={inv.sellable}
                       className="h-4 w-4 accent-[#c8a96e]"
                     />
                   </td>
                   <td className="px-4 py-2.5">
-                    <input
-                      defaultValue={u.note ?? ''}
-                      onBlur={(e) => {
-                        const note = e.target.value.trim() || null
-                        if (note !== u.note) patch(u.id, { note })
-                      }}
-                      className="w-full min-w-40 rounded-md border border-transparent bg-transparent px-2 py-1 text-warm-gray/75 outline-none hover:border-line focus:border-gold/60"
-                    />
+                    {noteInput(u, 'min-w-40 border border-transparent bg-transparent text-sm hover:border-line')}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <p className="mt-5 font-mono text-xs text-warm-gray/40">{inv.importHint}</p>

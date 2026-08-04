@@ -66,18 +66,18 @@ export function WaitlistView({ alerts }: { alerts: StockAlertDTO[] }) {
 
   return (
     <div>
-      <h1 className="font-head text-2xl text-warm-white">{w.title}</h1>
-      <p className="mt-1 text-warm-gray/60">{w.subtitle}</p>
+      <h1 className="font-head text-xl text-warm-white sm:text-2xl">{w.title}</h1>
+      <p className="mt-1 text-sm text-warm-gray/60 sm:text-base">{w.subtitle}</p>
 
       {alerts.length === 0 ? (
-        <div className="mt-8 rounded-2xl border border-line bg-carbon-850 p-8 text-warm-gray/60">
+        <div className="mt-6 rounded-2xl border border-line bg-carbon-850 p-6 text-warm-gray/60 sm:mt-8 sm:p-8">
           {w.empty}
         </div>
       ) : (
         <>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2 lg:grid-cols-3">
             {summary.map((row) => (
-              <div key={row.productId} className="rounded-2xl border border-line bg-carbon-850 p-5">
+              <div key={row.productId} className="rounded-2xl border border-line bg-carbon-850 p-4 sm:p-5">
                 <h2 className="font-head text-warm-white">{row.productName}</h2>
                 <p className="mt-1 font-mono text-xs tracking-widest text-warm-gray/55">
                   {w.stock}: {row.stock}
@@ -101,8 +101,25 @@ export function WaitlistView({ alerts }: { alerts: StockAlertDTO[] }) {
             ))}
           </div>
 
-          <div className="mt-8 overflow-x-auto rounded-2xl border border-line">
-            <table className="w-full min-w-[720px] text-left text-sm">
+          {/* Móvil: una ficha por correo apuntado */}
+          <ul className="mt-6 space-y-3 md:hidden">
+            {alerts.map((a) => (
+              <li key={a.id} className="rounded-2xl border border-line bg-carbon-850 p-4">
+                <div className="break-all text-sm text-warm-white">{a.email}</div>
+                <div className="mt-1 text-sm text-warm-gray/70">{a.productName}</div>
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-xs text-warm-gray/50">
+                  <span className="text-warm-gray/75">{statusLabel[a.status] ?? a.status}</span>
+                  <span>·</span>
+                  <span>{a.source === 'preview' ? w.sourcePreview : w.sourceSoldOut}</span>
+                  <span>·</span>
+                  <span>{formatDateTime(a.createdAt)}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-8 hidden overflow-x-auto rounded-2xl border border-line md:block">
+            <table className="w-full text-left text-sm">
               <thead className="border-b border-line bg-carbon-850 text-warm-gray/55">
                 <tr>
                   <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{w.colEmail}</th>

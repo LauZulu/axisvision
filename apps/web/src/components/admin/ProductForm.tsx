@@ -59,8 +59,10 @@ function Field({
   )
 }
 
+// `text-base` (16px) explícito: heredando el `text-sm` del label, Safari de iOS
+// hace zoom al enfocar cada campo y editar desde el móvil se vuelve un baile.
 const inputCls =
-  'w-full rounded-md border border-line bg-carbon-900 px-3 py-2.5 text-warm-white outline-none focus:border-gold/60'
+  'w-full rounded-md border border-line bg-carbon-900 px-3 py-2.5 text-base text-warm-white outline-none focus:border-gold/60'
 
 export function ProductForm({ product }: { product?: ProductDTO }) {
   const { t } = useDict()
@@ -121,15 +123,17 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
 
   return (
     <div>
-      <h1 className="font-head text-2xl text-warm-white">{product ? f.editTitle : f.newTitle}</h1>
+      <h1 className="font-head text-xl text-warm-white sm:text-2xl">
+        {product ? f.editTitle : f.newTitle}
+      </h1>
       {product ? (
-        <p className="mt-1 font-mono text-xs text-warm-gray/45">{product.slug}</p>
+        <p className="mt-1 break-all font-mono text-xs text-warm-gray/45">{product.slug}</p>
       ) : (
-        <p className="mt-1 text-warm-gray/60">{f.newSubtitle}</p>
+        <p className="mt-1 text-sm text-warm-gray/60 sm:text-base">{f.newSubtitle}</p>
       )}
 
-      <form onSubmit={onSubmit} className="mt-8 max-w-3xl">
-        <div className="grid gap-5 sm:grid-cols-2">
+      <form onSubmit={onSubmit} className="mt-6 max-w-3xl sm:mt-8">
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
           <Field label={f.slug}>
             <input
               className={inputCls}
@@ -177,7 +181,7 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
           </Field>
         </div>
 
-        <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        <div className="mt-4 grid gap-4 sm:mt-5 sm:grid-cols-2 sm:gap-5">
           <Field label={f.descriptionEs}>
             <textarea
               className={`${inputCls} min-h-24`}
@@ -196,7 +200,9 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
           </Field>
         </div>
 
-        <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Una columna en móvil: estas etiquetas son largas ("Precio anterior
+            (opcional, muestra descuento)") y a dos columnas ocupan tres líneas. */}
+        <div className="mt-4 grid gap-4 sm:mt-5 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
           <Field label={f.price}>
             <input
               className={inputCls}
@@ -268,14 +274,18 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
 
         {error && <p className="mt-5 text-sm text-red-400">{error}</p>}
 
-        <div className="mt-8 flex items-center gap-3">
-          <button type="submit" disabled={saving} className="btn-axis disabled:opacity-60">
+        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
+          <button
+            type="submit"
+            disabled={saving}
+            className="btn-axis w-full disabled:opacity-60 sm:w-auto"
+          >
             {saving ? f.saving : product ? f.save : f.create}
           </button>
           <button
             type="button"
             onClick={() => router.push('/admin/productos')}
-            className="text-sm text-warm-gray/60 transition-colors hover:text-gold"
+            className="w-full py-2 text-sm text-warm-gray/60 transition-colors hover:text-gold sm:w-auto"
           >
             {f.cancel}
           </button>

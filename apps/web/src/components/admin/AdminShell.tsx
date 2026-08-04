@@ -27,69 +27,81 @@ export function AdminShell({ email, children }: { email: string; children: React
     router.refresh()
   }
 
-  return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b border-line bg-carbon-900/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <div className="flex items-center gap-6">
-            <Link href="/admin" className="flex items-center gap-2 text-gold">
-              <TreeLogo className="h-6 w-auto" />
-              <span className="font-mono text-[0.7rem] tracking-[0.22em] text-warm-gray/70">ADMIN</span>
-            </Link>
-            <nav className="flex items-center gap-1 overflow-x-auto">
-              {nav.map((item) => {
-                const active =
-                  item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href)
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
-                      active ? 'bg-carbon-800 text-warm-white' : 'text-warm-gray/70 hover:text-gold'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                )
-              })}
-            </nav>
-          </div>
+  // Las pestañas se pintan dos veces —en línea con el logo en escritorio, en su
+  // propia tira deslizable en móvil— porque en una sola fila de 430px los seis
+  // enlaces + logo + sesión quedaban ilegibles (y encogidos, no recortados).
+  const links = nav.map((item) => {
+    const active = item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href)
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        aria-current={active ? 'page' : undefined}
+        className={`shrink-0 whitespace-nowrap rounded-md px-3 py-2 text-sm transition-colors md:py-1.5 ${
+          active ? 'bg-carbon-800 text-warm-white' : 'text-warm-gray/70 hover:text-gold'
+        }`}
+      >
+        {item.label}
+      </Link>
+    )
+  })
 
-          <div className="flex items-center gap-4">
-            <div className="font-mono text-xs tracking-widest">
-              <button
-                onClick={() => setLang('es')}
-                className={lang === 'es' ? 'text-gold' : 'text-warm-gray/45 hover:text-warm-gray'}
+  return (
+    <div className="min-h-[100svh]">
+      <header className="sticky top-0 z-40 border-b border-line bg-carbon-900/85 backdrop-blur-xl">
+        <div className="mx-auto max-w-6xl px-4 sm:px-5">
+          <div className="flex h-14 items-center justify-between gap-3 md:h-16">
+            <div className="flex min-w-0 items-center gap-6">
+              <Link href="/admin" className="flex items-center gap-2 text-gold">
+                <TreeLogo className="h-6 w-auto" />
+                <span className="font-mono text-[0.7rem] tracking-[0.22em] text-warm-gray/70">
+                  ADMIN
+                </span>
+              </Link>
+              <nav className="hidden items-center gap-1 md:flex">{links}</nav>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+              <div className="font-mono text-xs tracking-widest">
+                <button
+                  onClick={() => setLang('es')}
+                  className={lang === 'es' ? 'text-gold' : 'text-warm-gray/45 hover:text-warm-gray'}
+                >
+                  ES
+                </button>
+                <span className="mx-1 text-warm-gray/30">/</span>
+                <button
+                  onClick={() => setLang('en')}
+                  className={lang === 'en' ? 'text-gold' : 'text-warm-gray/45 hover:text-warm-gray'}
+                >
+                  EN
+                </button>
+              </div>
+              <Link
+                href="/"
+                className="hidden text-sm text-warm-gray/60 transition-colors hover:text-gold sm:inline"
               >
-                ES
-              </button>
-              <span className="mx-1 text-warm-gray/30">/</span>
+                {t.admin.nav.viewSite}
+              </Link>
+              <span className="hidden font-mono text-xs text-warm-gray/50 lg:inline">{email}</span>
               <button
-                onClick={() => setLang('en')}
-                className={lang === 'en' ? 'text-gold' : 'text-warm-gray/45 hover:text-warm-gray'}
+                onClick={logout}
+                className="inline-flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-sm text-warm-gray/80 transition-colors hover:border-gold/50 hover:text-gold"
               >
-                EN
+                {t.admin.nav.logout}
+                <Icon name="arrow" size={14} />
               </button>
             </div>
-            <Link
-              href="/"
-              className="hidden text-sm text-warm-gray/60 transition-colors hover:text-gold sm:inline"
-            >
-              {t.admin.nav.viewSite}
-            </Link>
-            <span className="hidden font-mono text-xs text-warm-gray/50 md:inline">{email}</span>
-            <button
-              onClick={logout}
-              className="inline-flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-sm text-warm-gray/80 transition-colors hover:border-gold/50 hover:text-gold"
-            >
-              {t.admin.nav.logout}
-              <Icon name="arrow" size={14} />
-            </button>
           </div>
+
+          {/* Móvil: las pestañas en su propia fila, deslizable de lado. */}
+          <nav className="no-scrollbar -mx-4 flex items-center gap-1 overflow-x-auto px-4 pb-2 md:hidden">
+            {links}
+          </nav>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-5 py-10">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-7 sm:px-5 sm:py-10">{children}</main>
     </div>
   )
 }

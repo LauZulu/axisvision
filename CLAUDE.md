@@ -113,6 +113,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   resincroniza el stock) y `/admin/lentes` (CRUD de opciones, con el selector `kind` para decir si
 >   la fila es un tipo de lente o el complemento de fórmula). El campo `stock` sale de solo
 >   lectura cuando el producto tiene unidades — se gestiona moviendo unidades, no tecleando.
+>   **El panel se usa desde el teléfono, así que ninguna tabla hace scroll horizontal en móvil:**
+>   el patrón es lista de **fichas** hasta `md` (`lg` en inventario, que trae 7 columnas) y `<table>`
+>   de ahí para arriba, con la misma lógica compartida en helpers dentro del componente. Las
+>   pestañas del `AdminShell` van en su propia fila deslizable (`.no-scrollbar`) bajo `md`. Dos
+>   reglas que se rompen solas si no se vigilan: los inputs del admin llevan **`text-base` (16px)**
+>   —por debajo, Safari de iOS hace zoom al enfocar— y nada interactivo puede depender de
+>   `group-hover` (en táctil no existe; era el caso de las flechas para reordenar fotos).
 > - **Fotos de producto en S3 (57 reales, ya cargadas):** viven en
 >   **`products/<slug>/<variante>/<categoria>-NN.<ext>`**. Las subidas manuales desde el admin usan
 >   `products/<slug>/<uuid>.<ext>` (el presign recibe el `slug`). Ya **no quedan fotos de ejemplo**:

@@ -10,16 +10,16 @@ export function ProductsView({ products }: { products: ProductDTO[] }) {
   const p = t.admin.products
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-head text-2xl text-warm-white">{p.title}</h1>
-          <p className="mt-1 text-warm-gray/60">{p.subtitle}</p>
+          <h1 className="font-head text-xl text-warm-white sm:text-2xl">{p.title}</h1>
+          <p className="mt-1 text-sm text-warm-gray/60 sm:text-base">{p.subtitle}</p>
         </div>
-        <Link href="/admin/productos/nuevo" className="btn-axis">
+        <Link href="/admin/productos/nuevo" className="btn-axis w-full sm:w-auto">
           {p.new}
         </Link>
       </div>
-      <div className="mt-8">
+      <div className="mt-6 sm:mt-8">
         <ProductTable products={products} />
       </div>
     </div>

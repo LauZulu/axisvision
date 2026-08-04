@@ -6,8 +6,10 @@ import { useDict } from '../../i18n/useDict'
 import { formatCop } from '../../lib/products'
 import type { LensOptionDTO } from '../../lib/lenses'
 
+// `text-base` en móvil (16px) para que Safari de iOS no haga zoom al enfocar;
+// a partir de `sm` vuelve al cuerpo compacto de la tabla.
 const inputCls =
-  'w-full rounded-md border border-line bg-carbon-900 px-3 py-2 text-sm text-warm-white outline-none focus:border-gold/60'
+  'w-full rounded-md border border-line bg-carbon-900 px-3 py-2.5 text-base text-warm-white outline-none focus:border-gold/60 sm:py-2 sm:text-sm'
 
 type Draft = {
   slug: string
@@ -111,13 +113,17 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="font-head text-2xl text-warm-white">{l.title}</h1>
-          <p className="mt-1 text-warm-gray/60">{l.subtitle}</p>
+          <h1 className="font-head text-xl text-warm-white sm:text-2xl">{l.title}</h1>
+          <p className="mt-1 text-sm text-warm-gray/60 sm:text-base">{l.subtitle}</p>
         </div>
         {editing === null && (
-          <button type="button" onClick={() => startEdit()} className="btn-axis">
+          <button
+            type="button"
+            onClick={() => startEdit()}
+            className="btn-axis w-full shrink-0 sm:w-auto"
+          >
             {l.add}
           </button>
         )}
@@ -127,7 +133,7 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
 
       {/* Formulario (alta o edición) */}
       {draft && (
-        <div className="mt-6 rounded-xl border border-gold/40 bg-carbon-850 p-5">
+        <div className="mt-6 rounded-xl border border-gold/40 bg-carbon-850 p-4 sm:p-5">
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm text-warm-gray/80">
               <span className="mb-1.5 block">{l.name}</span>
@@ -202,11 +208,20 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
             </label>
           </div>
 
-          <div className="mt-5 flex items-center gap-3">
-            <button type="button" onClick={save} disabled={saving} className="btn-axis disabled:opacity-60">
+          <div className="mt-5 flex flex-col items-center gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={save}
+              disabled={saving}
+              className="btn-axis w-full disabled:opacity-60 sm:w-auto"
+            >
               {saving ? l.saving : l.save}
             </button>
-            <button type="button" onClick={cancel} className="text-sm text-warm-gray/60 transition-colors hover:text-gold">
+            <button
+              type="button"
+              onClick={cancel}
+              className="w-full py-2 text-sm text-warm-gray/60 transition-colors hover:text-gold sm:w-auto"
+            >
               {l.cancel}
             </button>
           </div>
@@ -239,18 +254,33 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
                     </span>
                   )}
                 </div>
-                <p className="mt-0.5 truncate text-sm text-warm-gray/55">{o.descriptionEs}</p>
+                <p className="mt-0.5 line-clamp-2 text-sm text-warm-gray/55 sm:truncate">
+                  {o.descriptionEs}
+                </p>
               </div>
-              <span className="font-mono text-sm text-warm-gray/80">
-                {o.extraPriceCop > 0 ? `+ ${formatCop(o.extraPriceCop)}` : l.included}
-              </span>
-              <div className="flex items-center gap-3">
-                <button type="button" onClick={() => startEdit(o)} className="text-sm text-warm-gray/70 transition-colors hover:text-gold">
-                  {t.admin.products.edit}
-                </button>
-                <button type="button" onClick={() => remove(o.id)} className="text-sm text-warm-gray/45 transition-colors hover:text-red-400">
-                  {l.delete}
-                </button>
+              {/* En móvil el precio y las acciones bajan a su propia línea y se
+                  reparten el ancho: en la misma fila que el nombre quedaban
+                  dos enlaces de 12px pegados al borde. */}
+              <div className="flex w-full items-center justify-between gap-4 sm:w-auto">
+                <span className="font-mono text-sm text-warm-gray/80">
+                  {o.extraPriceCop > 0 ? `+ ${formatCop(o.extraPriceCop)}` : l.included}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => startEdit(o)}
+                    className="rounded-md px-2 py-1.5 text-sm text-warm-gray/70 transition-colors hover:text-gold"
+                  >
+                    {t.admin.products.edit}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => remove(o.id)}
+                    className="rounded-md px-2 py-1.5 text-sm text-warm-gray/45 transition-colors hover:text-red-400"
+                  >
+                    {l.delete}
+                  </button>
+                </div>
               </div>
             </li>
           ))}

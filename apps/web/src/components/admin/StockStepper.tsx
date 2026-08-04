@@ -38,8 +38,10 @@ export function StockStepper({
 
   const btn =
     'grid place-items-center rounded-md border border-line text-warm-gray/80 transition-colors hover:border-gold/50 hover:text-gold disabled:opacity-40'
-  const dim = size === 'sm' ? 'h-7 w-7 text-sm' : 'h-8 w-8'
-  const inputDim = size === 'sm' ? 'h-7 w-12 text-sm' : 'h-8 w-14'
+  // En táctil los controles nunca bajan de 36px: el tamaño `sm` (28px) es
+  // cómodo con ratón, pero con el dedo se falla el −1 y se toca el +1.
+  const dim = size === 'sm' ? 'h-9 w-9 md:h-7 md:w-7 text-sm' : 'h-9 w-9 md:h-8 md:w-8'
+  const inputDim = size === 'sm' ? 'h-9 w-12 md:h-7 text-base md:text-sm' : 'h-9 w-14 md:h-8'
 
   return (
     <div className={`inline-flex items-center gap-1.5 ${saving ? 'opacity-60' : ''}`}>

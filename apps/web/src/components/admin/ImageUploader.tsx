@@ -91,19 +91,21 @@ export function ImageUploader({
                 type="button"
                 onClick={() => remove(key)}
                 aria-label={im.remove}
-                className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-carbon-900/80 text-warm-gray/90 hover:text-red-400"
+                className="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-full bg-carbon-900/80 text-warm-gray/90 hover:text-red-400 md:h-5 md:w-5"
               >
                 ×
               </button>
 
-              {/* Reordenar */}
-              <div className="absolute inset-x-0 bottom-0 flex justify-between bg-carbon-900/70 opacity-0 transition-opacity group-hover:opacity-100">
+              {/* Reordenar. Visible SIEMPRE en táctil: con `group-hover` las
+                  flechas no existían en un teléfono y no había forma de elegir
+                  la foto principal desde el móvil. */}
+              <div className="absolute inset-x-0 bottom-0 flex justify-between bg-carbon-900/70 transition-opacity md:opacity-0 md:group-hover:opacity-100">
                 <button
                   type="button"
                   onClick={() => move(i, -1)}
                   disabled={i === 0}
                   aria-label={im.moveBefore}
-                  className="px-2 py-1 text-warm-gray/90 hover:text-gold disabled:opacity-30"
+                  className="px-3 py-2 text-warm-gray/90 hover:text-gold disabled:opacity-30 md:px-2 md:py-1"
                 >
                   ◀
                 </button>
@@ -112,7 +114,7 @@ export function ImageUploader({
                   onClick={() => move(i, 1)}
                   disabled={i === value.length - 1}
                   aria-label={im.moveAfter}
-                  className="px-2 py-1 text-warm-gray/90 hover:text-gold disabled:opacity-30"
+                  className="px-3 py-2 text-warm-gray/90 hover:text-gold disabled:opacity-30 md:px-2 md:py-1"
                 >
                   ▶
                 </button>
@@ -122,7 +124,7 @@ export function ImageUploader({
         </div>
       )}
 
-      <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-line px-4 py-2 text-sm text-warm-gray/80 transition-colors hover:border-gold/50 hover:text-gold">
+      <label className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-line px-4 py-2.5 text-sm text-warm-gray/80 transition-colors hover:border-gold/50 hover:text-gold sm:w-auto sm:py-2">
         {busy ? im.uploading : im.upload}
         <input
           type="file"

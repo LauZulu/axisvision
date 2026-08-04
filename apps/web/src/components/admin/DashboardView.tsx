@@ -24,10 +24,14 @@ function Tile({
   const valueColor =
     accent === 'gold' ? 'text-gold' : accent === 'warn' ? 'text-red-400' : 'text-warm-white'
   return (
-    <div className="rounded-2xl border border-line bg-carbon-850 p-6">
-      <div className="font-mono text-[0.7rem] uppercase tracking-widest text-warm-gray/55">{label}</div>
-      <div className={`mt-2 font-head text-3xl ${valueColor}`}>{value}</div>
-      {hint && <div className="mt-1 text-sm text-warm-gray/55">{hint}</div>}
+    <div className="rounded-2xl border border-line bg-carbon-850 p-4 sm:p-6">
+      <div className="font-mono text-[0.62rem] uppercase tracking-widest text-warm-gray/55 sm:text-[0.7rem]">
+        {label}
+      </div>
+      {/* El valor puede ser un importe largo ($ 163.380.000): en móvil baja de
+          cuerpo y se le permite partir, o desborda la tarjeta. */}
+      <div className={`mt-2 break-words font-head text-xl sm:text-3xl ${valueColor}`}>{value}</div>
+      {hint && <div className="mt-1 text-xs text-warm-gray/55 sm:text-sm">{hint}</div>}
     </div>
   )
 }
@@ -50,10 +54,12 @@ export function DashboardView({
 
   return (
     <div>
-      <h1 className="font-head text-2xl text-warm-white">{d.title}</h1>
-      <p className="mt-1 text-warm-gray/60">{d.subtitle}</p>
+      <h1 className="font-head text-xl text-warm-white sm:text-2xl">{d.title}</h1>
+      <p className="mt-1 text-sm text-warm-gray/60 sm:text-base">{d.subtitle}</p>
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Dos columnas ya en móvil: seis fichas apiladas eran seis pantallazos
+          de scroll para leer un resumen que se llama "de un vistazo". */}
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-5 lg:grid-cols-3">
         <Tile label={d.revenue} value={formatCop(orderStats.revenueCop)} hint={d.revenueHint} accent="gold" />
         <Tile label={d.orders} value={orderStats.total} hint={fill(d.ordersHint, { n: orderStats.pending })} />
         <Tile label={d.inventoryValue} value={formatCop(stats.inventoryValueCop)} hint={d.inventoryValueHint} />
@@ -71,8 +77,8 @@ export function DashboardView({
         />
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-line bg-carbon-850 p-6">
+      <div className="mt-6 grid gap-4 sm:mt-8 sm:gap-6 lg:grid-cols-2">
+        <section className="rounded-2xl border border-line bg-carbon-850 p-5 sm:p-6">
           <div className="flex items-center justify-between">
             <h2 className="font-head text-lg text-warm-white">{d.restockTitle}</h2>
             <Link href="/admin/productos" className="font-mono text-xs tracking-widest text-gold hover:underline">
@@ -96,7 +102,7 @@ export function DashboardView({
           )}
         </section>
 
-        <section className="rounded-2xl border border-line bg-carbon-850 p-6">
+        <section className="rounded-2xl border border-line bg-carbon-850 p-5 sm:p-6">
           <div className="flex items-center justify-between">
             <h2 className="font-head text-lg text-warm-white">{d.recentTitle}</h2>
             <Link href="/admin/pedidos" className="font-mono text-xs tracking-widest text-gold hover:underline">
@@ -108,10 +114,13 @@ export function DashboardView({
           ) : (
             <ul className="mt-4 divide-y divide-line/60">
               {recent.map((o) => (
-                <li key={o.id} className="flex items-center justify-between gap-3 py-2.5">
+                <li
+                  key={o.id}
+                  className="flex flex-col gap-1.5 py-2.5 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between min-[420px]:gap-3"
+                >
                   <div className="min-w-0">
                     <div className="truncate text-sm text-warm-white">{o.customerName}</div>
-                    <div className="font-mono text-xs text-warm-gray/45">
+                    <div className="truncate font-mono text-xs text-warm-gray/45">
                       {o.reference} · {formatDateTime(o.createdAt)}
                     </div>
                   </div>

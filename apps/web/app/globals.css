@@ -310,6 +310,16 @@
       );
   }
 
+  /* Tira que se desplaza en horizontal sin barra a la vista (pestañas del
+     admin en móvil). El gesto es táctil; la barra solo roba alto. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Botón secundario — texto + subrayado dorado */
   .btn-ghost {
     display: inline-flex;
