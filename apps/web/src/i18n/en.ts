@@ -358,7 +358,7 @@ export const en = {
   },
 
   admin: {
-    nav: { dashboard: 'Dashboard', products: 'Products', inventory: 'Inventory', lenses: 'Lenses', orders: 'Orders', waitlist: 'Waitlist', viewSite: 'View site', logout: 'Log out' },
+    nav: { dashboard: 'Dashboard', products: 'Products', inventory: 'Inventory', lenses: 'Lenses', orders: 'Orders', waitlist: 'Waitlist', viewSite: 'View site', backToSite: 'Back to site', logout: 'Log out' },
     waitlist: {
       title: 'Waitlist',
       subtitle: 'Who is waiting for each model. The top ones are the ones to restock first.',

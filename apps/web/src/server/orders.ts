@@ -45,19 +45,25 @@ export async function getAllOrders(): Promise<OrderDTO[]> {
 
 export type OrderStats = { total: number; pending: number; revenueCop: number }
 
+/** Las tres cifras en una sola pasada (ver la nota de `getAdminStats`). */
 export async function getOrderStats(): Promise<OrderStats> {
   const db = await getDb()
-  const repo = db.getRepository(AxisOrder)
-  const [total, pending] = await Promise.all([
-    repo.count(),
-    repo.count({ where: { status: 'pending' } }),
-  ])
-  const rev = await repo
+  const row = await db
+    .getRepository(AxisOrder)
     .createQueryBuilder('o')
-    .select('COALESCE(SUM(o."amountCop"), 0)', 'total')
-    .where('o.status IN (:...statuses)', { statuses: REVENUE_STATUSES })
-    .getRawOne<{ total: string }>()
-  return { total, pending, revenueCop: Number(rev?.total ?? 0) }
+    .select('COUNT(*)', 'total')
+    .addSelect("COUNT(*) FILTER (WHERE o.status = 'pending')", 'pending')
+    .addSelect(
+      'COALESCE(SUM(o."amountCop") FILTER (WHERE o.status IN (:...statuses)), 0)',
+      'revenue',
+    )
+    .setParameter('statuses', REVENUE_STATUSES)
+    .getRawOne<{ total: string; pending: string; revenue: string }>()
+  return {
+    total: Number(row?.total ?? 0),
+    pending: Number(row?.pending ?? 0),
+    revenueCop: Number(row?.revenue ?? 0),
+  }
 }
 
 export async function updateOrderStatus(id: string, status: OrderStatus): Promise<boolean> {

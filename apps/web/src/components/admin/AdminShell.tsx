@@ -77,11 +77,15 @@ export function AdminShell({ email, children }: { email: string; children: React
                   EN
                 </button>
               </div>
+              {/* La salida al sitio estaba oculta bajo `sm`: en el teléfono el
+                  panel era un callejón sin salida. En móvil queda como flecha. */}
               <Link
                 href="/"
-                className="hidden text-sm text-warm-gray/60 transition-colors hover:text-gold sm:inline"
+                aria-label={t.admin.nav.viewSite}
+                className="inline-flex items-center text-sm text-warm-gray/60 transition-colors hover:text-gold"
               >
-                {t.admin.nav.viewSite}
+                <Icon name="arrow" size={16} className="rotate-180 sm:hidden" />
+                <span className="hidden sm:inline">{t.admin.nav.viewSite}</span>
               </Link>
               <span className="hidden font-mono text-xs text-warm-gray/50 lg:inline">{email}</span>
               <button

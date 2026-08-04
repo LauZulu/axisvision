@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { TreeLogo } from '../../../src/components/ui/TreeLogo'
 import { Icon } from '../../../src/components/ui/Icon'
@@ -26,8 +27,11 @@ export default function AdminLoginPage() {
         body: JSON.stringify({ email, password }),
       })
       if (res.ok) {
+        // Sin `router.refresh()` detrás: `replace()` ya pide al servidor el
+        // render de /admin (la ruta es force-dynamic, no hay caché de cliente
+        // que refrescar), y el refresh lo renderizaba OTRA vez — el panel
+        // entero, con sus consultas, dos veces por cada inicio de sesión.
         router.replace('/admin')
-        router.refresh()
         return
       }
       const data = await res.json().catch(() => null)
@@ -44,7 +48,19 @@ export default function AdminLoginPage() {
     'mt-1.5 w-full rounded-md border border-line bg-carbon-900 px-3 py-2.5 text-base text-warm-white outline-none focus:border-gold/60'
 
   return (
-    <main className="grid min-h-[100svh] place-items-center px-5 py-10 sm:px-6">
+    <main className="relative grid min-h-[100svh] place-items-center px-5 py-10 sm:px-6">
+      {/* Salida a la landing. Es un <Link> a "/" y no un history.back(): a
+          /admin/login se llega también desde un marcador o escribiendo la URL,
+          y ahí no hay atrás al que volver. En móvil no había ninguna forma de
+          salir de esta pantalla sin los gestos del navegador. */}
+      <Link
+        href="/"
+        className="absolute left-3 top-[max(0.75rem,env(safe-area-inset-top))] inline-flex items-center gap-2 rounded-md px-2.5 py-2 text-sm text-warm-gray/60 transition-colors hover:text-gold sm:left-5 sm:top-5"
+      >
+        <Icon name="arrow" size={17} className="rotate-180" />
+        {t.admin.nav.backToSite}
+      </Link>
+
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-3 text-gold">
           <TreeLogo className="h-9 w-auto" />

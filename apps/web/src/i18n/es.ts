@@ -366,7 +366,7 @@ export const es = {
   },
 
   admin: {
-    nav: { dashboard: 'Dashboard', products: 'Productos', inventory: 'Inventario', lenses: 'Lentes', orders: 'Pedidos', waitlist: 'Reservas', viewSite: 'Ver sitio', logout: 'Salir' },
+    nav: { dashboard: 'Dashboard', products: 'Productos', inventory: 'Inventario', lenses: 'Lentes', orders: 'Pedidos', waitlist: 'Reservas', viewSite: 'Ver sitio', backToSite: 'Volver al sitio', logout: 'Salir' },
     waitlist: {
       title: 'Reservas',
       subtitle: 'Quién está esperando cada modelo. Los de arriba son los que hay que reponer primero.',

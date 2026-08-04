@@ -16,28 +16,30 @@ export type AdminStats = {
 
 export const LOW_STOCK_THRESHOLD = 3
 
+/**
+ * Las cinco cifras del dashboard en UNA sola consulta (agregados con FILTER).
+ * Antes eran cuatro viajes a la RDS —tres `count()` en paralelo y después el
+ * `SUM`— y cada viaje cuesta un round-trip completo: medido, 722 ms para leer
+ * seis filas de producto. Con una sola pasada es un round-trip.
+ */
 export async function getAdminStats(): Promise<AdminStats> {
   const db = await getDb()
-  const productRepo = db.getRepository(AxisProduct)
-  const [productsTotal, productsActive, lowStock] = await Promise.all([
-    productRepo.count(),
-    productRepo.count({ where: { active: true } }),
-    productRepo
-      .createQueryBuilder('p')
-      .where('p.stock <= :n', { n: LOW_STOCK_THRESHOLD })
-      .getCount(),
-  ])
-  const agg = await productRepo
+  const row = await db
+    .getRepository(AxisProduct)
     .createQueryBuilder('p')
-    .select('COALESCE(SUM(p.stock), 0)', 'units')
+    .select('COUNT(*)', 'total')
+    .addSelect('COUNT(*) FILTER (WHERE p.active)', 'active')
+    .addSelect('COUNT(*) FILTER (WHERE p.stock <= :n)', 'low')
+    .addSelect('COALESCE(SUM(p.stock), 0)', 'units')
     .addSelect('COALESCE(SUM(p.stock * p."priceCop"), 0)', 'value')
-    .getRawOne<{ units: string; value: string }>()
+    .setParameter('n', LOW_STOCK_THRESHOLD)
+    .getRawOne<{ total: string; active: string; low: string; units: string; value: string }>()
   return {
-    productsTotal,
-    productsActive,
-    lowStock,
-    totalStock: Number(agg?.units ?? 0),
-    inventoryValueCop: Number(agg?.value ?? 0),
+    productsTotal: Number(row?.total ?? 0),
+    productsActive: Number(row?.active ?? 0),
+    lowStock: Number(row?.low ?? 0),
+    totalStock: Number(row?.units ?? 0),
+    inventoryValueCop: Number(row?.value ?? 0),
   }
 }
 
