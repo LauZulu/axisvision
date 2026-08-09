@@ -241,7 +241,10 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
       // página de resultado cuando el pago queda aprobado.
       if (!buyNowSlug) markCartPendingOrder(pay.reference)
       setPayment(pay)
-    } catch {
+    } catch (err) {
+      // Fallo de red al crear el pedido. El comprador ve un aviso genérico; si
+      // llama a soporte, esto es lo único que hay para saber qué le pasó.
+      console.error('[checkout] no se pudo crear el pedido:', err)
       setError(c.errorGeneric)
       sending.current = false
       setSubmitting(false)

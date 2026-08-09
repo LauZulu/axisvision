@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { In } from 'typeorm'
 import { getDb } from './db'
 import { AxisProduct } from './db/entities/Product'
+import { AxisProductLensOption } from './db/entities/ProductLensOption'
 import { AxisOrder } from './db/entities/Order'
 import { AxisOrderItem } from './db/entities/OrderItem'
 import { AxisLensOption } from './db/entities/LensOption'
@@ -113,8 +114,30 @@ export async function createGuestOrder(
   const lensOptions = await db.getRepository(AxisLensOption).findBy({ active: true })
   const lensTypes = lensOptions.filter((o) => o.kind !== 'prescription')
   const lensById = new Map(lensTypes.map((o) => [o.id, o]))
-  const defaultLens = lensTypes.find((o) => o.isDefault) ?? null
   const prescriptionAddon = lensOptions.find((o) => o.kind === 'prescription') ?? null
+
+  // No todos los modelos ofrecen todos los lentes (Apex, la deportiva, tiene
+  // uno solo). **Sin filas = los ofrece todos.** Se comprueba AQUÍ y no solo en
+  // la ficha: la ficha es maquillaje, y sin esta guarda una petición a mano
+  // compraba —y pagaba el sobrecosto de— un lente imposible de montar.
+  const allowRows = await db
+    .getRepository(AxisProductLensOption)
+    .findBy({ productId: In(ids) })
+  const allowedByProduct = new Map<string, Set<string>>()
+  for (const row of allowRows) {
+    const set = allowedByProduct.get(row.productId)
+    if (set) set.add(row.lensOptionId)
+    else allowedByProduct.set(row.productId, new Set([row.lensOptionId]))
+  }
+  const offers = (productId: string, optionId: string) => {
+    const allowed = allowedByProduct.get(productId)
+    return !allowed || allowed.has(optionId)
+  }
+  // El lente de fábrica del modelo: el marcado por defecto entre los que ofrece.
+  const defaultLensFor = (productId: string) =>
+    lensTypes.find((o) => o.isDefault && offers(productId, o.id)) ??
+    lensTypes.find((o) => offers(productId, o.id)) ??
+    null
 
   // El stock se valida por PRODUCTO, sumando todas sus líneas: un mismo modelo
   // puede venir en varias líneas si el cliente eligió lentes distintos.
@@ -135,14 +158,30 @@ export async function createGuestOrder(
       return { ok: false, code: 'PRODUCT_UNAVAILABLE', message: `Producto no disponible: ${item.productId}` }
     }
 
-    const lens = item.lensOptionId ? (lensById.get(item.lensOptionId) ?? null) : defaultLens
+    const lens = item.lensOptionId
+      ? (lensById.get(item.lensOptionId) ?? null)
+      : defaultLensFor(product.id)
     if (item.lensOptionId && !lens) {
       return { ok: false, code: 'LENS_UNAVAILABLE', message: 'La opción de lente elegida no está disponible.' }
+    }
+    if (lens && !offers(product.id, lens.id)) {
+      return {
+        ok: false,
+        code: 'LENS_NOT_OFFERED',
+        message: `${product.name} no se ofrece con ese lente.`,
+      }
     }
 
     // Complemento de fórmula: lo pide el cliente por su cuenta, o lo impone el
     // tipo de lente si solo existe graduado. El precio sale SIEMPRE de la DB.
     const wantsPrescription = Boolean(item.withPrescription) || Boolean(lens?.requiresPrescription)
+    if (wantsPrescription && prescriptionAddon && !offers(product.id, prescriptionAddon.id)) {
+      return {
+        ok: false,
+        code: 'PRESCRIPTION_NOT_OFFERED',
+        message: `${product.name} no admite montaje con fórmula médica.`,
+      }
+    }
     if (wantsPrescription && !prescriptionAddon) {
       return {
         ok: false,

@@ -9,6 +9,7 @@ import { AxisFavorite } from './entities/Favorite'
 import { AxisProductUnit } from './entities/ProductUnit'
 import { AxisLensOption } from './entities/LensOption'
 import { AxisStockAlert } from './entities/StockAlert'
+import { AxisProductLensOption } from './entities/ProductLensOption'
 import { InitAxisSchema1720000000000 } from './migrations/1720000000000-InitAxisSchema'
 import { WompiAndDiscounts1720000000001 } from './migrations/1720000000001-WompiAndDiscounts'
 import { InventoryAndLensOptions1720000000002 } from './migrations/1720000000002-InventoryAndLensOptions'
@@ -16,6 +17,7 @@ import { ImageLensVariants1720000000003 } from './migrations/1720000000003-Image
 import { StockAlerts1720000000004 } from './migrations/1720000000004-StockAlerts'
 import { LensPrescriptionAddon1720000000005 } from './migrations/1720000000005-LensPrescriptionAddon'
 import { OrderIdempotency1720000000006 } from './migrations/1720000000006-OrderIdempotency'
+import { ProductLensOptions1720000000007 } from './migrations/1720000000007-ProductLensOptions'
 
 export const ENTITIES = [
   AxisUser,
@@ -23,6 +25,7 @@ export const ENTITIES = [
   AxisProductImage,
   AxisProductUnit,
   AxisLensOption,
+  AxisProductLensOption,
   AxisOrder,
   AxisOrderItem,
   AxisFavorite,
@@ -90,6 +93,7 @@ export function buildDataSource(): DataSource {
       StockAlerts1720000000004,
       LensPrescriptionAddon1720000000005,
       OrderIdempotency1720000000006,
+      ProductLensOptions1720000000007,
     ],
     migrationsTableName: 'axis_migrations',
     // Resiliencia del pool: keepAlive evita que conexiones ociosas mueran en

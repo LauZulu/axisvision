@@ -142,6 +142,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   salen de `fotos-para-subir/<slug>/<variante>/orden.json`
 >   (`[{"file":"PXL_1.jpg","category":"frente"}]`, primero = portada), escrito DESPUÉS de revisar las
 >   fotos una a una; sin manifiesto se adivina por el nombre del archivo.
+> - **Qué lentes ofrece cada modelo (`axis_product_lens_option`, migración `...007`):** las opciones
+>   son globales, pero **no todos los modelos las ofrecen todas**. La tabla guarda SOLO las
+>   excepciones y la regla es **sin filas = las ofrece todas** (default seguro: un modelo nuevo sin
+>   marcar sale con todo, no sin nada). Hoy la única excepción es **Apex**, la deportiva: un único
+>   lente (`sol-polarizado`) + la fórmula. Antes su ficha ofrecía transitions y lente transparente,
+>   que no existen para ese armazón, y el checkout habría cobrado el sobrecosto de un lente
+>   imposible de montar. Se modela por producto y **no** con una categoría casual/sport porque lo
+>   que varía es qué lentes ofrece cada modelo, no a qué familia pertenece — una segunda deportiva
+>   con dos lentes rompería la categoría. Se resuelve con `optionsForProduct()`
+>   (`src/lib/lenses.ts`), nunca a mano; el DTO trae `lensOptionIds` (vacío = todas). La guarda de
+>   verdad está en `createGuestOrder()` (`LENS_NOT_OFFERED` / `PRESCRIPTION_NOT_OFFERED`): la ficha
+>   es maquillaje. En el panel son casillas "Lentes que ofrece este modelo"; desmarcar la primera
+>   parte de TODAS menos esa, y quedarse sin ningún lente vuelve a significar "todos". Con un solo
+>   tipo de lente el `LensPicker` no pinta un radiogroup de una tarjeta: lo enseña como dato
+>   ("Lente de sol polarizado · incluido") y solo pregunta por la fórmula.
 > - **Galería por variante de lente:** `axis_lens_option.imageVariant` dice qué fotos mostrar al
 >   elegir cada opción (sol→`sunglass`; fórmula/transitions/filtro azul/transparente→`ophthalmic`;
 >   filtro amarillo→`yellow`). La ficha usa `imagesForLens()` (`src/lib/lenses.ts`): devuelve las de

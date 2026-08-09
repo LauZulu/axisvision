@@ -42,10 +42,29 @@ export function LensPicker({
   const rx = prescriptionAddon(options)
   const forced = Boolean(value?.requiresPrescription)
 
-  if (types.length <= 1 && !rx) return null
+  if (types.length === 0 && !rx) return null
 
   return (
     <div className="mt-8 space-y-6">
+      {/* Un solo lente (Apex, la deportiva): no hay nada que elegir, pero
+          callarlo dejaba la ficha sin decir qué lente lleva. Se enseña como
+          dato, no como pregunta — un "radiogroup" de una sola tarjeta invita a
+          buscar las otras. */}
+      {types.length === 1 && value && (
+        <div>
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <span className="eyebrow text-gold">{l.title}</span>
+            <span className="font-mono text-xs tracking-wide text-warm-gray/55">
+              {value.extraPriceCop > 0 ? `+ ${formatCop(value.extraPriceCop)}` : l.included}
+            </span>
+          </div>
+          <p className="mt-2 text-warm-white">{lensName(value, lang)}</p>
+          <p className="mt-1 text-sm leading-relaxed text-warm-gray/60">
+            {lensDescription(value, lang)}
+          </p>
+        </div>
+      )}
+
       {types.length > 1 && (
         <fieldset>
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">

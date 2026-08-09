@@ -55,7 +55,8 @@ export function InventoryView({ units: initial }: { units: ProductUnitDTO[] }) {
         setUnits(before)
         setError(inv.saveError)
       }
-    } catch {
+    } catch (err) {
+      console.error('[admin] no se pudo guardar la unidad:', err)
       setUnits(before)
       setError(inv.saveError)
     }

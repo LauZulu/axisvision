@@ -2,6 +2,7 @@ import { getDb } from './db'
 import { AxisProduct } from './db/entities/Product'
 import { AxisProductImage } from './db/entities/ProductImage'
 import { AxisProductUnit } from './db/entities/ProductUnit'
+import { AxisProductLensOption } from './db/entities/ProductLensOption'
 import { syncStockFromUnits } from './inventory'
 import { deleteObjects } from './s3'
 import type { ImageLensVariant, ProductDTO } from '../lib/products'
@@ -89,6 +90,25 @@ export type ProductInput = {
   active: boolean
   position: number
   images: ProductImageInput[]
+  /**
+   * Opciones de lente que ofrece el modelo. **Vacía = las ofrece todas** (es lo
+   * normal); ausente = no tocar lo que ya hubiera guardado.
+   */
+  lensOptionIds?: string[]
+}
+
+/** Deja la lista de lentes del producto en exactamente `lensOptionIds`. */
+async function replaceLensOptions(productId: string, lensOptionIds: string[]) {
+  const db = await getDb()
+  await db.transaction(async (manager) => {
+    const repo = manager.getRepository(AxisProductLensOption)
+    await repo.delete({ productId })
+    if (lensOptionIds.length > 0) {
+      await repo.insert(
+        lensOptionIds.map((lensOptionId, position) => ({ productId, lensOptionId, position })),
+      )
+    }
+  })
 }
 
 /**
@@ -162,6 +182,7 @@ export async function createProduct(input: ProductInput): Promise<string> {
     }),
   )
   await replaceImages(product.id, input.images)
+  if (input.lensOptionIds) await replaceLensOptions(product.id, input.lensOptionIds)
   return product.id
 }
 
@@ -174,7 +195,7 @@ export async function updateProduct(
   const product = await repo.findOne({ where: { id } })
   if (!product) return false
 
-  const { images, ...fields } = patch
+  const { images, lensOptionIds, ...fields } = patch
 
   // El stock es DERIVADO del inventario por unidad: si el producto tiene
   // unidades cargadas, el valor que venga del formulario se ignora (si no, un
@@ -189,6 +210,7 @@ export async function updateProduct(
   await repo.save(product)
   if (hasUnits) await syncStockFromUnits(db, id)
   if (images) await replaceImages(id, images)
+  if (lensOptionIds) await replaceLensOptions(id, lensOptionIds)
   return true
 }
 

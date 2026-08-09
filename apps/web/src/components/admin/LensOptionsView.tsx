@@ -98,7 +98,8 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
       }
       cancel()
       router.refresh()
-    } catch {
+    } catch (err) {
+      console.error('[admin] no se pudo guardar la opción de lente:', err)
       setError(l.saveError)
     }
     setSaving(false)

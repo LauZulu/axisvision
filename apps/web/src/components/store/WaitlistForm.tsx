@@ -50,7 +50,8 @@ export function WaitlistForm({
       if (!res.ok) throw new Error('request failed')
       const data = (await res.json()) as { status?: Status }
       setStatus(data.status === 'already' || data.status === 'pending' ? data.status : 'active')
-    } catch {
+    } catch (err) {
+      console.error('[reservas] no se pudo enviar la reserva:', err)
       setStatus('error')
     }
   }

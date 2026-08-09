@@ -21,6 +21,7 @@ import {
   defaultLens,
   imagesForLens,
   lensName,
+  optionsForProduct,
   prescriptionAddon,
   priceWithLens,
   type LensOptionDTO,
@@ -36,6 +37,7 @@ export function ProductDetail({
   lensOptions,
 }: {
   product: ProductDTO
+  /** Catálogo COMPLETO de opciones; aquí se recorta a las que ofrece el modelo. */
   lensOptions: LensOptionDTO[]
 }) {
   const { t, lang } = useDict()
@@ -49,11 +51,14 @@ export function ProductDetail({
   const maxQty = Math.max(1, Math.min(product.stock, 20))
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
-  const [lens, setLens] = useState<LensOptionDTO | null>(() => defaultLens(lensOptions))
+  // No todos los modelos ofrecen todos los lentes: Apex, la deportiva, tiene uno
+  // solo. Ofrecerle transitions era prometer algo que nadie puede montar.
+  const options = optionsForProduct(lensOptions, product.lensOptionIds)
+  const [lens, setLens] = useState<LensOptionDTO | null>(() => defaultLens(options))
   // La fórmula es una pregunta APARTE del tipo de lente: se monta sobre
   // cualquiera de ellos. Un lente que solo existe graduado la impone.
   const [wantsRx, setWantsRx] = useState(false)
-  const rxOption = prescriptionAddon(lensOptions)
+  const rxOption = prescriptionAddon(options)
   const withPrescription = Boolean(rxOption) && (wantsRx || Boolean(lens?.requiresPrescription))
   const rx = withPrescription ? rxOption : null
 
@@ -169,7 +174,7 @@ export function ProductDetail({
                 queda inalcanzable. */}
             {!soldOut && (
               <LensPicker
-                options={lensOptions}
+                options={options}
                 value={lens}
                 onChange={setLens}
                 withPrescription={withPrescription}

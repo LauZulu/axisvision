@@ -1,10 +1,28 @@
 import { getDb } from './db'
 import { AxisProduct } from './db/entities/Product'
 import { AxisProductUnit } from './db/entities/ProductUnit'
+import { AxisProductLensOption } from './db/entities/ProductLensOption'
 import type { ProductDTO } from '../lib/products'
 import { cdnUrl, isRemoteImage } from '../lib/cdn'
 
-function toDTO(p: AxisProduct, unitsTotal?: number): ProductDTO {
+/**
+ * Qué opciones de lente ofrece cada producto. **Sin filas = las ofrece todas**,
+ * así que un producto que no aparezca en el mapa sale con la lista vacía y eso
+ * es lo correcto (lo resuelve `optionsForProduct()`), no un olvido.
+ */
+async function lensOptionIdsByProduct(): Promise<Map<string, string[]>> {
+  const db = await getDb()
+  const rows = await db.getRepository(AxisProductLensOption).find()
+  const map = new Map<string, string[]>()
+  for (const row of rows) {
+    const list = map.get(row.productId)
+    if (list) list.push(row.lensOptionId)
+    else map.set(row.productId, [row.lensOptionId])
+  }
+  return map
+}
+
+function toDTO(p: AxisProduct, unitsTotal?: number, lensOptionIds: string[] = []): ProductDTO {
   const images = (p.images ?? [])
     .slice()
     .sort((a, b) => a.position - b.position)
@@ -32,6 +50,7 @@ function toDTO(p: AxisProduct, unitsTotal?: number): ProductDTO {
     active: p.active,
     position: p.position,
     images,
+    lensOptionIds,
     ...(unitsTotal === undefined ? {} : { unitsTotal }),
   }
 }
@@ -52,26 +71,30 @@ async function unitCounts(): Promise<Map<string, number>> {
 /** Productos activos para la tienda, ordenados por `position`. */
 export async function getActiveProducts(): Promise<ProductDTO[]> {
   const db = await getDb()
-  const rows = await db.getRepository(AxisProduct).find({
-    where: { active: true },
-    relations: { images: true },
-    order: { position: 'ASC' },
-  })
+  const [rows, lenses] = await Promise.all([
+    db.getRepository(AxisProduct).find({
+      where: { active: true },
+      relations: { images: true },
+      order: { position: 'ASC' },
+    }),
+    lensOptionIdsByProduct(),
+  ])
   // Lambda explícita: `map(toDTO)` pasaría el índice como `unitsTotal`.
-  return rows.map((p) => toDTO(p))
+  return rows.map((p) => toDTO(p, undefined, lenses.get(p.id)))
 }
 
 /** Todos los productos (incluye inactivos) — para el admin. */
 export async function getAllProducts(): Promise<ProductDTO[]> {
   const db = await getDb()
-  const [rows, counts] = await Promise.all([
+  const [rows, counts, lenses] = await Promise.all([
     db.getRepository(AxisProduct).find({
       relations: { images: true },
       order: { position: 'ASC' },
     }),
     unitCounts(),
+    lensOptionIdsByProduct(),
   ])
-  return rows.map((p) => toDTO(p, counts.get(p.id) ?? 0))
+  return rows.map((p) => toDTO(p, counts.get(p.id) ?? 0, lenses.get(p.id)))
 }
 
 /**
@@ -87,7 +110,9 @@ export async function getProductBySlug(slug: string): Promise<ProductDTO | null>
   const p = await db
     .getRepository(AxisProduct)
     .findOne({ where: { slug, active: true }, relations: { images: true } })
-  return p ? toDTO(p) : null
+  if (!p) return null
+  const lenses = await lensOptionIdsByProduct()
+  return toDTO(p, undefined, lenses.get(p.id))
 }
 
 export async function getProductById(id: string): Promise<ProductDTO | null> {
@@ -96,6 +121,9 @@ export async function getProductById(id: string): Promise<ProductDTO | null> {
     .getRepository(AxisProduct)
     .findOne({ where: { id }, relations: { images: true } })
   if (!p) return null
-  const total = await db.getRepository(AxisProductUnit).countBy({ productId: p.id })
-  return toDTO(p, total)
+  const [total, lenses] = await Promise.all([
+    db.getRepository(AxisProductUnit).countBy({ productId: p.id }),
+    lensOptionIdsByProduct(),
+  ])
+  return toDTO(p, total, lenses.get(p.id))
 }

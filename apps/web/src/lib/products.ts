@@ -37,6 +37,13 @@ export type ProductDTO = {
   position: number
   images: ProductImageDTO[]
   /**
+   * Opciones de lente que ofrece ESTE modelo. **Vacío = las ofrece todas**, que
+   * es el caso de casi todo el catálogo: la lista solo existe para el modelo
+   * que es la excepción (Apex, deportiva, con un único lente). Resolverlo con
+   * `optionsForProduct()` en src/lib/lenses.ts, nunca a mano.
+   */
+  lensOptionIds: string[]
+  /**
    * Unidades físicas cargadas en el inventario (todas, no solo las disponibles).
    * Solo se rellena en las consultas del admin. Si es > 0, `stock` es DERIVADO y
    * no debe editarse a mano.

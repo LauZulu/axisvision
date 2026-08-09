@@ -43,6 +43,9 @@ export const productSchema = z.object({
   active: z.boolean(),
   position: z.number().int().min(0),
   images: z.array(productImageSchema).max(30),
+  // Opciones de lente que ofrece el modelo. Lista VACÍA = las ofrece todas
+  // (ver axis_product_lens_option); ausente = no se toca lo que ya hubiera.
+  lensOptionIds: z.array(z.string().uuid()).max(20).optional(),
 })
 
 /** Para editar: todos opcionales. */

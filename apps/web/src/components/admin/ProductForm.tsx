@@ -7,7 +7,12 @@ import { fill } from '../../lib/format'
 import { ImageUploader, type UploaderImage } from './ImageUploader'
 import { LensGalleryPreview } from './LensGalleryPreview'
 import { useDict } from '../../i18n/useDict'
-import type { LensOptionDTO } from '../../lib/lenses'
+import {
+  lensName,
+  lensTypes,
+  optionsForProduct,
+  type LensOptionDTO,
+} from '../../lib/lenses'
 import type { ProductDTO } from '../../lib/products'
 
 type FormState = {
@@ -25,6 +30,8 @@ type FormState = {
   position: string
   active: boolean
   images: UploaderImage[]
+  /** Lentes que ofrece el modelo. VACÍO = los ofrece todos (lo normal). */
+  lensOptionIds: string[]
 }
 
 function initial(product?: ProductDTO): FormState {
@@ -43,6 +50,7 @@ function initial(product?: ProductDTO): FormState {
     position: product ? String(product.position ?? 0) : '0',
     active: product?.active ?? true,
     images: product?.images.map((i) => ({ key: i.key, lensVariant: i.lensVariant })) ?? [],
+    lensOptionIds: product?.lensOptionIds ?? [],
   }
 }
 
@@ -74,7 +82,7 @@ export function ProductForm({
   /** Opciones de lente activas: sirven para previsualizar la galería por lente. */
   lensOptions?: LensOptionDTO[]
 }) {
-  const { t } = useDict()
+  const { t, lang } = useDict()
   const f = t.admin.form
   const router = useRouter()
   const [form, setForm] = useState<FormState>(() => initial(product))
@@ -85,6 +93,26 @@ export function ProductForm({
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
+
+  // Opciones que el modelo ofrece de verdad (lista vacía = todas). Alimenta la
+  // previsualización de la galería: si Apex solo ofrece un lente, no tiene
+  // sentido enseñar qué se vería con transitions.
+  const offered = optionsForProduct(lensOptions, form.lensOptionIds)
+
+  /**
+   * Marcar/desmarcar un lente. Desmarcar desde "todos" (lista vacía) parte de
+   * TODAS las opciones menos esa: si no, el primer clic dejaría el modelo con
+   * un único lente sin que nadie lo pidiera. Quedarse sin ningún lente vuelve a
+   * significar "los ofrece todos", que es el estado seguro.
+   */
+  function toggleLens(id: string, checked: boolean) {
+    setForm((f) => {
+      const base = f.lensOptionIds.length === 0 ? lensOptions.map((o) => o.id) : f.lensOptionIds
+      const next = checked ? [...new Set([...base, id])] : base.filter((x) => x !== id)
+      const quedanLentes = lensTypes(lensOptions.filter((o) => next.includes(o.id))).length > 0
+      return { ...f, lensOptionIds: quedanLentes ? next : [] }
+    })
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -107,6 +135,7 @@ export function ProductForm({
       position: Number(form.position),
       active: form.active,
       images: form.images,
+      lensOptionIds: form.lensOptionIds,
     }
 
     const url = product ? `/api/admin/products/${product.id}` : '/api/admin/products'
@@ -124,7 +153,11 @@ export function ProductForm({
       }
       const data = await res.json().catch(() => null)
       setError(data?.error?.message ?? f.saveError)
-    } catch {
+    } catch (err) {
+      // Aquí solo caen los fallos de RED (los HTTP se tratan arriba). El aviso
+      // en pantalla es genérico a propósito, así que sin esta línea la consola
+      // del navegador —el único sitio donde se puede mirar— queda muda.
+      console.error('[admin] no se pudo guardar el producto:', err)
       setError(f.netError)
     }
     setSaving(false)
@@ -272,6 +305,54 @@ export function ProductForm({
           {f.visible}
         </label>
 
+        {/* Lentes que ofrece este modelo. Ninguno marcado = los ofrece todos:
+            es el caso de casi todo el catálogo, y el default seguro (un modelo
+            nuevo sin marcar sale con todos, no sin ninguno). */}
+        {lensOptions.length > 0 && (
+          <fieldset className="mt-7 rounded-lg border border-line p-3 sm:p-4">
+            <legend className="px-1 text-sm text-warm-gray/80">{f.lensOffered}</legend>
+            <p className="mb-3 text-xs text-warm-gray/45">
+              {form.lensOptionIds.length === 0 ? f.lensOfferedAll : f.lensOfferedSome}
+            </p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {lensOptions.map((option) => {
+                const checked = form.lensOptionIds.includes(option.id)
+                const esFormula = option.kind === 'prescription'
+                return (
+                  <label
+                    key={option.id}
+                    className="flex items-start gap-2.5 rounded-md border border-line px-3 py-2.5 text-sm text-warm-gray/80"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked || form.lensOptionIds.length === 0}
+                      onChange={(e) => toggleLens(option.id, e.target.checked)}
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-[#c8a96e]"
+                    />
+                    <span>
+                      {lensName(option, lang)}
+                      {esFormula && (
+                        <span className="ml-1.5 font-mono text-[0.6rem] uppercase tracking-wide text-gold/70">
+                          {f.lensOfferedRx}
+                        </span>
+                      )}
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+            {form.lensOptionIds.length > 0 && (
+              <button
+                type="button"
+                onClick={() => set('lensOptionIds', [])}
+                className="mt-3 text-xs text-gold hover:underline"
+              >
+                {f.lensOfferedReset}
+              </button>
+            )}
+          </fieldset>
+        )}
+
         {/* Fotos: se suben directo a S3 (presigned PUT) y se sirven por CloudFront.
             Debajo, qué galería verá el cliente con cada tipo de lente. */}
         <div className="mt-7">
@@ -280,7 +361,7 @@ export function ProductForm({
             onChange={(imgs) => set('images', imgs)}
             slug={form.slug.trim() || product?.slug}
           />
-          <LensGalleryPreview images={form.images} options={lensOptions} />
+          <LensGalleryPreview images={form.images} options={offered} />
         </div>
 
         {error && <p className="mt-5 text-sm text-red-400">{error}</p>}

@@ -46,6 +46,29 @@ export function lensTypes(options: LensOptionDTO[]): LensOptionDTO[] {
   return options.filter((o) => o.kind !== 'prescription')
 }
 
+/**
+ * Las opciones que ofrece un modelo concreto.
+ *
+ * `lensOptionIds` vacío significa "las ofrece todas" — es el caso normal, y el
+ * default seguro: un modelo nuevo al que se le olvide marcar lentes sale con
+ * todos, no sin ninguno. La lista solo existe para las excepciones (Apex, la
+ * deportiva, que tiene un único lente y la ficha le ofrecía transitions).
+ *
+ * Filtra lentes Y complemento de fórmula: un modelo puede no admitir fórmula.
+ */
+export function optionsForProduct(
+  options: LensOptionDTO[],
+  lensOptionIds: string[] | undefined,
+): LensOptionDTO[] {
+  if (!lensOptionIds || lensOptionIds.length === 0) return options
+  const allowed = new Set(lensOptionIds)
+  const filtered = options.filter((o) => allowed.has(o.id))
+  // Si la lista quedó sin ningún lente (opciones borradas o desactivadas), se
+  // vuelve al catálogo completo: mejor ofrecer de más que dejar la ficha sin
+  // forma de elegir lente y, con ella, sin forma de comprar.
+  return lensTypes(filtered).length > 0 ? filtered : options
+}
+
 /** El complemento de fórmula (una sola fila activa). null si no está en catálogo. */
 export function prescriptionAddon(options: LensOptionDTO[]): LensOptionDTO | null {
   return options.find((o) => o.kind === 'prescription') ?? null
