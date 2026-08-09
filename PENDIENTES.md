@@ -1,7 +1,7 @@
 # Pendientes de AXIS Vision
 
 Lista viva de lo que falta para que la tienda opere de verdad. Escrita el
-**1 de agosto de 2026**.
+**1 de agosto de 2026**, revisada contra el estado real el **8 de agosto de 2026**.
 
 Lo que ya está hecho y cómo funciona está en `CLAUDE.md`; esto es solo lo que
 queda. **Al completar algo, bórralo de aquí** (o muévelo a "Resueltos" con la
@@ -34,12 +34,15 @@ Si cierra el navegador en la pantalla de Wompi y el webhook no está registrado,
 el pedido se queda en `pending` para siempre aunque el dinero haya entrado.
 
 Al registrarla, Wompi da el **secreto de eventos** → va a `WOMPI_EVENTS_SECRET`.
+Esa variable ya tiene valor en el `.env`, así que probablemente esté registrada
+en sandbox: queda **confirmarlo en el panel** y repetirlo al pasar a producción,
+que tiene su propia URL de eventos y su propio secreto.
 
 ### 🔑 Pasar de llaves de sandbox a producción
 
-Hoy la llave es `pub_test_` (sandbox): los pagos son de juguete. Para cobrar de
-verdad hacen falta las tres de producción en `apps/web/.env` (y en el panel de
-despliegue):
+Hoy la llave es `pub_test_` (sandbox, verificado el 8 de agosto): los pagos son
+de juguete. Para cobrar de verdad hacen falta las tres de producción en
+`apps/web/.env` (y en el panel de despliegue):
 
 - `NEXT_PUBLIC_WOMPI_PUBLIC_KEY` (`pub_prod_…`)
 - `WOMPI_INTEGRITY_SECRET`
@@ -77,10 +80,12 @@ pnpm payments:reconcile --horas=2
 
 ### ⏳ Probar el flujo completo en sandbox
 
-Con las llaves de sandbox puestas y `NEXT_PUBLIC_STORE_MODE=live` en local:
-comprar, pagar con los datos de prueba de Wompi, y comprobar que llegan el
-webhook, el correo y el descuento de inventario. Hoy no se puede: no hay llaves
-configuradas.
+Las tres llaves de sandbox **ya están** en `apps/web/.env` (comprobado el 8 de
+agosto), así que esto ya se puede hacer: poner `NEXT_PUBLIC_STORE_MODE=live` en
+local, comprar, pagar con los datos de prueba de Wompi y comprobar que llegan el
+webhook, el descuento de inventario y —cuando Brevo funcione— el correo.
+
+Es la última prueba antes de tocar llaves de producción.
 
 ---
 
@@ -88,8 +93,8 @@ configuradas.
 
 ### 🔑 Crear la cuenta y verificar el dominio
 
-La `BREVO_API_KEY` que hay en el `.env` responde **401 (Key not found)**: no
-está saliendo ningún correo. Hace falta cuenta, llave válida y remitente
+La `BREVO_API_KEY` que hay en el `.env` sigue respondiendo **401 (Key not found)** —
+comprobado contra `GET /v3/account` el 8 de agosto—: no está saliendo ningún correo. Hace falta cuenta, llave válida y remitente
 verificado.
 
 ### 🔑 DNS de `axisvision.co`
@@ -128,8 +133,10 @@ correos pendientes con reintentos.
 
 Plantillas ya escritas, sin nada que las dispare:
 
-- `order-shipped` y `order-delivered` → falta el botón en el panel para mover el
-  estado del pedido
+- `order-shipped` y `order-delivered` → el panel **sí** tiene el selector de estado
+  (`OrderTable`), pero `updateOrderStatus()` solo escribe la columna: no manda el
+  correo. Falta engancharlo a la transición (y decidir si se manda al volver a un
+  estado ya visitado, para no repetir el aviso)
 - `checkout-abandoned` → falta el cron
 - `admin-waitlist-digest` → falta el cron
 - `admin-password-reset` → falta el flujo de recuperación de contraseña
@@ -140,20 +147,42 @@ Plantillas ya escritas, sin nada que las dispare:
 
 ### 🔑 Cosas que solo el cliente tiene
 
-- Catálogo PDF → subirlo y ajustar `CATALOG_URL` en `src/config/brand.ts`
-- Imagen Open Graph 1200×630 → referenciarla desde `app/layout.tsx`
+- Catálogo PDF → `CATALOG_URL` apunta a `/catalogo-axis.pdf` y ese archivo **no
+  existe** en `apps/web/public/`: hoy el enlace da 404
+- Imagen Open Graph 1200×630 → `app/layout.tsx` ya la referencia como
+  `/og-image.jpg`, pero el archivo **no existe**: al compartir el enlace no sale
+  ninguna imagen
 - Datos reales de garantía, aliado clínico y registro de marca → `src/i18n/*.ts`
 - Los pasos exactos del manual (carga, emparejamiento) para el correo
   `order-delivered`: hoy están redactados en genérico a propósito, para no
   describir un botón que quizá no existe
 
-### 🔑 CORS del bucket S3
+---
 
-Falta la política CORS para que el navegador del admin pueda hacer PUT/DELETE
-directo a S3 con las presigned URLs.
+## Catálogo y fotos (decisiones de contenido)
+
+### 🔑 Dos fotos de Apex son de un lente que no se vende
+
+Apex ofrece **un solo lente** (sol polarizado) + fórmula opcional, pero entre sus
+7 fotos hay dos con lente **amarillo**. O se quitan desde el panel, o se acepta
+que se enseñe un lente que no está en venta.
+
+### 🔑 Empaque y estuche de Origin están dentro de un grupo de lente
+
+En AXIS Origin, la foto del empaque completo está en "Lentes de sol" y las dos
+del estuche en "Lentes transparentes". Si se quiere que salgan con cualquier
+lente, hay que moverlas al grupo "Sirven para cualquier lente" desde el panel.
 
 ---
 
 ## Resueltos
 
-_(vacío por ahora — al cerrar una tarea, muévela aquí con la fecha)_
+- **8 ago 2026 — CORS del bucket S3.** Ya está puesta la política (PUT/DELETE
+  desde `axisvision.co`, `www.axisvision.co` y `localhost:3000`); es lo que
+  permite que el admin suba fotos directo desde el navegador.
+- **8 ago 2026 — Escrituras rotas solo en producción.** `TypeORMError: Cyclic
+  dependency` por la minificación del servidor: qué se rompía cambiaba en cada
+  despliegue (el panel de productos en uno, el alta de reservas en el siguiente).
+  Arreglado con `experimental.serverMinification: false`.
+- **8 ago 2026 — Lentes por modelo.** Apex ya no ofrece lentes que no existen
+  para su armazón, y el servidor rechaza la compra aunque se salte la ficha.

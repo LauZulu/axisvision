@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 
-// Fuentes (self-host) — ruta híbrida del PLAN-AXIS.md §7.2
+// Fuentes (self-host) — la ruta híbrida descrita en CLAUDE.md (Tipografía).
 import '@fontsource-variable/inter-tight/wght.css'
 import '@fontsource-variable/dm-sans/wght.css'
 import '@fontsource/cormorant-garamond/400.css'

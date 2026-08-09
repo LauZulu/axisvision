@@ -2,18 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> ## ⚠️ Estado actual: migración a plataforma full-stack (en curso)
+> ## Estado actual: plataforma construida; falta encender el cobro
 >
 > **Lo que falta por hacer vive en `PENDIENTES.md`** (raíz del repo), con quién puede hacer cada
 > cosa: 🔑 solo el usuario (paneles de Wompi/Brevo/DNS), 🤖 código, ⏳ código bloqueado por un 🔑.
 > Consúltalo antes de proponer trabajo nuevo y bórrale las tareas que se completen.
 >
-> El repo dejó de ser una app Vite de una sola carpeta. Ahora es un **monorepo pnpm**
-> con **Next.js** (App Router). El plan y las fases viven en **`PLAN-PLATAFORMA.md`**
-> (fuente de verdad para la evolución). Estado: **Fases 0-6 hechas y verificadas contra RDS+S3
-> reales** (monorepo + Next con paridad + tienda DB-driven + auth JWT/roles + middleware + panel
-> admin + S3/CloudFront por presigned URLs + checkout invitado). Enfoque **guest checkout** (sin
-> cuentas de cliente; solo admin tiene login). Pendiente: **Wompi (Fase 7, lo último)**.
+> El repo dejó de ser una app Vite de una sola carpeta: es un **monorepo pnpm** con **Next.js**
+> (App Router), desplegado en Vercel. Todo el código está hecho y verificado contra la RDS y el S3
+> reales — landing, tienda leída de la DB, auth JWT/roles con middleware, panel de administración,
+> imágenes por presigned URLs a S3/CloudFront, inventario por unidad, reservas, correo y checkout
+> con Wompi. Enfoque **guest checkout**: no hay cuentas de cliente, solo el admin tiene login.
+> Lo que falta **no es código**: llaves de producción de Wompi, cuenta de Brevo y abrir la tienda
+> (`NEXT_PUBLIC_STORE_MODE=live`). Detalle y responsables, en `PENDIENTES.md`.
 >
 > - **Estructura:** `apps/web/` (`app/` rutas, `src/` código portado + `src/server/` backend:
 >   `db/` TypeORM, `auth/`, `products.ts`, `admin.ts`; `scripts/` migración/seed). `packages/*` placeholders.
@@ -43,8 +44,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   subir/actualizar originales: `pnpm exec tsx scripts/migrate-images-to-s3.mts <carpeta>` (mide
 >   dimensiones con `identify`; la carpeta se pasa por argumento, `src/assets/` ya no existe).
 >   En la DB `axis_product_image.imageKey` guarda la **clave S3**; el frontend usa la URL de CloudFront
->   (`src/lib/cdn.ts`, `resolveProductSrc`). Verifica acceso con `pnpm s3:check`. **Falta CORS** en el
->   bucket para que el navegador del admin haga PUT/DELETE (ver PLAN/README).
+>   (`src/lib/cdn.ts`, `resolveProductSrc`). Verifica acceso con `pnpm s3:check`. El bucket **ya
+>   tiene CORS** (PUT/DELETE desde `axisvision.co`, `www.axisvision.co` y `localhost:3000`), que es
+>   lo que permite que el navegador del admin suba directo; si algún día se sirve desde otro
+>   dominio, hay que añadirlo allí o las subidas fallarán solo en ese origen.
 > - **Confirmación del pago — un solo camino (`src/server/payments.ts`):** `confirmPaidOrder()`
 >   concentra validar monto, claim atómico, inventario, correos y alertas; lo usan **el webhook Y la
 >   página de resultado**. Que la página también confirme no es redundancia: el webhook era el ÚNICO
@@ -68,7 +71,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   `pending` con dos referencias = posible doble cobro, doble descuento de stock y un correo de
 >   "compra sin terminar" a quien sí compró. Hay además un cerrojo `useRef` en el submit: el
 >   `disabled` por estado deja una ventana entre el clic y el re-render.
-> - **Checkout + Wompi (Fase 7, implementada — faltan llaves):** compra invitado con carrito
+> - **Checkout + Wompi (implementado — faltan llaves de producción):** compra invitado con carrito
 >   localStorage (`src/lib/cart.ts`) o "Comprar ahora"; `POST /api/checkout` valida stock, crea
 >   `axis_order` `pending` con precios DESDE LA DB y responde parámetros FIRMADOS del Web Checkout
 >   (`src/server/wompi.ts`: firma integridad SHA256 server-side + `expiration-time` 1h). El pago se
@@ -241,7 +244,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Tema:** oscuro por defecto + claro, con interruptor en el Nav (sol/luna). El tema se aplica con `<html data-theme>` y se persiste en `localStorage` (`axis-theme`); el script anti-FOUC vive en `index.html`. El cambio se hace a nivel de variables CSS en `src/index.css` (`:root[data-theme='light']` re-mapea solo los neutros carbón/blanco; el dorado y el Morpho no cambian). La sección Capabilities usa color fijo (siempre clara) y no sigue el tema.
 
-> **`PLAN-AXIS.md`** contiene el detalle de estrategia y diseño de la vitrina, ya **100% B2C** (sistema visual, tokens, animación, mapa de sitio, copy por sección orientado al usuario final). Para la evolución a plataforma full-stack (tienda, auth, DB, Wompi) la fuente de verdad es **`PLAN-PLATAFORMA.md`**; para copy/estructura de la vitrina, `PLAN-AXIS.md` y este CLAUDE.md están alineados.
+> Este archivo es la **fuente de verdad viva**: sistema visual, estructura de la landing, tienda,
+> panel y backend. `PENDIENTES.md` dice lo que falta. `PLAN-PLATAFORMA.md` es **histórico** (el
+> plan de la migración a plataforma, ya ejecutado): sirve para entender por qué se decidió algo,
+> no para saber cómo está hoy. `PLAN-AXIS.md` se borró el 8 de agosto de 2026 — describía
+> secciones de la landing que ya no existen (Especificaciones, Ediciones, Trust signals, Qué es
+> AXIS…) y una arquitectura Vite anterior a la migración; todo lo suyo que seguía siendo cierto
+> —tokens de color, tipografía, reglas de uso del dorado y del Morpho— vive aquí abajo.
 
 Barra de calidad visual y de animación: **Apple · Whoop · Ray-Ban × Meta**. Minimalista, premium, multinacional, serio y confiable.
 
@@ -338,7 +347,7 @@ máxima resolución (ideal ≥2400px de ancho); `next/image` genera las variante
 
 ## Sistema de diseño — usar los valores EXACTOS
 
-Identidad visual no negociable (detalle y reglas de uso en `PLAN-AXIS.md` §7):
+Identidad visual no negociable:
 
 - **Negro carbón** `#0A0A0A` / `#0D0D0D` — fondo base (nunca negro puro).
 - **Dorado antiguo** `#C8A96E` — SOLO líneas finas, etiquetas, contornos y el símbolo de marca. **Nunca** rellenos grandes.

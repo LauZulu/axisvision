@@ -1,7 +1,11 @@
 # PLAN-PLATAFORMA.md — AXIS Vision: de vitrina a plataforma full-stack
 
-> Documento de estrategia y paso a paso. Fuente de verdad para la evolución del sitio.
-> Complementa (no reemplaza) a `CLAUDE.md`. `PLAN-AXIS.md` es histórico (etapa B2B) — ignorar su estrategia.
+> **DOCUMENTO HISTÓRICO.** Es el plan con el que se hizo la migración de vitrina a plataforma, y
+> las fases 0-7 ya están ejecutadas. Se conserva para entender **por qué** se decidió cada cosa;
+> para saber **cómo está hoy** el proyecto, la fuente de verdad es `CLAUDE.md`, y lo que falta,
+> `PENDIENTES.md`. Algunas partes ya no describen la realidad: el catálogo son 6 modelos reales
+> (no 4 de prueba) y **no hay cuentas de cliente** — la Fase 5 se descartó a favor de compra como
+> invitado. `PLAN-AXIS.md` se borró el 8 de agosto de 2026.
 
 ---
 
