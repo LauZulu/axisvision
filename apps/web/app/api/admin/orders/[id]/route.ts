@@ -23,7 +23,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const ok = await updateOrderStatus(id, parsed.data.status)
     if (!ok) return jsonError('NOT_FOUND', 'Pedido no encontrado.', 404)
     return json({ ok: true })
-  } catch {
+  } catch (err) {
+    console.error('[admin] PATCH /api/admin/orders/%s falló:', id, err)
     return jsonError('DB_ERROR', 'No se pudo actualizar el pedido.', 500)
   }
 }

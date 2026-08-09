@@ -24,6 +24,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   RDS (`db-axis-optica...:5432`, accesible públicamente) — sin túnel ni `.env.local`. Auth:
 >   `JWT_SECRET_MANAGMENT` (HS256 vía `jose`). Nota Next+TypeORM: en dev el HMR invalida la metadata
 >   de entidades; `getDb()` (src/server/db/index.ts) detecta y reconstruye el DataSource — no quitar.
+>   **`experimental.serverMinification: false` (next.config.ts) tampoco se quita:** TypeORM identifica
+>   cada entidad por el NOMBRE DE LA CLASE y el minificador las renombraba todas a una letra (nueve
+>   clases `h` en el mismo chunk), así que dos entidades pasaban a llamarse igual y `repo.save()`
+>   moría con `TypeORMError: Cyclic dependency: "h"`. Era un 500 que SOLO aparecía en producción
+>   —en dev no se minifica— y dejó el panel admin sin poder guardar nada. De la misma raíz salió la
+>   regla de declarar las relaciones por nombre de TABLA (ver el comentario en entities/Product.ts).
+>   Corolario para depurar: un fallo que no se reproduce en `pnpm dev` se reproduce con
+>   `pnpm build && pnpm start`, no hace falta desplegar.
 > - **Imágenes/S3:** bucket **privado** (`AWS_PRODUCTS_BUCKET`) con **versionado ACTIVADO** (un borrado
 >   deja marcador y la versión anterior se recupera), lectura pública solo por **CloudFront**
 >   (`NEXT_PUBLIC_CDN_URL`, ya definido). El admin sube/borra **directo a S3 con presigned URLs**
@@ -141,7 +149,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   (sol primero) — **nunca mezcla variantes** en la misma galería. El `<ImageCarousel>` se remonta
 >   con `key` al cambiar de lente. Realidad del catálogo: Origin y Eclypse tienen sol + oftálmica;
 >   Shadow y Ocean solo sol; **Crystal solo oftálmica** (lente transparente); **Apex es deportivo con
->   lentes intercambiables** (espejado + amarillo), sin fotos oftálmicas.
+>   lentes intercambiables** (espejado + amarillo), sin fotos oftálmicas — sus 7 fotos están sin
+>   marcar (neutras), así que hoy salen con cualquier lente hasta que alguien las clasifique.
+>   **El panel edita las fotos AGRUPADAS por lente** (`ImageUploader`): cuatro secciones —sol,
+>   transparentes, amarillo y "sirven para cualquier lente"— cada una con su propio botón de subir
+>   (así la foto nace clasificada, en vez de subirla y etiquetarla después) y sus fotos numeradas:
+>   ese número es el orden real en la ficha y el 1 es la portada de ese lente. El orden de los
+>   grupos (`GROUPS`) es también el orden en que se guardan en la única columna `position`, así que
+>   lo que se ve en el panel es lo que sale en la tienda; para recolocar una foto hay un "Mover a…"
+>   que solo ofrece los OTROS grupos. Debajo, **`LensGalleryPreview`** resume en vivo —antes de
+>   guardar y con la misma `imagesForLens()`— qué ve el cliente con cada una de las CINCO opciones
+>   de lente: los grupos dicen qué fotos hay, esto dice qué se ve, que no es lo mismo (transitions,
+>   transparente y filtro azul comparten grupo, y un grupo vacío cae a otro). Va sin miniaturas a
+>   propósito: las fotos están justo encima. Las fotos viajan al API como `{key, lensVariant}` (`productImageSchema` en
+>   `validation.ts` sigue aceptando la clave suelta = "no toques la variante"), y el tope por
+>   producto son **30** fotos: con 12, un modelo con dos variantes (Eclypse, Origin: 13) no se podía
+>   guardar y el panel respondía "Datos de producto inválidos".
 > - **Modo tienda (`NEXT_PUBLIC_STORE_MODE`):** interruptor que decide si se puede COMPRAR.
 >   `live` = compra abierta; **cualquier otro valor o sin definir = `preview`** (solo reservar) — el
 >   default inseguro sería cobrar sin pasarela, así que el fallback es no cobrar. Cliente:

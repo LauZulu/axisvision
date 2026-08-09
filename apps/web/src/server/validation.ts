@@ -1,5 +1,27 @@
 import { z } from 'zod'
 
+/**
+ * Una foto del producto: la clave en S3 y con qué lente se tomó.
+ *
+ * Acepta también la clave suelta (`"products/…jpg"`), que es lo que mandaba el
+ * panel antes de que las fotos llevaran variante. En ese caso `lensVariant`
+ * queda `undefined`, que NO significa "sin variante" sino "no lo toques": el
+ * servidor conserva la que ya tuviera la foto.
+ *
+ * El tope de 30 no es decorativo: un modelo con fotos de sol + transparente +
+ * amarillo pasa de 12 sin esfuerzo, y con el tope viejo Eclypse (13 fotos) no se
+ * podía guardar desde el panel — devolvía "Datos de producto inválidos".
+ */
+const productImageSchema = z
+  .union([
+    z.string().min(1).max(512),
+    z.object({
+      key: z.string().min(1).max(512),
+      lensVariant: z.enum(['sunglass', 'ophthalmic', 'yellow']).nullable().optional(),
+    }),
+  ])
+  .transform((v) => (typeof v === 'string' ? { key: v } : v))
+
 /** Esquema de producto para crear (todos los campos). */
 export const productSchema = z.object({
   slug: z
@@ -20,7 +42,7 @@ export const productSchema = z.object({
   stock: z.number().int().min(0),
   active: z.boolean(),
   position: z.number().int().min(0),
-  images: z.array(z.string().min(1)).max(12),
+  images: z.array(productImageSchema).max(30),
 })
 
 /** Para editar: todos opcionales. */

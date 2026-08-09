@@ -24,7 +24,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const ok = await updateProduct(id, parsed.data)
     if (!ok) return jsonError('NOT_FOUND', 'Producto no encontrado.', 404)
     return json({ ok: true })
-  } catch {
+  } catch (err) {
+    console.error('[admin] PATCH /api/admin/products/%s falló:', id, err)
     return jsonError('DB_ERROR', 'No se pudo actualizar el producto.', 500)
   }
 }
@@ -46,7 +47,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const ok = await softDeleteProduct(id)
     if (!ok) return jsonError('NOT_FOUND', 'Producto no encontrado.', 404)
     return json({ ok: true, deleted: 'soft' })
-  } catch {
+  } catch (err) {
+    console.error('[admin] DELETE /api/admin/products/%s falló:', id, err)
     return jsonError('DB_ERROR', 'No se pudo eliminar el producto.', 500)
   }
 }

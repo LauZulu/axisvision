@@ -4,8 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { fill } from '../../lib/format'
-import { ImageUploader } from './ImageUploader'
+import { ImageUploader, type UploaderImage } from './ImageUploader'
+import { LensGalleryPreview } from './LensGalleryPreview'
 import { useDict } from '../../i18n/useDict'
+import type { LensOptionDTO } from '../../lib/lenses'
 import type { ProductDTO } from '../../lib/products'
 
 type FormState = {
@@ -22,7 +24,7 @@ type FormState = {
   stock: string
   position: string
   active: boolean
-  images: string[]
+  images: UploaderImage[]
 }
 
 function initial(product?: ProductDTO): FormState {
@@ -40,7 +42,7 @@ function initial(product?: ProductDTO): FormState {
     stock: product ? String(product.stock) : '0',
     position: product ? String(product.position ?? 0) : '0',
     active: product?.active ?? true,
-    images: product?.images.map((i) => i.key) ?? [],
+    images: product?.images.map((i) => ({ key: i.key, lensVariant: i.lensVariant })) ?? [],
   }
 }
 
@@ -64,7 +66,14 @@ function Field({
 const inputCls =
   'w-full rounded-md border border-line bg-carbon-900 px-3 py-2.5 text-base text-warm-white outline-none focus:border-gold/60'
 
-export function ProductForm({ product }: { product?: ProductDTO }) {
+export function ProductForm({
+  product,
+  lensOptions = [],
+}: {
+  product?: ProductDTO
+  /** Opciones de lente activas: sirven para previsualizar la galería por lente. */
+  lensOptions?: LensOptionDTO[]
+}) {
   const { t } = useDict()
   const f = t.admin.form
   const router = useRouter()
@@ -263,13 +272,15 @@ export function ProductForm({ product }: { product?: ProductDTO }) {
           {f.visible}
         </label>
 
-        {/* Fotos: se suben directo a S3 (presigned PUT) y se sirven por CloudFront. */}
+        {/* Fotos: se suben directo a S3 (presigned PUT) y se sirven por CloudFront.
+            Debajo, qué galería verá el cliente con cada tipo de lente. */}
         <div className="mt-7">
           <ImageUploader
             value={form.images}
             onChange={(imgs) => set('images', imgs)}
             slug={form.slug.trim() || product?.slug}
           />
+          <LensGalleryPreview images={form.images} options={lensOptions} />
         </div>
 
         {error && <p className="mt-5 text-sm text-red-400">{error}</p>}

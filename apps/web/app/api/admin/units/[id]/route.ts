@@ -18,7 +18,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   try {
     const ok = await updateProductUnit(id, parsed.data)
     return ok ? json({ ok: true }) : jsonError('NOT_FOUND', 'Unidad no encontrada.', 404)
-  } catch {
+  } catch (err) {
+    console.error('[admin] PATCH /api/admin/units/%s falló:', id, err)
     return jsonError('DB_ERROR', 'No se pudo guardar la unidad.', 500)
   }
 }

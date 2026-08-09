@@ -47,7 +47,8 @@ export async function POST(req: Request) {
     }
     const url = await presignDelete(parsed.data.key)
     return json({ key: parsed.data.key, url, expiresIn: 300 })
-  } catch {
+  } catch (err) {
+    console.error('[admin] POST /api/admin/uploads/presign falló:', err)
     return jsonError('S3_ERROR', 'No se pudo firmar la URL de S3.', 500)
   }
 }

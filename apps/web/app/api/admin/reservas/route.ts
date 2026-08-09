@@ -11,7 +11,8 @@ export async function GET() {
   if (gate.response) return gate.response
   try {
     return json({ alerts: await listStockAlerts() })
-  } catch {
+  } catch (err) {
+    console.error('[admin] GET /api/admin/reservas falló:', err)
     return jsonError('DB_ERROR', 'No se pudieron leer las reservas.', 500)
   }
 }

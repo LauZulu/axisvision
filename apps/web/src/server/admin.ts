@@ -4,7 +4,7 @@ import { AxisProductImage } from './db/entities/ProductImage'
 import { AxisProductUnit } from './db/entities/ProductUnit'
 import { syncStockFromUnits } from './inventory'
 import { deleteObjects } from './s3'
-import type { ProductDTO } from '../lib/products'
+import type { ImageLensVariant, ProductDTO } from '../lib/products'
 
 export type AdminStats = {
   productsTotal: number
@@ -65,6 +65,15 @@ export async function getLowStockProducts(
   return rows.map((p) => ({ id: p.id, slug: p.slug, name: p.name, stock: p.stock, priceCop: p.priceCop }))
 }
 
+/**
+ * Foto tal y como la manda el panel. `lensVariant` ausente = "no la toques"
+ * (conserva la que ya tuviera en la DB); `null` = sirve para cualquier lente.
+ */
+export type ProductImageInput = {
+  key: string
+  lensVariant?: ImageLensVariant | null
+}
+
 export type ProductInput = {
   slug: string
   name: string
@@ -79,25 +88,55 @@ export type ProductInput = {
   stock: number
   active: boolean
   position: number
-  images: string[]
+  images: ProductImageInput[]
 }
 
-async function replaceImages(productId: string, keys: string[]) {
+/**
+ * Deja las fotos del producto en exactamente `keys`, en ese orden.
+ *
+ * Borrado + inserción van en UNA transacción. Antes eran dos pasos sueltos, así
+ * que un fallo al insertar dejaba al producto SIN NINGUNA foto: es justo lo que
+ * pasó en producción con el 500 de `Cyclic dependency` —AXIS Origin se quedó en
+ * cero y la tienda lo mostró sin imágenes—. La limpieza de S3 va DESPUÉS del
+ * commit y con el error contenido: borrar el objeto de una transacción que luego
+ * se deshace no tiene vuelta atrás, y un fallo de S3 no puede tumbar un guardado
+ * que la base ya dio por bueno.
+ *
+ * `lensVariant` solo se pisa si el panel la manda: una petición que trae la
+ * clave suelta (formato viejo) conserva la variante que la foto ya tuviera. Sin
+ * eso, cada guardado del panel dejaba todas las fotos como "sirve para cualquier
+ * lente" y rompía en silencio la galería por lente de la ficha.
+ */
+async function replaceImages(productId: string, images: ProductImageInput[]) {
   const db = await getDb()
-  const imageRepo = db.getRepository(AxisProductImage)
-  const old = await imageRepo.find({ where: { productId } })
-  const oldKeys = old.map((i) => i.imageKey)
+  const keys = images.map((i) => i.key)
 
-  await imageRepo.delete({ productId })
-  if (keys.length > 0) {
-    await imageRepo.save(
-      keys.map((imageKey, position) => imageRepo.create({ productId, imageKey, position })),
-    )
-  }
+  const removed = await db.transaction(async (manager) => {
+    const imageRepo = manager.getRepository(AxisProductImage)
+    const old = await imageRepo.find({ where: { productId } })
+    const previous = new Map(old.map((i) => [i.imageKey, i.lensVariant]))
+
+    await imageRepo.delete({ productId })
+    if (images.length > 0) {
+      await imageRepo.insert(
+        images.map((img, position) => ({
+          productId,
+          imageKey: img.key,
+          position,
+          lensVariant:
+            img.lensVariant !== undefined ? img.lensVariant : (previous.get(img.key) ?? null),
+        })),
+      )
+    }
+    return old.map((i) => i.imageKey).filter((k) => !keys.includes(k))
+  })
 
   // Limpia de S3 las fotos que se quitaron (best-effort; ignora claves locales).
-  const removed = oldKeys.filter((k) => !keys.includes(k))
-  if (removed.length) await deleteObjects(removed)
+  if (removed.length) {
+    await deleteObjects(removed).catch((err) =>
+      console.error('[admin] no se pudieron borrar de S3 las fotos retiradas:', err),
+    )
+  }
 }
 
 export async function createProduct(input: ProductInput): Promise<string> {

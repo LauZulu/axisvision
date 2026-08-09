@@ -18,7 +18,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   try {
     const ok = await updateLensOption(id, parsed.data)
     return ok ? json({ ok: true }) : jsonError('NOT_FOUND', 'Opción no encontrada.', 404)
-  } catch {
+  } catch (err) {
+    console.error('[admin] PATCH /api/admin/lenses/%s falló:', id, err)
     return jsonError('DB_ERROR', 'No se pudo guardar la opción.', 500)
   }
 }
@@ -31,7 +32,8 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   try {
     const ok = await deleteLensOption(id)
     return ok ? json({ ok: true }) : jsonError('NOT_FOUND', 'Opción no encontrada.', 404)
-  } catch {
+  } catch (err) {
+    console.error('[admin] DELETE /api/admin/lenses/%s falló:', id, err)
     return jsonError('DB_ERROR', 'No se pudo eliminar la opción.', 500)
   }
 }

@@ -1,7 +1,15 @@
+import { getActiveLensOptions } from '../../../../../src/server/lenses'
 import { ProductForm } from '../../../../../src/components/admin/ProductForm'
+import { AdminDbError } from '../../../../../src/components/admin/AdminDbError'
 
 export const dynamic = 'force-dynamic'
 
-export default function NewProductPage() {
-  return <ProductForm />
+export default async function NewProductPage() {
+  let lensOptions
+  try {
+    lensOptions = await getActiveLensOptions()
+  } catch {
+    return <AdminDbError />
+  }
+  return <ProductForm lensOptions={lensOptions} />
 }
