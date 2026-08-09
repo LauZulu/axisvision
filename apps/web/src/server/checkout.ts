@@ -60,7 +60,11 @@ function resultFor(order: AxisOrder, reused: boolean): { ok: true; order: Checko
   let payment: CheckoutParams | null = null
   try {
     payment = buildCheckoutParams(order.reference, order.amountCop)
-  } catch {
+  } catch (err) {
+    // Sin parámetros el comprador ve un checkout sin botón de pago. Que falte la
+    // config de Wompi es un caso previsto, pero enterarse por el silencio no:
+    // queda el rastro para distinguirlo de un fallo real al firmar.
+    console.error('[checkout] no se pudieron firmar los parámetros de Wompi:', err)
     payment = null
   }
   return {

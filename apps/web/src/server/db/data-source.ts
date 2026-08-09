@@ -94,8 +94,16 @@ export function buildDataSource(): DataSource {
     migrationsTableName: 'axis_migrations',
     // Resiliencia del pool: keepAlive evita que conexiones ociosas mueran en
     // silencio (NAT/firewall); timeouts razonables para no colgar requests.
+    //
+    // `max` BAJO a propósito. En local hay un solo proceso y diez conexiones no
+    // molestan; en producción cada instancia serverless levanta SU PROPIO pool,
+    // así que el tope real es max × instancias vivas. Con 10, ocho instancias
+    // simultáneas ya se comen las ~85 conexiones de una RDS pequeña y la
+    // siguiente petición muere con "too many connections" — un fallo que no se
+    // puede reproducir en local por definición. Una petición usa 1 conexión (2
+    // si la página lanza consultas en paralelo), así que 3 sobra.
     extra: {
-      max: 10,
+      max: 3,
       keepAlive: true,
       connectionTimeoutMillis: 15000,
       idleTimeoutMillis: 30000,

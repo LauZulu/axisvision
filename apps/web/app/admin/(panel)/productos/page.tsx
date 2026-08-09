@@ -8,7 +8,8 @@ export default async function AdminProductsPage() {
   try {
     const products = await getAllProducts()
     return <ProductsView products={products} />
-  } catch {
+  } catch (err) {
+    console.error('[admin] productos:', err)
     return <AdminDbError />
   }
 }

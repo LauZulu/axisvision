@@ -8,7 +8,8 @@ export default async function AdminOrdersPage() {
   try {
     const orders = await getAllOrders()
     return <OrdersView orders={orders} />
-  } catch {
+  } catch (err) {
+    console.error('[admin] pedidos:', err)
     return <AdminDbError />
   }
 }

@@ -18,7 +18,10 @@ export default async function ProductDetailPage({
     ])
     if (!product) return <StoreNotFound />
     return <ProductDetail product={product} lensOptions={lensOptions} />
-  } catch {
+  } catch (err) {
+    // Igual que en /tienda: la página responde 200 con el aviso, así que sin
+    // este log el fallo no deja rastro NI en el status NI en la consola.
+    console.error('[tienda] no se pudo cargar la ficha:', err)
     return <StoreUnavailable />
   }
 }

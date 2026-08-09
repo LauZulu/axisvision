@@ -7,7 +7,8 @@ export const dynamic = 'force-dynamic'
 export default async function AdminLensesPage() {
   try {
     return <LensOptionsView options={await getAllLensOptions()} />
-  } catch {
+  } catch (err) {
+    console.error('[admin] lentes:', err)
     return <AdminDbError />
   }
 }

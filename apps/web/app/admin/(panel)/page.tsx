@@ -22,7 +22,9 @@ export default async function AdminDashboard() {
         threshold={LOW_STOCK_THRESHOLD}
       />
     )
-  } catch {
+  } catch (err) {
+    // `AdminDbError` responde 200 con un aviso: sin log, el fallo es invisible.
+    console.error('[admin] dashboard:', err)
     return <AdminDbError />
   }
 }

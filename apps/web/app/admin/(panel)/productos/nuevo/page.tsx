@@ -8,7 +8,8 @@ export default async function NewProductPage() {
   let lensOptions
   try {
     lensOptions = await getActiveLensOptions()
-  } catch {
+  } catch (err) {
+    console.error('[admin] producto nuevo:', err)
     return <AdminDbError />
   }
   return <ProductForm lensOptions={lensOptions} />

@@ -70,7 +70,11 @@ export default async function PaymentResultPage({
           }
         }
       }
-    } catch {
+    } catch (err) {
+      // Quien acaba de pagar ve "no encontramos la transacción". Sin este log,
+      // un fallo consultando a Wompi es indistinguible de un id inventado, y es
+      // el peor momento posible para no tener rastro.
+      console.error('[pago] no se pudo consultar la transacción %s:', id, err)
       result = { found: false }
     }
   }

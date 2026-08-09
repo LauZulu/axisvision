@@ -53,9 +53,19 @@ export function presignDelete(key: string): Promise<string> {
  */
 export async function deleteObjects(keys: string[]): Promise<void> {
   const remote = keys.filter((k) => k && k.startsWith('products/'))
-  await Promise.allSettled(
-    remote.map((Key) => s3().send(new DeleteObjectCommand({ Bucket: bucket(), Key }))),
-  )
+  if (remote.length === 0) return
+  // Nunca lanza. El `allSettled` solo contenía los fallos de RED; `s3()` y
+  // `bucket()` lanzan de forma SÍNCRONA si al despliegue le faltan variables, y
+  // ese error escapaba del allSettled y tumbaba la petición ENTERA — un guardado
+  // de producto ya escrito en la base respondía 500, o un borrado ya hecho
+  // decía "no se pudo eliminar". Limpiar S3 es best-effort: se registra y sigue.
+  try {
+    await Promise.allSettled(
+      remote.map((Key) => s3().send(new DeleteObjectCommand({ Bucket: bucket(), Key }))),
+    )
+  } catch (err) {
+    console.error('[s3] no se pudieron borrar objetos:', err)
+  }
 }
 
 /** Verifica acceso al bucket (lista 1 objeto). No sube nada. */

@@ -17,7 +17,8 @@ export default async function EditProductPage({
   let lensOptions
   try {
     ;[product, lensOptions] = await Promise.all([getProductById(id), getActiveLensOptions()])
-  } catch {
+  } catch (err) {
+    console.error('[admin] ficha de producto %s:', id, err)
     return <AdminDbError />
   }
   if (!product) return <AdminProductNotFound />

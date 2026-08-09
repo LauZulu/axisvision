@@ -19,7 +19,8 @@ export default async function AdminInventoryPage({
       productId = products.find((p) => p.slug === producto)?.id
     }
     return <InventoryView units={await getProductUnits(productId)} />
-  } catch {
+  } catch (err) {
+    console.error('[admin] inventario:', err)
     return <AdminDbError />
   }
 }

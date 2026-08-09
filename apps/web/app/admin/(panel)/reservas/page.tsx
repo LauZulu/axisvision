@@ -8,7 +8,8 @@ export default async function AdminWaitlistPage() {
   try {
     const alerts = await listStockAlerts()
     return <WaitlistView alerts={alerts} />
-  } catch {
+  } catch (err) {
+    console.error('[admin] reservas:', err)
     return <AdminDbError />
   }
 }

@@ -4,11 +4,18 @@ import path from 'node:path'
 // Permite a next/image cargar desde el dominio de CloudFront (si está configurado).
 function cdnRemotePatterns() {
   const cdn = process.env.NEXT_PUBLIC_CDN_URL
-  if (!cdn) return undefined
+  // Se lee en tiempo de BUILD: si al build del hosting le falta la variable, el
+  // sitio se despliega entero y sin errores… con TODAS las fotos rotas (400 de
+  // /_next/image, que no dice nada de esto). Avisar aquí es la única señal.
+  if (!cdn) {
+    console.warn('[next.config] NEXT_PUBLIC_CDN_URL sin definir: next/image rechazará las fotos de S3.')
+    return undefined
+  }
   try {
     const u = new URL(cdn)
     return [{ protocol: u.protocol.replace(':', '') as 'https' | 'http', hostname: u.hostname }]
   } catch {
+    console.warn(`[next.config] NEXT_PUBLIC_CDN_URL no es una URL válida (${cdn}): fotos rotas.`)
     return undefined
   }
 }
