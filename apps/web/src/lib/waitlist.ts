@@ -7,7 +7,12 @@ export type StockAlertSourceDTO = 'sold_out' | 'preview'
 
 export type StockAlertDTO = {
   id: string
-  email: string
+  /** Null solo en reservas anteriores al formulario con nombre y WhatsApp. */
+  name: string | null
+  /** Canónico (`573123727253`); usar `formatPhone()`/`whatsappTo()` para pintarlo. */
+  phone: string | null
+  /** Opcional: sin correo, a esa persona se le escribe por WhatsApp. */
+  email: string | null
   status: StockAlertStatusDTO
   source: StockAlertSourceDTO
   productId: string

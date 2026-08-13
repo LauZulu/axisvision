@@ -16,7 +16,15 @@ export const dynamic = 'force-dynamic'
  */
 const schema = z.object({
   productId: z.string().uuid(),
-  email: z.string().email().max(255),
+  name: z.string().trim().min(2).max(120),
+  // El formato lo valida `normalizePhone()` dentro de `subscribeToStockAlert`,
+  // que es la misma función que usa el formulario: aquí solo se acota el tamaño
+  // para no aceptar una novela. Repetir la regla en un regex de zod la dejaría
+  // desincronizada de la del cliente a la primera.
+  phone: z.string().trim().min(7).max(24),
+  // Opcional de verdad: `''` es lo que manda el navegador cuando lo dejan en
+  // blanco, y `z.string().email()` lo rechazaría con un 400.
+  email: z.union([z.string().email().max(255), z.literal('')]).optional(),
   source: z.enum(['sold_out', 'preview']).optional(),
   locale: z.enum(['es', 'en']).optional(),
   // Honeypot: invisible para las personas, irresistible para los bots. Acepta
@@ -33,7 +41,7 @@ export async function POST(req: Request) {
 
   const parsed = schema.safeParse(await req.json().catch(() => null))
   if (!parsed.success) {
-    return jsonError('INVALID_BODY', 'Revisa el correo que escribiste.', 400)
+    return jsonError('INVALID_BODY', 'Revisa los datos que escribiste.', 400)
   }
 
   // Bot detectado: se responde 200 como si todo hubiera ido bien. Un error le
@@ -43,11 +51,15 @@ export async function POST(req: Request) {
   try {
     const result = await subscribeToStockAlert({
       productId: parsed.data.productId,
+      name: parsed.data.name,
+      phone: parsed.data.phone,
       email: parsed.data.email,
       source: parsed.data.source ?? 'sold_out',
       locale: parsed.data.locale,
     })
-    if (!result.ok) return jsonError(result.code, result.message, 404)
+    if (!result.ok) {
+      return jsonError(result.code, result.message, result.code === 'INVALID_PHONE' ? 400 : 404)
+    }
     return json({ status: result.status }, 201)
   } catch (err) {
     console.error('[reservas] alta fallida:', err)

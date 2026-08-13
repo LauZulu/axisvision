@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import { getDb } from './db'
+import { normalizePhone } from '../lib/phone'
 import { AxisStockAlert, type StockAlertSource } from './db/entities/StockAlert'
 import { AxisProduct } from './db/entities/Product'
 import { AxisProductImage } from './db/entities/ProductImage'
@@ -26,6 +27,14 @@ import {
  * distintas: si Brevo no está configurado (hoy no lo está), las reservas se
  * siguen guardando y el aviso se puede disparar a mano desde el panel el día
  * que haya cuenta.
+ *
+ * **El dato obligatorio es el WhatsApp, no el correo** (migración `...011`).
+ * Eso parte el aviso en dos caminos que conviene no mezclar:
+ *  - con correo → aviso automático por Brevo, con confirmación y baja por token;
+ *  - sin correo → no hay nada que automatizar; queda en el panel para que
+ *    alguien le escriba por WhatsApp.
+ * Por eso `notifyProductAvailable()` devuelve las dos cifras y solo marca como
+ * `notified` a quien de verdad recibió un correo.
  */
 
 const VERIFY_EXPIRES_HOURS = 48
@@ -67,7 +76,10 @@ async function coverUrl(productId: string): Promise<string | null> {
 
 export type SubscribeInput = {
   productId: string
-  email: string
+  name: string
+  phone: string
+  /** Opcional: sin él, la reserva se atiende a mano por WhatsApp. */
+  email?: string | null
   source: StockAlertSource
   locale?: string
 }
@@ -80,17 +92,26 @@ export type SubscribeOutcome =
   /** Ya estaba apuntado a este modelo. */
   | { ok: true; status: 'already' }
   | { ok: false; code: 'PRODUCT_NOT_FOUND'; message: string }
+  | { ok: false; code: 'INVALID_PHONE'; message: string }
 
 /**
- * Apunta un correo a la lista de espera de un producto.
+ * Apunta a alguien a la lista de espera de un producto.
  *
- * Idempotente por (producto, correo): volver a apuntarse reactiva la fila que
+ * Idempotente por (producto, teléfono): volver a apuntarse reactiva la fila que
  * ya existe. Eso incluye a quien se había dado de baja — si vuelve por su
  * propia voluntad, vuelve a entrar.
+ *
+ * El teléfono se normaliza AQUÍ además de en el formulario: el endpoint es
+ * público y nadie garantiza que la petición venga de nuestro navegador.
  */
 export async function subscribeToStockAlert(input: SubscribeInput): Promise<SubscribeOutcome> {
   const db = await getDb()
-  const email = input.email.trim().toLowerCase()
+  const phone = normalizePhone(input.phone)
+  if (!phone) {
+    return { ok: false, code: 'INVALID_PHONE', message: 'Escribe un número de WhatsApp válido.' }
+  }
+  const name = input.name.trim().slice(0, 120) || null
+  const email = input.email?.trim().toLowerCase() || null
 
   const product = await db.getRepository(AxisProduct).findOne({
     where: { id: input.productId, active: true },
@@ -100,13 +121,27 @@ export async function subscribeToStockAlert(input: SubscribeInput): Promise<Subs
   }
 
   const repo = db.getRepository(AxisStockAlert)
-  const existing = await repo.findOne({ where: { productId: product.id, email } })
-  const status = doubleOptIn() ? 'pending' : 'active'
+  // El teléfono manda, pero el correo también identifica: quien se apuntó con
+  // correo y vuelve desde otro número es la misma persona, y sin este segundo
+  // findOne el índice único del correo lo convertiría en un 23505.
+  const existing =
+    (await repo.findOne({ where: { productId: product.id, phone } })) ??
+    (email ? await repo.findOne({ where: { productId: product.id, email } }) : null)
+  // Sin correo no hay a dónde mandar la confirmación: el doble opt-in no aplica.
+  const status = doubleOptIn() && email ? 'pending' : 'active'
 
   if (existing) {
+    // Los datos de contacto se refrescan siempre, incluso si ya estaba en la
+    // lista: si volvió a apuntarse dejando ahora sí un correo, o corrigiendo el
+    // número, lo último que escribió es lo bueno.
+    existing.name = name ?? existing.name
+    existing.phone = phone
+    existing.email = email ?? existing.email
+
     // Ya avisado o dado de baja: se reabre. En espera: no se toca (ni se le
     // manda otro correo de confirmación por insistir con el formulario).
     if (existing.status === 'active' || existing.status === 'pending') {
+      await repo.save(existing)
       return { ok: true, status: 'already' }
     }
     existing.status = status
@@ -116,12 +151,14 @@ export async function subscribeToStockAlert(input: SubscribeInput): Promise<Subs
     existing.notifiedAt = null
     if (status === 'active') existing.verifiedAt = new Date()
     await repo.save(existing)
-    await sendSubscribeEmail(existing.token, status, product.name, product.slug, email)
+    await sendSubscribeEmail(existing.token, status, product.name, product.slug, existing.email)
     return { ok: true, status }
   }
 
   const alert = repo.create({
     productId: product.id,
+    name,
+    phone,
     email,
     status,
     source: input.source,
@@ -133,7 +170,7 @@ export async function subscribeToStockAlert(input: SubscribeInput): Promise<Subs
     await repo.save(alert)
   } catch (err) {
     // Doble clic en el botón: los dos requests pasaron el findOne y los dos
-    // insertan. El índice único (productId, email) hace su trabajo y aquí se
+    // insertan. El índice único (productId, phone) hace su trabajo y aquí se
     // traduce a "ya estabas apuntado" en vez de a un 500.
     if ((err as { code?: string })?.code === '23505') return { ok: true, status: 'already' }
     throw err
@@ -147,8 +184,11 @@ async function sendSubscribeEmail(
   status: 'active' | 'pending',
   productName: string,
   slug: string,
-  email: string,
+  email: string | null,
 ): Promise<void> {
+  // Reserva sin correo: no hay nada que mandar. El aviso lo dará una persona
+  // por WhatsApp desde /admin/reservas.
+  if (!email) return
   const base = {
     email,
     productName,
@@ -181,7 +221,7 @@ export async function verifyStockAlert(token: string): Promise<boolean> {
   await repo.save(alert)
 
   const product = await db.getRepository(AxisProduct).findOne({ where: { id: alert.productId } })
-  if (product) {
+  if (product && alert.email) {
     await sendEmail(
       { email: alert.email },
       renderWaitlistConfirm({
@@ -210,7 +250,7 @@ export async function unsubscribeStockAlert(token: string): Promise<boolean> {
   await repo.save(alert)
 
   const product = await db.getRepository(AxisProduct).findOne({ where: { id: alert.productId } })
-  if (product) {
+  if (product && alert.email) {
     await sendEmail(
       { email: alert.email },
       renderWaitlistUnsubscribed({
@@ -228,21 +268,36 @@ export async function unsubscribeStockAlert(token: string): Promise<boolean> {
 
 // ---------- Aviso de disponibilidad ----------
 
+export type NotifyResult = {
+  /** Correos enviados. */
+  sent: number
+  /** Reservas sin correo: quedan en espera de un WhatsApp escrito a mano. */
+  pendingWhatsapp: number
+}
+
 /**
- * Avisa a toda la lista activa de un producto y las marca como notificadas.
- * Devuelve cuántos correos se enviaron.
+ * Avisa por correo a toda la lista activa de un producto y las marca como
+ * notificadas.
+ *
+ * Las reservas SIN correo no se pueden avisar desde aquí y por eso **siguen en
+ * `active`**: marcarlas como notificadas sería mentir y las escondería del
+ * panel justo cuando toca escribirles. Se devuelven contadas en
+ * `pendingWhatsapp` para que el panel diga cuántas quedan a mano.
  *
  * Se manda de a pocos a propósito: Brevo limita el ritmo, y una ráfaga de 200
  * peticiones en paralelo se traduce en 429 y avisos perdidos.
  */
-export async function notifyProductAvailable(productId: string): Promise<number> {
+export async function notifyProductAvailable(productId: string): Promise<NotifyResult> {
+  const empty: NotifyResult = { sent: 0, pendingWhatsapp: 0 }
   const db = await getDb()
   const product = await db.getRepository(AxisProduct).findOne({ where: { id: productId } })
-  if (!product) return 0
+  if (!product) return empty
 
   const repo = db.getRepository(AxisStockAlert)
-  const alerts = await repo.find({ where: { productId, status: 'active' }, order: { createdAt: 'ASC' } })
-  if (alerts.length === 0) return 0
+  const all = await repo.find({ where: { productId, status: 'active' }, order: { createdAt: 'ASC' } })
+  const alerts = all.filter((a): a is AxisStockAlert & { email: string } => Boolean(a.email))
+  const pendingWhatsapp = all.length - alerts.length
+  if (alerts.length === 0) return { sent: 0, pendingWhatsapp }
 
   const image = await coverUrl(productId)
   let sent = 0
@@ -283,14 +338,43 @@ export async function notifyProductAvailable(productId: string): Promise<number>
 
   // Se marcan como notificadas aunque el envío haya fallado o Brevo no esté
   // configurado: si no, el siguiente movimiento de inventario reintentaría con
-  // toda la lista y quien SÍ recibió el aviso lo recibiría dos veces.
-  await repo.update(
-    { productId, status: 'active' },
-    { status: 'notified', notifiedAt: new Date() },
-  )
+  // toda la lista y quien SÍ recibió el aviso lo recibiría dos veces. Solo las
+  // que tienen correo: a las demás no se les ha avisado de nada.
+  await repo
+    .createQueryBuilder()
+    .update(AxisStockAlert)
+    .set({ status: 'notified', notifiedAt: new Date() })
+    .where('"productId" = :productId', { productId })
+    .andWhere('status = :status', { status: 'active' })
+    .andWhere('email IS NOT NULL')
+    .execute()
 
-  console.info(`[reservas] ${product.name}: ${sent}/${alerts.length} avisos enviados`)
-  return sent
+  console.info(
+    `[reservas] ${product.name}: ${sent}/${alerts.length} avisos enviados` +
+      (pendingWhatsapp ? `, ${pendingWhatsapp} por WhatsApp a mano` : ''),
+  )
+  return { sent, pendingWhatsapp }
+}
+
+/**
+ * Marca UNA reserva como avisada, sin mandar nada.
+ *
+ * Es el cierre del camino manual: la persona no dejó correo, alguien le escribió
+ * por WhatsApp desde el panel y hay que sacarla de "en espera". Sin esto, las
+ * reservas sin correo se quedarían activas para siempre y el contador del panel
+ * pediría avisar a gente ya avisada.
+ */
+export async function markAlertNotified(id: string): Promise<boolean> {
+  const db = await getDb()
+  const repo = db.getRepository(AxisStockAlert)
+  const alert = await repo.findOne({ where: { id } })
+  if (!alert) return false
+  if (alert.status === 'notified') return true
+
+  alert.status = 'notified'
+  alert.notifiedAt = new Date()
+  await repo.save(alert)
+  return true
 }
 
 /**
@@ -349,6 +433,8 @@ export async function listStockAlerts(): Promise<StockAlertDTO[]> {
     .innerJoin(AxisProduct, 'p', 'p.id = a."productId"')
     .select([
       'a.id AS id',
+      'a.name AS name',
+      'a.phone AS phone',
       'a.email AS email',
       'a.status AS status',
       'a.source AS source',
@@ -362,7 +448,9 @@ export async function listStockAlerts(): Promise<StockAlertDTO[]> {
     .orderBy('a."createdAt"', 'DESC')
     .getRawMany<{
       id: string
-      email: string
+      name: string | null
+      phone: string | null
+      email: string | null
       status: StockAlertStatusDTO
       source: StockAlertSourceDTO
       productId: string

@@ -219,15 +219,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   responden cerrado. El front es maquillaje; la guarda de verdad es la del servidor.
 >   Ojo: la variable es `NEXT_PUBLIC_`, así que se hornea en el build — cambiarla exige
 >   reconstruir/redesplegar, no basta con editar el entorno del hosting.
-> - **Reservas / lista de espera:** tabla **`axis_stock_alert`** (migración `...004`) con único
->   (productId, email); `src/server/waitlist.ts` es todo el flujo. Alta pública en
->   `POST /api/reservas` (rate-limit + honeypot `website`), confirmación y baja por token opaco en
->   `/api/reservas/confirmar|baja` → redirigen a `/reservas/gracias`. **El aviso lo dispara el
+> - **Reservas / lista de espera:** tabla **`axis_stock_alert`** (migración `...004`);
+>   `src/server/waitlist.ts` es todo el flujo. Alta pública en `POST /api/reservas`
+>   (rate-limit + honeypot `website`), confirmación y baja por token opaco en
+>   `/api/reservas/confirmar|baja` → redirigen a `/reservas/gracias`.
+>   **El formulario pide NOMBRE y WHATSAPP; el correo es opcional** (migración `...011`): el canal
+>   por el que se responde en Colombia es WhatsApp, así que la identidad de la fila es el
+>   **teléfono** —único (productId, phone), y el único (productId, email) sigue vivo para que nadie
+>   reciba dos correos por el mismo modelo aunque se apunte desde otro número (en Postgres los NULL
+>   no chocan entre sí, así que las reservas sin correo conviven)—. El teléfono se guarda **canónico**
+>   (solo dígitos con indicativo, `573123727253`) con `normalizePhone()` (`src/lib/phone.ts`), que es
+>   la MISMA función que valida el formulario: si el navegador lo acepta, el servidor lo guarda.
+>   Guardar lo tecleado dejaría "312 372 7253" y "+573123727253" como dos personas.
+>   Eso parte el aviso en dos caminos: **con correo** → automático por Brevo; **sin correo** → no hay
+>   nada que automatizar y `notifyProductAvailable()` las deja en `active` a propósito (marcarlas
+>   `notified` sería mentir y las escondería justo cuando toca escribirles), devolviendo
+>   `{sent, pendingWhatsapp}` para que el panel diga cuántas quedan a mano. **El aviso lo dispara el
 >   inventario**: `syncStockFromUnits()` devuelve `{stock, previous}` por producto y
 >   `handleStockTransitions()` convierte 0→>0 en correos a la lista y >0→0 en aviso al equipo
 >   (el inventario NO importa el correo; se pasa por el valor de retorno). Panel en
->   `/admin/reservas` con botón "avisar ahora" (`POST /api/admin/reservas`) para el caso que la
->   transición no cubre: gente apuntada con la tienda cerrada en modelos que ya tienen stock.
+>   `/admin/reservas` con botón "avisar por correo" (`POST /api/admin/reservas` con `productId`) para
+>   el caso que la transición no cubre —gente apuntada con la tienda cerrada en modelos que ya tienen
+>   stock— más, por fila, enlace de WhatsApp con el saludo escrito y **"marcar avisado"**
+>   (`POST /api/admin/reservas` con `alertId`, `markAlertNotified()`): sin ese cierre manual, las
+>   reservas sin correo se quedarían "en espera" para siempre.
 >   **La baja NO se ejecuta en el GET**: `/api/reservas/baja` con GET solo redirige a
 >   `/reservas/baja`, una página con un botón que hace POST. Los escáneres de correo (Safe Links,
 >   antivirus corporativos) abren TODOS los enlaces de un mensaje; con la baja en el GET darían de
