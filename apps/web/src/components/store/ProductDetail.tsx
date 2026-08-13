@@ -17,19 +17,21 @@ import {
   type ProductDTO,
 } from '../../lib/products'
 import { addToCart } from '../../lib/cart'
+import { stashBuyNowRx } from '../../lib/buyNow'
 import {
   coatingAddon,
   coatingIncludedIn,
-  coatingPriceFor,
   defaultLens,
   imagesForLens,
   lensName,
   optionsForProduct,
   prescriptionAddon,
-  priceWithLens,
   type LensOptionDTO,
 } from '../../lib/lenses'
+import { indexRxPrices, quoteLens, type RxPriceDTO } from '../../lib/lensPricing'
+import type { Prescription } from '../../lib/prescription'
 import { LensPicker } from './LensPicker'
+import { PrescriptionModal } from './PrescriptionModal'
 import { WaitlistForm } from './WaitlistForm'
 import { canBuy } from '../../lib/storeMode'
 import { whatsappLink } from '../../config/brand'
@@ -38,10 +40,18 @@ import { whatsappLink } from '../../config/brand'
 export function ProductDetail({
   product,
   lensOptions,
+  rxPrices = [],
 }: {
   product: ProductDTO
   /** Catálogo COMPLETO de opciones; aquí se recorta a las que ofrece el modelo. */
   lensOptions: LensOptionDTO[]
+  /**
+   * Precios de lente graduado conocidos. Van al cliente para poder cotizar la
+   * fórmula EN VIVO mientras la escribe — que es todo el punto de preguntarla
+   * aquí y no después de comprar. Lo cobrado lo recalcula el servidor con estas
+   * mismas filas.
+   */
+  rxPrices?: RxPriceDTO[]
 }) {
   const { t, lang } = useDict()
   const router = useRouter()
@@ -74,14 +84,28 @@ export function ProductDetail({
   const withCoating = Boolean(arOption) && (wantsAr || arIncluded)
   const ar = withCoating ? arOption : null
 
-  // Precio mostrado = producto + lente + antirreflejo + fórmula. El cobro lo
-  // recalcula el servidor.
-  const unitPrice = priceWithLens(product.priceCop, lens, rx, withCoating)
-  const extras = unitPrice - product.priceCop
-  // La fórmula no suma aquí: su valor depende de la graduación y se confirma
-  // al recibirla. Hay que DECIRLO donde se pinta el total, o el número de
-  // arriba se lee como el precio final de unas gafas graduadas.
-  const rxOnQuote = Boolean(rx?.priceOnQuote)
+  // La graduación del cliente. Vive aquí y no dentro del modal porque es lo que
+  // decide el precio de la ficha entera y lo que viaja al carrito.
+  const [prescription, setPrescription] = useState<Prescription | null>(null)
+  const [rxModalOpen, setRxModalOpen] = useState(false)
+
+  // Precio mostrado = producto + lente + antirreflejo + fórmula, resuelto por
+  // el MISMO árbol de decisión que usa el servidor al cobrar (`quoteLens`).
+  const prices = indexRxPrices(rxPrices)
+  const quote = quoteLens({
+    lens,
+    withCoating,
+    rx: withPrescription ? prescription : null,
+    prices,
+  })
+  const unitPrice = product.priceCop + quote.extraCop
+  const extras = quote.extraCop
+  // Con la fórmula marcada pero todavía sin escribir, el total de arriba NO
+  // incluye el tallado: hay que decirlo, o se lee como el precio final de unas
+  // gafas graduadas.
+  const rxPending = withPrescription && !prescription
+  // El precio salió de la fórmula genérica y no de la lista del laboratorio.
+  const rxEstimated = quote.estimated
 
   // La galería sigue al TIPO de lente: con lente de sol se ven las fotos de sol,
   // con transparente las de lente claro. Las neutras (estuche) siempre.
@@ -101,19 +125,24 @@ export function ProductDetail({
       name: product.name,
       priceCop: unitPrice,
       image: { key: cover.key, url: cover.url },
+      // Los importes que se guardan son los que resolvió `quoteLens()`, no los
+      // de las filas del catálogo: con fórmula, el lente vale otra cosa.
       lens: lens
-        ? { id: lens.id, name: lensName(lens, lang), extraPriceCop: lens.extraPriceCop }
+        ? { id: lens.id, name: lensName(lens, lang), extraPriceCop: quote.lensBaseCop }
         : null,
       // El sobrecosto del antirreflejo sale del lente, no de su propia fila.
       coating: ar
-        ? { id: ar.id, name: lensName(ar, lang), extraPriceCop: coatingPriceFor(lens) ?? 0 }
+        ? { id: ar.id, name: lensName(ar, lang), extraPriceCop: quote.coatingCop }
         : null,
       prescription: rx
         ? {
             id: rx.id,
             name: lensName(rx, lang),
-            extraPriceCop: rx.extraPriceCop,
+            extraPriceCop: quote.rxDeltaCop,
             priceOnQuote: rx.priceOnQuote,
+            rx: prescription,
+            index: quote.index,
+            estimated: quote.estimated,
           }
         : null,
     }
@@ -124,6 +153,10 @@ export function ProductDetail({
     if (lens) params.set('lens', lens.id)
     if (ar) params.set('ar', '1')
     if (rx) params.set('rx', '1')
+    // La fórmula NO va en la URL: son diez números que quedarían a la vista, se
+    // podrían editar a mano y ensuciarían cualquier enlace compartido. Viaja
+    // por `sessionStorage`, que es de esta pestaña y muere con ella.
+    stashBuyNowRx(prescription)
     router.push(`/tienda/checkout?${params}`)
   }
 
@@ -207,13 +240,55 @@ export function ProductDetail({
                 withCoating={withCoating}
                 onCoatingChange={setWantsAr}
                 withPrescription={withPrescription}
-                onPrescriptionChange={setWantsRx}
+                onPrescriptionChange={(on) => {
+                  setWantsRx(on)
+                  // Quitar la fórmula tiene que BORRAR los datos: dejarlos
+                  // guardados haría que volver a marcar la casilla reviviera en
+                  // silencio una graduación que el cliente ya había descartado.
+                  if (!on) setPrescription(null)
+                }}
+                prescription={prescription}
+                onEditPrescription={() => setRxModalOpen(true)}
+                prescriptionPrice={
+                  prescription
+                    ? quote.rxDeltaCop > 0
+                      ? `+ ${formatCop(quote.rxDeltaCop)}`
+                      : t.store.lens.included
+                    : null
+                }
+                prescriptionEstimated={rxEstimated}
+              />
+            )}
+
+            {/* El configurador por pasos. Se monta solo cuando hace falta: es
+                un panel a pantalla completa y montarlo siempre metería su
+                bloqueo de scroll en cada ficha. */}
+            {rxOption && (
+              <PrescriptionModal
+                open={rxModalOpen}
+                onClose={() => {
+                  setRxModalOpen(false)
+                  // Cerrar sin completar deja la casilla como estaba: marcarla
+                  // y no escribir nada no puede acabar en un lente graduado sin
+                  // graduación.
+                  if (!prescription) setWantsRx(false)
+                }}
+                product={product}
+                lens={lens}
+                withCoating={withCoating}
+                rxPrices={rxPrices}
+                value={prescription}
+                onConfirm={(value) => {
+                  setPrescription(value)
+                  setWantsRx(true)
+                  setRxModalOpen(false)
+                }}
               />
             )}
 
             {/* El precio de arriba es el del armazón; aquí se cierra la cuenta
                 con lo que el cliente acaba de añadir, desglosado. */}
-            {!soldOut && (extras > 0 || rxOnQuote) && (
+            {!soldOut && (extras > 0 || rxPending) && (
               <div className="mt-6 border-t border-line pt-4">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                   <span className="text-sm text-warm-gray/70">
@@ -226,9 +301,17 @@ export function ProductDetail({
                   </span>
                   <span className="font-head text-xl text-warm-white">{formatCop(unitPrice)}</span>
                 </div>
-                {rxOnQuote && (
+                {/* Dos avisos que no son el mismo: falta escribir la fórmula
+                    (el total todavía no la incluye) o ya está escrita pero su
+                    precio es una estimación. */}
+                {rxPending && (
                   <p className="mt-2 text-xs leading-relaxed text-warm-gray/50">
                     {t.store.lens.quoteNote}
+                  </p>
+                )}
+                {!rxPending && rxEstimated && (
+                  <p className="mt-2 text-xs leading-relaxed text-warm-gray/50">
+                    {t.store.rx.estimatedNote}
                   </p>
                 )}
               </div>
@@ -264,14 +347,23 @@ export function ProductDetail({
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               {canPurchase && (
                 <>
-                  <button type="button" onClick={onBuyNow} className="btn-axis">
+                  {/* Sin la graduación escrita no se puede comprar un lente
+                      graduado: el servidor lo rechazaría igual, y enterarse en
+                      la pantalla de pago es peor que enterarse aquí. */}
+                  <button
+                    type="button"
+                    onClick={onBuyNow}
+                    disabled={rxPending}
+                    className="btn-axis disabled:opacity-50"
+                  >
                     {t.store.buyNow}
                     <Icon name="arrow" size={18} />
                   </button>
                   <button
                     type="button"
                     onClick={onAddToCart}
-                    className="inline-flex items-center justify-center gap-2 rounded-md border border-gold/40 px-6 py-[0.95rem] font-head text-sm font-medium text-warm-white transition-colors hover:border-gold hover:text-gold"
+                    disabled={rxPending}
+                    className="inline-flex items-center justify-center gap-2 rounded-md border border-gold/40 px-6 py-[0.95rem] font-head text-sm font-medium text-warm-white transition-colors hover:border-gold hover:text-gold disabled:opacity-50"
                   >
                     <Icon name="bag" size={17} />
                     {added ? t.store.addedToCart : t.store.addToCart}
@@ -279,6 +371,10 @@ export function ProductDetail({
                 </>
               )}
             </div>
+
+            {canPurchase && rxPending && (
+              <p className="mt-3 text-sm text-warm-gray/65">{t.store.rx.pendingCta}</p>
+            )}
 
             {!canPurchase && (
               <div className="mt-8">

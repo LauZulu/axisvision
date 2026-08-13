@@ -10,6 +10,7 @@
 import type {
   AdminNewOrderData,
   AdminPaymentAlertData,
+  AdminAppointmentData,
   AdminOutOfStockData,
   AdminPasswordResetData,
   AdminWaitlistDigestData,
@@ -150,6 +151,18 @@ export const SAMPLE_ADMIN_OUT_OF_STOCK: AdminOutOfStockData = {
   modelCode: 'HK01',
   waitingCount: 7,
   adminUrl: siteUrl('/admin/inventario'),
+}
+
+export const SAMPLE_ADMIN_APPOINTMENT: AdminAppointmentData = {
+  name: 'Laura Gómez',
+  phoneDisplay: '+57 312 372 7253',
+  whatsappUrl: 'https://wa.me/573123727253',
+  productName: 'AXIS Origin',
+  lensName: 'Lente de sol polarizado',
+  city: 'Bogotá',
+  preferredTime: 'Tardes entre semana',
+  note: 'Mi fórmula es de hace dos años, prefiero que me la revisen.',
+  adminUrl: siteUrl('/admin/citas'),
 }
 
 export const SAMPLE_ADMIN_DIGEST: AdminWaitlistDigestData = {

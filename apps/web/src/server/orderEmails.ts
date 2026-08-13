@@ -35,6 +35,7 @@ function toLines(items: AxisOrderItem[]): OrderLine[] {
     prescriptionOptionName: i.prescriptionOptionName,
     prescriptionExtraPriceCop: i.prescriptionExtraPriceCop,
     prescriptionNote: i.prescriptionNote,
+    prescriptionEstimated: i.prescriptionEstimated,
   }))
 }
 

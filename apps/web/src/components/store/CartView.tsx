@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Icon } from '../ui/Icon'
 import { useDict } from '../../i18n/useDict'
+import { summarizePrescription } from '../../lib/prescription'
 import { formatCop } from '../../lib/products'
 import { resolveProductSrc } from '../../lib/productImages'
 import { useCart, setCartQuantity, removeFromCart, cartTotalCop, lineId } from '../../lib/cart'
@@ -65,6 +66,14 @@ export function CartView() {
                       .join(' · ')}
                   </div>
                 )}
+                {/* La graduación distingue dos líneas del mismo modelo con el
+                    mismo lente: si no se enseña, son dos filas idénticas y
+                    quitar "la que sobra" borra el par equivocado. */}
+                {item.prescription?.rx && (
+                  <div className="mt-1 text-xs leading-relaxed text-warm-gray/55">
+                    {summarizePrescription(item.prescription.rx)}
+                  </div>
+                )}
                 <div className="mt-1 text-sm text-warm-gray/60">{formatCop(item.priceCop)}</div>
 
                 <div className="mt-2.5 inline-flex items-center gap-1.5">
@@ -114,7 +123,7 @@ export function CartView() {
             <p className="mt-1 text-xs text-warm-gray/45">{t.cart.note}</p>
             {/* El montaje de la fórmula se cotiza al recibirla: este total no
                 lo incluye y callarlo lo convierte en una promesa de precio. */}
-            {items.some((i) => i.prescription?.priceOnQuote) && (
+            {items.some((i) => i.prescription && !i.prescription.rx) && (
               <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-warm-gray/55">
                 {t.cart.prescriptionNote}
               </p>

@@ -14,6 +14,7 @@ import {
   prescriptionAddon,
   type LensOptionDTO,
 } from '../../lib/lenses'
+import { summarizePrescription, type Prescription } from '../../lib/prescription'
 
 /**
  * Configurador del lente. Son TRES preguntas, no una lista de excluyentes:
@@ -38,6 +39,10 @@ export function LensPicker({
   onCoatingChange,
   withPrescription,
   onPrescriptionChange,
+  prescription,
+  onEditPrescription,
+  prescriptionPrice,
+  prescriptionEstimated,
 }: {
   options: LensOptionDTO[]
   value: LensOptionDTO | null
@@ -46,6 +51,19 @@ export function LensPicker({
   onCoatingChange: (on: boolean) => void
   withPrescription: boolean
   onPrescriptionChange: (on: boolean) => void
+  /** La graduación ya capturada, o null si todavía no la ha escrito. */
+  prescription: Prescription | null
+  /** Abre el configurador por pasos (marcar la casilla también lo abre). */
+  onEditPrescription: () => void
+  /**
+   * Lo que cuesta graduar el lente elegido con ESA fórmula, ya formateado. Lo
+   * calcula la ficha con `quoteLens()`: aquí no se hacen cuentas, porque el
+   * precio depende de la fórmula y del lente a la vez y repartirlo en dos
+   * sitios es como se acaba mostrando un número distinto del que se cobra.
+   */
+  prescriptionPrice: string | null
+  /** true = ese precio salió de la estimación, no de la lista del laboratorio. */
+  prescriptionEstimated?: boolean
 }) {
   const { t, lang } = useDict()
   const l = t.store.lens
@@ -179,14 +197,20 @@ export function LensPicker({
               type="checkbox"
               checked={withPrescription || forced}
               disabled={forced}
-              onChange={(e) => onPrescriptionChange(e.target.checked)}
+              onChange={(e) => {
+                // Marcarla no es solo un booleano: sin los datos de la fórmula
+                // no hay precio que mostrar ni lente que tallar, así que la
+                // casilla ABRE el configurador. Desmarcarla sí es un booleano.
+                if (e.target.checked) onEditPrescription()
+                else onPrescriptionChange(false)
+              }}
               className="mt-0.5 h-4 w-4 shrink-0 accent-[#c8a96e]"
             />
             <span className="min-w-0 flex-1">
               <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                 <span className="text-warm-white">{lensName(rx, lang)}</span>
                 <span className="font-mono text-xs tracking-wide text-warm-gray/55">
-                  {price(rx)}
+                  {prescriptionPrice ?? price(rx)}
                 </span>
               </span>
               <span className="mt-1 block text-sm leading-relaxed text-warm-gray/60">
@@ -195,19 +219,45 @@ export function LensPicker({
             </span>
           </label>
 
-          {/* Dos avisos distintos y los dos hacen falta al marcar la casilla:
-              qué le vamos a pedir (los datos) y qué NO le estamos cobrando
-              ahora. Sin el segundo, el precio de arriba se lee como el final. */}
           {(withPrescription || forced) && (
             <div className="mt-2.5 space-y-1.5 pl-1">
-              <p className="flex items-start gap-2 text-sm text-gold/90">
-                <Icon name="check" size={16} className="mt-0.5 shrink-0" />
-                {l.prescriptionNotice}
-              </p>
-              {/* `pl-6` = ancho del icono (16) + su gap (8): alinea con la
-                  línea de arriba sin pintar un segundo check. */}
-              {rx.priceOnQuote && (
-                <p className="pl-6 text-sm text-warm-gray/65">{l.prescriptionQuoteNotice}</p>
+              {prescription ? (
+                <>
+                  {/* Con la fórmula ya escrita, lo útil no es prometer que se
+                      pedirá: es enseñarla para que la revise antes de pagar. */}
+                  <p className="flex items-start gap-2 text-sm text-gold/90">
+                    <Icon name="check" size={16} className="mt-0.5 shrink-0" />
+                    <span className="min-w-0 break-words">
+                      {summarizePrescription(prescription)}
+                    </span>
+                  </p>
+                  <button
+                    type="button"
+                    onClick={onEditPrescription}
+                    className="pl-6 text-sm text-gold/85 underline underline-offset-4 transition-colors hover:text-gold"
+                  >
+                    {l.prescriptionEdit}
+                  </button>
+                  {prescriptionEstimated && (
+                    <p className="pl-6 text-sm text-warm-gray/65">{l.prescriptionEstimated}</p>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="flex items-start gap-2 text-sm text-gold/90">
+                    <Icon name="check" size={16} className="mt-0.5 shrink-0" />
+                    {l.prescriptionNotice}
+                  </p>
+                  {/* `pl-6` = ancho del icono (16) + su gap (8): alinea con la
+                      línea de arriba sin pintar un segundo check. */}
+                  <button
+                    type="button"
+                    onClick={onEditPrescription}
+                    className="pl-6 text-sm text-gold/85 underline underline-offset-4 transition-colors hover:text-gold"
+                  >
+                    {l.prescriptionOpen}
+                  </button>
+                </>
               )}
             </div>
           )}

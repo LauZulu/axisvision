@@ -207,23 +207,62 @@ Cuatro cosas que hay que revisar:
    La lista no tiene esos dos renglones; hoy están a +20.000 (el delta del
    blanco). Es lo único inventado de toda la tabla.
 
-### 🔑 Falta el precio del polarizado graduado
+### 🔑 Cargar la matriz de precios de tallados (`/admin/lentes`)
 
-El default de AXIS es sol polarizado y el caso más común va a ser **ese lente
-con fórmula**, que es tallado y no aparece en la lista de "terminados". Hoy eso
-no rompe nada —la fórmula se cotiza al recibirla— pero seguimos sin saber cuánto
-cuesta. Si tienes la lista de tallados, con ella se puede dar un "desde".
+**Esto es lo único que separa un precio de una estimación.** La tienda ya
+pregunta la fórmula en la ficha y da un precio al instante; de dónde sale ese
+número depende de si el renglón está cargado:
 
-### 🔑 Quién cotiza y cobra la fórmula
+| Situación | Qué hace la tienda |
+|---|---|
+| Hay fila en la matriz | Cobra ese precio, sin avisos |
+| No hay fila | Estima con la fórmula genérica y **dice que es estimado** |
 
-El checkout cobra montura + lente, y el correo de fórmula le dice al cliente que
-el montaje se cotiza aparte, antes de mandar a tallar. Ese cobro **no pasa por
-la plataforma**: hoy lo tiene que hacer una persona por WhatsApp. Falta definir
-cómo (¿link de pago de Wompi? ¿en la óptica?) y quién responde.
+Hoy solo están sembradas las cuatro filas que conocemos: **monofocal 1.50** de
+transparente (90.000), transitions (220.000), filtro azul (150.000) y amarillo
+(150.000) — la lista de terminados tal cual. Todo lo demás (índices 1.56, 1.60,
+1.67, 1.74 y **todas** las progresivas, en los cinco lentes) se estima.
+
+Se cargan celda a celda en `/admin/lentes` → "Precios con fórmula". El número
+gris de cada celda vacía es lo que se estimaría ahora mismo, para comparar.
+**Vaciar una celda no la pone en 0: la vuelve a dejar estimada.** Un 0 vendería
+el lente regalado.
+
+### 🔑 Definir el algoritmo real del árbol de decisión
+
+Mientras no haya matriz completa, el precio estimado sale de coeficientes
+inventados por mí (`DEFAULT_PRICING_RULES` en `src/lib/lensPricing.ts`):
+
+- índice: 1.50 ×1 · 1.56 ×1,25 · 1.60 ×1,6 · 1.67 ×2,2 · 1.74 ×3
+- progresiva ×2,4 sobre la monofocal
+- suelo de 90.000 para tallar (lo que hace que el **polarizado graduado** no
+  salga gratis pese a ir incluido con la montura)
+- los tramos potencia → índice: ≤2.00 → 1.50, ≤4.00 → 1.56, ≤6.00 → 1.60,
+  ≤8.00 → 1.67, más → 1.74 (`INDEX_TIERS` en `src/lib/prescription.ts`)
+
+**Son de mercado, no de tu laboratorio.** Cuando tengas la regla real, se cambia
+en esos dos objetos (o se reescribe `estimateRxPrice()`) sin tocar nada más.
+
+### 🔑 Quién atiende las citas
+
+Quien no tiene su fórmula a la mano pide cita desde la ficha y cae en
+`/admin/citas` con su WhatsApp y un saludo ya escrito. **Nada las mueve solo**:
+si nadie cambia el estado a mano, la cola crece para siempre. Falta decidir
+quién la revisa y con qué óptica aliada se agenda en cada ciudad.
+
+Para que además llegue el correo de aviso hace falta `ADMIN_NOTIFICATION_EMAIL`
+en el `.env` y la cuenta de Brevo (arriba). Sin eso la cita **igual se guarda** —
+solo hay que entrar al panel a verla.
 
 ---
 
 ## Resueltos
+
+- **12 ago 2026 — La fórmula médica se cotiza en la página.** Dejó de ser una
+  casilla "por confirmar": el configurador la pregunta por pasos (¿la tienes? →
+  monofocal/progresiva → esf/cil/eje/ADD/DIP → resumen) y el precio se recalcula
+  en vivo con el árbol de decisión potencia → índice → matriz → estimación. Quien
+  no la tiene pide cita. Queda 🔑 cargar la matriz y confirmar el algoritmo, arriba.
 
 - **8 ago 2026 — CORS del bucket S3.** Ya está puesta la política (PUT/DELETE
   desde `axisvision.co`, `www.axisvision.co` y `localhost:3000`); es lo que

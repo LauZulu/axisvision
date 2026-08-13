@@ -1,6 +1,7 @@
 'use client'
 
 import { useSyncExternalStore } from 'react'
+import { prescriptionKey, type LensIndex, type Prescription } from './prescription'
 
 // Carrito de invitado en localStorage ('axis-cart'). Guarda SOLO identidad y
 // cantidad + datos de presentación; los PRECIOS reales los calcula el servidor
@@ -36,23 +37,45 @@ export type CartItem = {
     name: string
     extraPriceCop: number
     priceOnQuote?: boolean
+    /**
+     * La graduación estructurada, capturada en la ficha. Es lo que decide el
+     * precio del lente graduado, así que viaja con la línea: el checkout la
+     * reenvía y el servidor la revalida y la vuelve a cotizar.
+     *
+     * Opcional porque los carritos guardados antes del formulario no la traen;
+     * esas líneas siguen funcionando con `prescriptionNote` a mano.
+     */
+    rx?: Prescription | null
+    /** Índice que salió de esa fórmula. Informativo: el servidor lo recalcula. */
+    index?: LensIndex | null
+    /** true = el precio lo puso la estimación, no la lista del laboratorio. */
+    estimated?: boolean
   } | null
-  /** Datos de la fórmula (se piden en el checkout, no en la ficha). */
+  /** Datos de la fórmula en texto (pedidos sin formulario estructurado). */
   prescriptionNote?: string | null
 }
 
 const STORAGE_KEY = 'axis-cart'
 const MAX_QTY = 20
 
-/** Identidad de una línea: producto + lente + antirreflejo + fórmula. */
+/**
+ * Identidad de una línea: producto + lente + antirreflejo + fórmula.
+ *
+ * La GRADUACIÓN también entra. Dos pares del mismo modelo con fórmulas
+ * distintas —lo normal en una pareja que compra a la vez— se tallan distinto y
+ * valen distinto: sin la huella de la fórmula se fundirían en una línea de
+ * cantidad 2 y el segundo par saldría con la graduación del primero.
+ */
 export function lineId(
   item: Pick<CartItem, 'productId' | 'lens' | 'coating' | 'prescription'>,
 ): string {
+  const rx = item.prescription?.rx
   return [
     item.productId,
     item.lens?.id ?? 'default',
     item.coating ? 'ar' : 'noar',
     item.prescription?.id ?? 'norx',
+    rx ? prescriptionKey(rx) : '',
   ].join('::')
 }
 

@@ -170,6 +170,49 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   salen de `fotos-para-subir/<slug>/<variante>/orden.json`
 >   (`[{"file":"PXL_1.jpg","category":"frente"}]`, primero = portada), escrito DESPUÉS de revisar las
 >   fotos una a una; sin manifiesto se adivina por el nombre del archivo.
+> - **La fórmula médica se pregunta en la ficha y se COTIZA ahí mismo** (migración `...012`).
+>   Antes la graduación llegaba después de comprar y por eso su fila iba con `priceOnQuote`; hoy
+>   el configurador la pide **por pasos** (`ProductDetail` → `LensPicker` → **`PrescriptionModal`**,
+>   calcado del flujo de Meta/Ray-Ban) y el precio del lente graduado sale en el acto. Pedir diez
+>   números —esfera, cilindro, eje, adición, DIP— de golpe es la forma más segura de que cierren la
+>   pestaña: van en cuatro pasos con el subtotal fijo abajo. **El primer paso NO pide números**,
+>   pregunta si la tiene a la mano; quien dice que no acaba en `AppointmentForm` → `axis_appointment`
+>   (tabla propia, NO un `source` de `axis_stock_alert`: esa lista responde "avísame cuando vuelva a
+>   haber" y su aviso lo dispara el stock, que aquí no pinta nada) y el equipo la atiende en
+>   **`/admin/citas`**, donde nada cambia de estado solo porque ningún evento del sistema sabe que
+>   alguien fue a la óptica.
+> - **El árbol de decisión del precio (`src/lib/lensPricing.ts`, `quoteLens()`)** — un solo sitio, y
+>   lo recorren la ficha (para mostrar) y `createGuestOrder()` (para cobrar), con las MISMAS filas:
+>   1. **potencia → índice.** `requiredIndex()` sobre `INDEX_TIERS` (`src/lib/prescription.ts`). La
+>      potencia es la del meridiano más fuerte (`max(|esf|, |esf+cil|)`): un −1.00 −4.00 es tan
+>      grueso como un −5.00 y cobrarlo como un −1.00 sería regalar el lente.
+>   2. **(lente × monofocal/progresiva × índice) → `axis_lens_rx_price`.** Si el laboratorio nos dio
+>      ese renglón, manda y no se calcula nada.
+>   3. **Sin fila → `estimateRxPrice()`**: el plano escalado por índice y tipo de rx, con **suelo
+>      `baseCop`** (si no, el polarizado —que va incluido, `extraPriceCop: 0`— saldría graduado
+>      gratis). Marca la cotización como **`estimated`**, y eso es lo que hace que la ficha, el
+>      carrito, el checkout y el correo de fórmula digan "precio estimado".
+>   El paso 3 existe porque **el algoritmo real no está definido todavía** y la tienda no se puede
+>   quedar sin número que mostrar: los coeficientes son de mercado, están en `DEFAULT_PRICING_RULES`
+>   y cada fila que se cargue en `/admin/lentes` apaga una estimación **sin tocar código**. Sembradas
+>   solo las cuatro de monofocal 1.50 (la lista de terminados); el resto se estima.
+> - **Snapshot y desglose:** `axis_order_item` guarda `lensExtraPriceCop` = el lente **plano**,
+>   `prescriptionExtraPriceCop` = el **delta** del tallado, `coatingExtraPriceCop` = el AR, más
+>   `prescriptionRx` (jsonb con la fórmula), `prescriptionRxType`, `prescriptionIndex` y
+>   `prescriptionEstimated`. El delta nunca sale negativo (`lensBaseCop = min(plano, graduado)`):
+>   un comprobante con "+ −30.000" no lo sabe leer nadie. Ese `estimated` se guarda porque **es lo
+>   que se le prometió al cliente ese día** — meses después nadie sabría si aquel número era firme.
+> - **La graduación entra en `lineId()`** (`prescriptionKey()`): dos pares del mismo modelo con
+>   fórmulas distintas —una pareja comprando a la vez— son dos líneas, no una de cantidad 2. Sin
+>   eso, el segundo par se tallaba con la fórmula del primero. En "Comprar ahora" la fórmula NO va
+>   en la URL (diez números a la vista y editables a mano): viaja por `sessionStorage`
+>   (`src/lib/buyNow.ts`). El checkout ya **no la vuelve a pedir**: la enseña para repasar, porque
+>   teclearla dos veces es como acaban existiendo dos versiones que no coinciden.
+> - **La validación es UNA** (`validatePrescription`, módulo puro): la usa el formulario para
+>   deshabilitar "Continuar" y el servidor para rechazar (`PRESCRIPTION_INVALID`). Misma razón que
+>   `normalizePhone()`: dos copias de la regla acaban en un campo que el front acepta y el back
+>   rechaza. El servidor además **reescribe** `prescriptionNote` con `describePrescription()` — lo
+>   que lee quien manda a tallar sale de los datos, no de lo que teclee el navegador.
 > - **Qué lentes ofrece cada modelo (`axis_product_lens_option`, migración `...007`):** las opciones
 >   son globales, pero **no todos los modelos las ofrecen todas**. La tabla guarda SOLO las
 >   excepciones y la regla es **sin filas = las ofrece todas** (default seguro: un modelo nuevo sin
@@ -243,13 +286,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   stock— más, por fila, enlace de WhatsApp con el saludo escrito y **"marcar avisado"**
 >   (`POST /api/admin/reservas` con `alertId`, `markAlertNotified()`): sin ese cierre manual, las
 >   reservas sin correo se quedarían "en espera" para siempre.
+> - **`/reservas` — la página de captación (`ReservaPicker`):** el enlace que se publica en redes.
+>   Una sola pantalla: rejilla de los modelos (tocar la foto = elegir, y al elegir baja solo hasta
+>   el formulario con `useScrollTo`) y **tres campos: modelo + nombre + WhatsApp**. Ni lente, ni
+>   fórmula, ni correo —el campo de correo NO existe aquí, se manda vacío—: a esta página se llega
+>   desde una historia y cada campo extra cuesta gente; lo demás es la conversación de WhatsApp.
+>   El modelo SÍ se pregunta porque es lo que vuelve un número suelto en un contacto atendible
+>   (si no, la conversación empieza en "hola, ¿qué te interesa?" horas después) y porque
+>   `productId` es NOT NULL: una reserva sin modelo no existe. **`?modelo=<slug>` preselecciona**,
+>   así es UNA página y siete enlaces (el genérico enseña la rejilla; el de cada publicación
+>   aterriza en su modelo); un slug que no existe cae en "elige primero", no rompe. El Nav esconde
+>   su CTA en `/reservas` igual que en `/tienda` (`inStore` en Nav.tsx): la página es un embudo de
+>   una sola acción. La parte de red la comparte con el formulario de la ficha en el hook
+>   **`useWaitlistSignup`** (cuerpo de la petición, honeypot y mapeo de la respuesta); la validación
+>   NO, porque cada formulario pide campos distintos. Se usa casi todo desde el móvil: rejilla de 2
+>   columnas hasta `sm`, botón a lo ancho e inputs con **`text-base`** (16px, o iOS hace zoom al
+>   enfocar). **No distingue el tráfico de una campaña**: estas altas quedan como cualquier otra
+>   `source: 'preview'`. Separarlas pide una columna `campaign`/UTM, que no está.
 >   **La baja NO se ejecuta en el GET**: `/api/reservas/baja` con GET solo redirige a
 >   `/reservas/baja`, una página con un botón que hace POST. Los escáneres de correo (Safe Links,
 >   antivirus corporativos) abren TODOS los enlaces de un mensaje; con la baja en el GET darían de
 >   baja en silencio a gente que nunca pulsó nada. El POST es además la forma que exige RFC 8058.
 >   Doble opt-in **apagado** por defecto (`WAITLIST_DOUBLE_OPT_IN=true` para encenderlo): con Brevo
 >   sin configurar dejaría a todos en `pending` para siempre.
-> - **Correo transaccional (Brevo, plantillas listas · envío PENDIENTE):** 17 plantillas HTML en
+> - **Correo transaccional (Brevo, plantillas listas · envío PENDIENTE):** 19 plantillas HTML en
 >   **`src/server/email/`** (`theme/format/components/layout/types` + `templates/`, una por archivo,
 >   registro con su disparador en `templates/index.ts`). Son **funciones puras** `datos → {subject,
 >   preheader, html, text}`: no leen la DB ni entidades de TypeORM, así que se revisan sin cuenta y
@@ -257,7 +317,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   **Todo en español** (solo vendemos en Colombia; nada de correos bilingües apilados) — cómo
 >   añadir inglés sin reescribir: `src/server/email/README.md`, que además trae el checklist de
 >   Brevo (SPF/DKIM/DMARC, variables `.env`, no bloquear el webhook de Wompi). Grupos: compra
->   (7, incl. fórmula médica y carrito abandonado), reserva/lista de espera (6) e internos (4).
+>   (7, incl. fórmula médica y carrito abandonado), reserva/lista de espera (6) e internos (5,
+>   incl. `admin-appointment`: alguien pidió cita para tomarse la fórmula).
 >   Reglas del medio: `<table>` + CSS inline, 600px, sin webfonts ni SVG ni `background-image`,
 >   siempre versión en texto plano, todo dato de fuera por `esc()`.
 >   **Idempotencia:** `sendEmail()` acepta `idempotencyKey` (cabecera documentada de Brevo, TTL 30

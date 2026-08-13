@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { CheckoutClient } from '../../../src/components/store/CheckoutClient'
 import { getActiveLensOptions } from '../../../src/server/lenses'
+import { getRxPrices } from '../../../src/server/lensPricing'
 import { canCheckout } from '../../../src/server/storeMode'
 
 export const dynamic = 'force-dynamic'
@@ -16,10 +17,13 @@ export default async function CheckoutPage() {
 
   // Catálogo de lentes para resolver el de "Comprar ahora" y saber cuáles piden
   // fórmula. Si la DB falla, el checkout sigue funcionando con el lente de fábrica.
-  const lensOptions = await getActiveLensOptions().catch(() => [])
+  const [lensOptions, rxPrices] = await Promise.all([
+    getActiveLensOptions().catch(() => []),
+    getRxPrices().catch(() => []),
+  ])
   return (
     <Suspense>
-      <CheckoutClient lensOptions={lensOptions} />
+      <CheckoutClient lensOptions={lensOptions} rxPrices={rxPrices} />
     </Suspense>
   )
 }

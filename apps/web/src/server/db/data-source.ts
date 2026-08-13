@@ -10,6 +10,8 @@ import { AxisProductUnit } from './entities/ProductUnit'
 import { AxisLensOption } from './entities/LensOption'
 import { AxisStockAlert } from './entities/StockAlert'
 import { AxisProductLensOption } from './entities/ProductLensOption'
+import { AxisLensRxPrice } from './entities/LensRxPrice'
+import { AxisAppointment } from './entities/Appointment'
 import { InitAxisSchema1720000000000 } from './migrations/1720000000000-InitAxisSchema'
 import { WompiAndDiscounts1720000000001 } from './migrations/1720000000001-WompiAndDiscounts'
 import { InventoryAndLensOptions1720000000002 } from './migrations/1720000000002-InventoryAndLensOptions'
@@ -22,6 +24,7 @@ import { LensPricesOnQuote1720000000008 } from './migrations/1720000000008-LensP
 import { AntiReflectiveLens1720000000009 } from './migrations/1720000000009-AntiReflectiveLens'
 import { AntiReflectiveAddon1720000000010 } from './migrations/1720000000010-AntiReflectiveAddon'
 import { WaitlistNamePhone1720000000011 } from './migrations/1720000000011-WaitlistNamePhone'
+import { PrescriptionPricing1720000000012 } from './migrations/1720000000012-PrescriptionPricing'
 
 export const ENTITIES = [
   AxisUser,
@@ -30,10 +33,12 @@ export const ENTITIES = [
   AxisProductUnit,
   AxisLensOption,
   AxisProductLensOption,
+  AxisLensRxPrice,
   AxisOrder,
   AxisOrderItem,
   AxisFavorite,
   AxisStockAlert,
+  AxisAppointment,
 ]
 
 /**
@@ -102,6 +107,7 @@ export function buildDataSource(): DataSource {
       AntiReflectiveLens1720000000009,
       AntiReflectiveAddon1720000000010,
       WaitlistNamePhone1720000000011,
+      PrescriptionPricing1720000000012,
     ],
     migrationsTableName: 'axis_migrations',
     // Resiliencia del pool: keepAlive evita que conexiones ociosas mueran en

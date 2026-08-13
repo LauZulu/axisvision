@@ -32,6 +32,13 @@ export function renderPrescriptionNextSteps(data: PrescriptionData): EmailDoc {
     })
     .join('\n')
 
+  // El precio de un lente graduado sale de la lista del laboratorio cuando la
+  // tenemos y de una estimación cuando no. Si esta compra se cobró estimada,
+  // este correo es el sitio donde hay que decirlo otra vez: es la última
+  // oportunidad antes de tallar, y un ajuste sin aviso previo se lee como un
+  // cobro sorpresa.
+  const estimated = data.lines.some((l) => l.prescriptionEstimated)
+
   const body = [
     eyebrow('Fórmula médica'),
     h1('Falta un paso para montar tus lentes.'),
@@ -39,6 +46,11 @@ export function renderPrescriptionNextSteps(data: PrescriptionData): EmailDoc {
       `${greeting(data.customerName)} Tu pedido ${data.reference} incluye lentes con fórmula médica. Los montamos con nuestra óptica aliada, y para eso necesitamos confirmar tus datos.`,
     ),
     lensBlocks,
+    estimated
+      ? note(
+          'El valor que pagaste por los lentes es una estimación según tu graduación. Al revisar tu fórmula te confirmamos el precio definitivo ANTES de mandarlos a tallar; si hay diferencia, te la contamos primero.',
+        )
+      : '',
     h2('Cómo seguir'),
     p(
       'Respóndenos por WhatsApp con una <strong style="color:#f5f3ee;">foto de tu fórmula vigente</strong> (o confirma que los datos de arriba están correctos). Con eso mandamos a tallar los lentes y te avisamos cuando las monturas estén listas para salir.',
@@ -53,7 +65,9 @@ export function renderPrescriptionNextSteps(data: PrescriptionData): EmailDoc {
     note(
       'La fórmula debe tener menos de un año y venir de un optómetra u oftalmólogo. Si la tuya está vencida, te ayudamos a agendar el examen con la óptica aliada.',
     ),
-  ].join('\n')
+  ]
+    .filter(Boolean)
+    .join('\n')
 
   const text = renderText({
     lines: [

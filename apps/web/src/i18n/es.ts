@@ -264,7 +264,98 @@ export const es = {
       prescriptionQuoteNotice:
         'El valor del montaje lo confirmamos al recibir tu fórmula. Hoy no se te cobra.',
       prescriptionForced: 'Este lente solo se monta con fórmula médica.',
+      prescriptionOpen: 'Escribir mi fórmula',
+      prescriptionEdit: 'Editar mi fórmula',
+      prescriptionEstimated: 'Precio estimado: lo confirmamos al revisar tu fórmula.',
       total: 'Total',
+    },
+
+    /**
+     * El configurador de la fórmula médica. Los textos de un paso son casi todo
+     * lo que la persona tiene para entender qué le estamos pidiendo: son
+     * palabras de óptica que nadie usa a diario.
+     */
+    rx: {
+      title: 'Tu fórmula médica',
+      close: 'Cerrar',
+      back: 'Volver',
+      stepOf: 'Paso {n} de {total}',
+      appointmentStep: 'Agendar cita',
+      continue: 'Continuar',
+      confirm: 'Usar esta fórmula',
+      subtotal: 'Subtotal',
+      included: 'Incluido',
+
+      haveTitle: '¿Tienes tu fórmula a la mano?',
+      haveBody:
+        'Puedes escribírnosla aquí mismo y ver el precio final al instante, o pedirnos una cita para que te la tomemos.',
+      haveYes: 'Sí, la tengo aquí',
+      haveYesDesc: 'Te pedimos los datos y calculamos el precio en la misma pantalla.',
+      haveNo: 'Quiero que me la tomen',
+      haveNoDesc: 'Déjanos tu WhatsApp y agendamos. Sin fórmula no podemos darte el precio final.',
+
+      typeTitle: 'Elige el tipo de graduación',
+      typeTitleShort: 'Graduación',
+      single: 'Monofocales',
+      singleDesc: 'Corrigen la visión para una distancia: cerca, intermedia o lejos.',
+      progressive: 'Progresivas',
+      progressiveDesc:
+        'Corrigen más de una distancia, con un cambio paulatino entre graduaciones.',
+
+      valuesTitle: 'Escribe tu graduación',
+      od: 'Ojo derecho · OD',
+      os: 'Ojo izquierdo · OI',
+      sph: 'Esf.',
+      cyl: 'Cil.',
+      axis: 'Eje',
+      add: 'Adición',
+      pdTitle: 'Distancia interpupilar · DIP',
+      pdDual: 'Tengo valores de DIP distintos para cada ojo.',
+      pdValue: 'Valor de DIP',
+      pdRight: 'DIP derecha',
+      pdLeft: 'DIP izquierda',
+      pdHelp:
+        'Si no la tienes, es la medida entre el centro de tus pupilas. Te la damos nosotros al montar.',
+      errorEmpty: 'Esta fórmula está en ceros: revisa los valores de cada ojo.',
+      legal:
+        'Al continuar confirmas que estos datos vienen de una fórmula vigente emitida a tu nombre por un optómetra u oftalmólogo.',
+
+      reviewTitle: 'Esto es lo que vamos a montar',
+      indexLabel: 'Material',
+      frameLine: 'Montura',
+      lensLine: 'Lente',
+      rxLine: 'Con tu fórmula',
+      coatingLine: 'Antirreflejo',
+      reviewNote:
+        'Revisamos tu fórmula antes de tallar. Si algo no cuadra, te escribimos por WhatsApp antes de mandarla al laboratorio.',
+      estimatedNote:
+        'Precio estimado según tu graduación: lo confirmamos al revisar tu fórmula, antes de tallar.',
+      pendingCta: 'Escribe tu fórmula para ver el precio final y poder comprar.',
+    },
+
+    /** La cita para tomar la fórmula: la salida de quien no la tiene. */
+    appointment: {
+      title: 'Te tomamos la fórmula',
+      body:
+        'Déjanos tus datos y te escribimos por WhatsApp para agendar. Es rápido y sin costo para ti.',
+      name: 'Nombre completo',
+      phone: 'WhatsApp',
+      city: 'Ciudad',
+      time: '¿Cuándo te sirve?',
+      timePlaceholder: 'Tardes entre semana',
+      note: 'Algo que debamos saber (opcional)',
+      submit: 'Pedir mi cita',
+      sending: 'Enviando…',
+      doneTitle: 'Listo, te escribimos',
+      doneBody:
+        'Recibimos tu solicitud. Te contactamos por WhatsApp para acordar día y hora; cuando tengamos tu fórmula, terminamos tu compra juntos.',
+      whatsappCta: 'Escribirnos ahora',
+      whatsappMessage: 'Hola, pedí una cita para que me tomen la fórmula. {model}',
+      backToStore: 'Seguir viendo',
+      invalidName: 'Escribe tu nombre.',
+      invalidPhone: 'Escribe un número de WhatsApp válido.',
+      error: 'No pudimos enviar tu solicitud. Escríbenos por WhatsApp.',
+      privacy: 'Usamos tus datos solo para agendar la cita.',
     },
     products: {
       onyx: {
@@ -367,7 +458,10 @@ export const es = {
     prescriptionTitle: 'Tu fórmula',
     prescriptionHelp: 'Escríbenos los datos de tu fórmula. Si tienes dudas, envíanos la foto por WhatsApp después de comprar.',
     prescriptionPlaceholder: 'OD: esfera / cilindro / eje · OI: esfera / cilindro / eje · Adición',
+    prescriptionConfirm: 'Revisa que sea exactamente lo que dice tu fórmula.',
+    prescriptionEdit: 'Corregirla',
     errorPrescription: 'Falta la fórmula de uno de los lentes graduados.',
+    errorPrescriptionInvalid: 'Revisa la fórmula: faltan datos o están fuera de rango.',
   },
 
   payment: {
@@ -394,8 +488,7 @@ export const es = {
   reserve: {
     eyebrow: 'Reserva',
     title: 'Elige tus AXIS y te escribimos.',
-    intro:
-      'Toca el modelo que te gustó y déjanos tu WhatsApp. El lente, la fórmula y lo demás lo hablamos por ahí.',
+    intro: 'Toca el modelo que te gustó y déjanos tu WhatsApp. La fórmula y el lente los vemos por ahí.',
     step1: '1 · El modelo',
     step2: '2 · Tus datos',
     chosen: 'Reservas: {model}',
@@ -424,7 +517,37 @@ export const es = {
   },
 
   admin: {
-    nav: { dashboard: 'Dashboard', products: 'Productos', inventory: 'Inventario', lenses: 'Lentes', orders: 'Pedidos', waitlist: 'Reservas', viewSite: 'Ver sitio', backToSite: 'Volver al sitio', logout: 'Salir' },
+    nav: { dashboard: 'Dashboard', products: 'Productos', inventory: 'Inventario', lenses: 'Lentes', orders: 'Pedidos', waitlist: 'Reservas', appointments: 'Citas', viewSite: 'Ver sitio', backToSite: 'Volver al sitio', logout: 'Salir' },
+    /** Precios de lente graduado (la matriz de /admin/lentes). */
+    rxPrices: {
+      title: 'Precios con fórmula',
+      help:
+        'Lo que cuesta cada lente TALLADO con la graduación del cliente. El índice lo decide la potencia de la fórmula, no el cliente. Lo que dejes vacío no es gratis: la tienda lo estima sola (el número gris es lo que estimaría) y avisa que es un precio estimado. Borrar un valor vuelve a dejarlo estimado; poner 0 sería regalarlo.',
+      plano: 'Terminado',
+      included: 'Incluido',
+      single: 'Monofocal',
+      progressive: 'Progresiva',
+      error: 'No se pudo guardar el precio. Inténtalo de nuevo.',
+    },
+
+    /** Cola de citas para tomar la fórmula. */
+    appointments: {
+      title: 'Citas',
+      subtitle:
+        'Gente que quiso comprar y no tenía su fórmula a la mano. Hasta que se la tomen no pueden terminar el pedido.',
+      empty: 'Todavía nadie ha pedido cita.',
+      pending: 'Sin atender',
+      scheduled: 'Agendada',
+      done: 'Fórmula tomada',
+      cancelled: 'No se concretó',
+      colName: 'Nombre',
+      colPhone: 'WhatsApp',
+      colModel: 'Modelo',
+      colWhen: 'Cuándo puede',
+      colDate: 'Pedida',
+      colStatus: 'Estado',
+    },
+
     waitlist: {
       title: 'Reservas',
       subtitle: 'Quién está esperando cada modelo. Los de arriba son los que hay que reponer primero.',

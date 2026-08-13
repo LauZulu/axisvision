@@ -250,7 +250,92 @@ export const en = {
       prescriptionQuoteNotice:
         "We'll confirm the fitting price when we receive your prescription. You're not charged for it today.",
       prescriptionForced: 'This lens is only fitted with a prescription.',
+      prescriptionOpen: 'Enter my prescription',
+      prescriptionEdit: 'Edit my prescription',
+      prescriptionEstimated: 'Estimated price: we confirm it once we review your prescription.',
       total: 'Total',
+    },
+
+    rx: {
+      title: 'Your prescription',
+      close: 'Close',
+      back: 'Back',
+      stepOf: 'Step {n} of {total}',
+      appointmentStep: 'Book a visit',
+      continue: 'Continue',
+      confirm: 'Use this prescription',
+      subtotal: 'Subtotal',
+      included: 'Included',
+
+      haveTitle: 'Do you have your prescription handy?',
+      haveBody:
+        'You can enter it here and see the final price instantly, or book a visit and we will measure it for you.',
+      haveYes: 'Yes, I have it here',
+      haveYesDesc: 'Enter the details and we work out the price on this same screen.',
+      haveNo: 'I need you to measure it',
+      haveNoDesc:
+        'Leave us your WhatsApp and we will book a visit. Without a prescription we cannot give you a final price.',
+
+      typeTitle: 'Choose your prescription type',
+      typeTitleShort: 'Prescription',
+      single: 'Single vision',
+      singleDesc: 'Corrects one distance: near, intermediate or far.',
+      progressive: 'Progressive',
+      progressiveDesc: 'Corrects more than one distance, blending gradually between them.',
+
+      valuesTitle: 'Enter your prescription',
+      od: 'Right eye · OD',
+      os: 'Left eye · OS',
+      sph: 'Sph.',
+      cyl: 'Cyl.',
+      axis: 'Axis',
+      add: 'Add',
+      pdTitle: 'Pupillary distance · PD',
+      pdDual: 'I have different PD values for each eye.',
+      pdValue: 'PD value',
+      pdRight: 'Right PD',
+      pdLeft: 'Left PD',
+      pdHelp:
+        'If you do not have it, it is the distance between the centre of your pupils. We can measure it when fitting.',
+      errorEmpty: 'This prescription is all zeros: check the values for each eye.',
+      legal:
+        'By continuing you confirm these details come from a valid prescription issued in your name by an optometrist or ophthalmologist.',
+
+      reviewTitle: 'This is what we will fit',
+      indexLabel: 'Material',
+      frameLine: 'Frame',
+      lensLine: 'Lens',
+      rxLine: 'With your prescription',
+      coatingLine: 'Anti-reflective',
+      reviewNote:
+        'We check your prescription before cutting the lenses. If something looks off, we message you on WhatsApp first.',
+      estimatedNote:
+        'Estimated price based on your prescription: we confirm it before the lenses are cut.',
+      pendingCta: 'Enter your prescription to see the final price and check out.',
+    },
+
+    appointment: {
+      title: 'We will measure your prescription',
+      body:
+        'Leave us your details and we will message you on WhatsApp to book a time. Quick and free.',
+      name: 'Full name',
+      phone: 'WhatsApp',
+      city: 'City',
+      time: 'When works for you?',
+      timePlaceholder: 'Weekday afternoons',
+      note: 'Anything we should know (optional)',
+      submit: 'Book my visit',
+      sending: 'Sending…',
+      doneTitle: 'Done, we will be in touch',
+      doneBody:
+        'We got your request. We will message you on WhatsApp to agree on a time; once we have your prescription we finish your order together.',
+      whatsappCta: 'Message us now',
+      whatsappMessage: 'Hi, I booked a visit to have my prescription measured. {model}',
+      backToStore: 'Keep browsing',
+      invalidName: 'Enter your name.',
+      invalidPhone: 'Enter a valid WhatsApp number.',
+      error: 'We could not send your request. Message us on WhatsApp.',
+      privacy: 'We only use your details to book the visit.',
     },
     products: {
       onyx: {
@@ -351,7 +436,10 @@ export const en = {
     prescriptionTitle: 'Your prescription',
     prescriptionHelp: 'Type in your prescription details. If in doubt, send us a photo on WhatsApp after your purchase.',
     prescriptionPlaceholder: 'OD: sphere / cylinder / axis · OS: sphere / cylinder / axis · Add',
+    prescriptionConfirm: 'Check this matches your prescription exactly.',
+    prescriptionEdit: 'Fix it',
     errorPrescription: 'One of the prescription lenses is missing its details.',
+    errorPrescriptionInvalid: 'Check the prescription: some values are missing or out of range.',
   },
 
   payment: {
@@ -376,8 +464,7 @@ export const en = {
   reserve: {
     eyebrow: 'Reserve',
     title: 'Pick your AXIS and we’ll message you.',
-    intro:
-      'Tap the model you liked and leave us your WhatsApp. Lenses, prescription and the rest we sort out there.',
+    intro: 'Tap the model you liked and leave us your WhatsApp. Lenses and prescription we sort out there.',
     step1: '1 · The model',
     step2: '2 · Your details',
     chosen: 'Reserving: {model}',
@@ -406,7 +493,35 @@ export const en = {
   },
 
   admin: {
-    nav: { dashboard: 'Dashboard', products: 'Products', inventory: 'Inventory', lenses: 'Lenses', orders: 'Orders', waitlist: 'Waitlist', viewSite: 'View site', backToSite: 'Back to site', logout: 'Log out' },
+    nav: { dashboard: 'Dashboard', products: 'Products', inventory: 'Inventory', lenses: 'Lenses', orders: 'Orders', waitlist: 'Waitlist', appointments: 'Visits', viewSite: 'View site', backToSite: 'Back to site', logout: 'Log out' },
+    rxPrices: {
+      title: 'Prescription lens prices',
+      help:
+        'What each lens costs cut to the customer prescription. The index comes from the prescription power, not from the customer. What you leave blank is not free: the store estimates it (the grey number is what it would estimate) and says so. Clearing a value returns it to estimated; a 0 would give it away.',
+      plano: 'Finished',
+      included: 'Included',
+      single: 'Single vision',
+      progressive: 'Progressive',
+      error: 'Could not save the price. Try again.',
+    },
+
+    appointments: {
+      title: 'Visits',
+      subtitle:
+        'People who wanted to buy but did not have their prescription handy. They cannot finish the order until we measure it.',
+      empty: 'Nobody has booked a visit yet.',
+      pending: 'Not handled',
+      scheduled: 'Booked',
+      done: 'Prescription taken',
+      cancelled: 'Did not happen',
+      colName: 'Name',
+      colPhone: 'WhatsApp',
+      colModel: 'Model',
+      colWhen: 'Availability',
+      colDate: 'Requested',
+      colStatus: 'Status',
+    },
+
     waitlist: {
       title: 'Waitlist',
       subtitle: 'Who is waiting for each model. The top ones are the ones to restock first.',

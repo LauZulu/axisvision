@@ -19,6 +19,7 @@ import { renderWaitlistConfirm } from './waitlistConfirm'
 import { renderWaitlistAvailable } from './waitlistAvailable'
 import { renderWaitlistReminder } from './waitlistReminder'
 import { renderWaitlistUnsubscribed } from './waitlistUnsubscribed'
+import { renderAdminAppointment } from './adminAppointment'
 import { renderAdminNewOrder } from './adminNewOrder'
 import { renderAdminOutOfStock } from './adminOutOfStock'
 import { renderAdminWaitlistDigest } from './adminWaitlistDigest'
@@ -38,6 +39,7 @@ export {
   renderWaitlistAvailable,
   renderWaitlistReminder,
   renderWaitlistUnsubscribed,
+  renderAdminAppointment,
   renderAdminNewOrder,
   renderAdminOutOfStock,
   renderAdminWaitlistDigest,
@@ -156,6 +158,13 @@ export const TEMPLATES: TemplateEntry[] = [
     group: 'Interno',
     trigger: 'Mismo webhook que confirma el pago',
     preview: () => renderAdminNewOrder(S.SAMPLE_ADMIN_ORDER),
+  },
+  {
+    key: 'admin-appointment',
+    title: 'Cita para tomar la fórmula',
+    group: 'Interno',
+    trigger: 'requestAppointment(): alguien pide cita desde la ficha',
+    preview: () => renderAdminAppointment(S.SAMPLE_ADMIN_APPOINTMENT),
   },
   {
     key: 'admin-out-of-stock',

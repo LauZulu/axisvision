@@ -1,5 +1,6 @@
 import { getProductBySlug } from '../../../src/server/products'
 import { getActiveLensOptions } from '../../../src/server/lenses'
+import { getRxPrices } from '../../../src/server/lensPricing'
 import { ProductDetail } from '../../../src/components/store/ProductDetail'
 import { StoreNotFound, StoreUnavailable } from '../../../src/components/store/StoreMessage'
 
@@ -12,12 +13,16 @@ export default async function ProductDetailPage({
 }) {
   const { slug } = await params
   try {
-    const [product, lensOptions] = await Promise.all([
+    // Los precios de lente graduado viajan al cliente para poder cotizar la
+    // fórmula EN VIVO mientras el cliente la escribe. Son unas pocas filas y
+    // no son secreto: el mismo número acaba en la ficha de todas formas.
+    const [product, lensOptions, rxPrices] = await Promise.all([
       getProductBySlug(slug),
       getActiveLensOptions(),
+      getRxPrices(),
     ])
     if (!product) return <StoreNotFound />
-    return <ProductDetail product={product} lensOptions={lensOptions} />
+    return <ProductDetail product={product} lensOptions={lensOptions} rxPrices={rxPrices} />
   } catch (err) {
     // Igual que en /tienda: la página responde 200 con el aviso, así que sin
     // este log el fallo no deja rastro NI en el status NI en la consola.

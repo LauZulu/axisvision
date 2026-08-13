@@ -7,6 +7,14 @@ import { AxisOrder } from './db/entities/Order'
 import { AxisOrderItem } from './db/entities/OrderItem'
 import { AxisLensOption } from './db/entities/LensOption'
 import { buildCheckoutParams, type CheckoutParams } from './wompi'
+import { getRxPrices } from './lensPricing'
+import { indexRxPrices, quoteLens, type LensQuote } from '../lib/lensPricing'
+import {
+  describePrescription,
+  validatePrescription,
+  type Prescription,
+} from '../lib/prescription'
+import type { LensOptionDTO } from '../lib/lenses'
 
 export type CheckoutItemInput = {
   productId: string
@@ -17,7 +25,13 @@ export type CheckoutItemInput = {
   withCoating?: boolean
   /** El cliente pidió montar su fórmula médica (complemento, se suma al lente). */
   withPrescription?: boolean
-  /** Datos de la fórmula (obligatorios si la línea la lleva). */
+  /**
+   * La graduación estructurada, capturada en la ficha. Es lo que decide el
+   * precio del lente graduado, así que se REVALIDA y se recotiza aquí: lo que
+   * mande el navegador solo dice qué quiere el cliente, nunca cuánto paga.
+   */
+  prescription?: Prescription
+  /** Nota libre de la fórmula. Único dato de los pedidos anteriores al formulario. */
   prescriptionNote?: string
 }
 
@@ -114,6 +128,11 @@ export async function createGuestOrder(
   // cliente (igual que el precio del producto). El catálogo son TRES preguntas
   // distintas: el TIPO de lente (excluyentes), el ANTIRREFLEJO y el COMPLEMENTO
   // de fórmula.
+  // Precios de lente graduado. El árbol de decisión (potencia → índice → fila
+  // de lista → estimación) lo recorre `quoteLens()` con ESTAS filas: la ficha
+  // cotiza en vivo con las mismas, pero lo cobrado se recalcula siempre aquí.
+  const rxPrices = indexRxPrices(await getRxPrices())
+
   const lensOptions = await db.getRepository(AxisLensOption).findBy({ active: true })
   const lensTypes = lensOptions.filter((o) => o.kind !== 'prescription' && o.kind !== 'coating')
   const lensById = new Map(lensTypes.map((o) => [o.id, o]))
@@ -154,7 +173,11 @@ export async function createGuestOrder(
     /** Fila del antirreflejo aplicada. Su PRECIO sale del lente, no de ella. */
     coating: AxisLensOption | null
     prescription: AxisLensOption | null
+    /** La graduación validada, o null si la línea va sin fórmula. */
+    rx: Prescription | null
     prescriptionNote: string | null
+    /** Desglose de precio ya resuelto por el árbol de decisión. */
+    quote: LensQuote
   }
   const lines: Line[] = []
 
@@ -225,7 +248,27 @@ export async function createGuestOrder(
     }
     const prescription = wantsPrescription ? prescriptionAddon : null
 
-    const prescriptionNote = item.prescriptionNote?.trim() || null
+    /**
+     * La graduación estructurada. Se revalida con la MISMA función que usó el
+     * formulario (`validatePrescription`): el endpoint es público, y una
+     * fórmula con el eje en blanco o toda en ceros no solo sale mal tallada —
+     * también cambiaría el índice y, con él, lo que hay que cobrar.
+     */
+    const rx = prescription ? (item.prescription ?? null) : null
+    if (rx && validatePrescription(rx).length > 0) {
+      return {
+        ok: false,
+        code: 'PRESCRIPTION_INVALID',
+        message: `La fórmula de ${product.name} está incompleta.`,
+      }
+    }
+
+    // El texto es lo que lee quien manda a tallar. Cuando la fórmula vino del
+    // formulario se genera de los datos; si no, se acepta lo que el cliente
+    // escribió a mano (carritos y pedidos anteriores al formulario).
+    const prescriptionNote = rx
+      ? describePrescription(rx)
+      : item.prescriptionNote?.trim() || null
     if (prescription && !prescriptionNote) {
       return {
         ok: false,
@@ -234,32 +277,42 @@ export async function createGuestOrder(
       }
     }
 
+    // Aquí se decide el precio del lente: sin fórmula es el terminado de
+    // siempre; con fórmula, el graduado que corresponda a su índice.
+    const quote = quoteLens({
+      lens: lens as LensOptionDTO | null,
+      withCoating: coating !== null,
+      rx,
+      prices: rxPrices,
+    })
+
     const total = (requestedByProduct.get(product.id) ?? 0) + item.quantity
     if (product.stock < total) {
       return { ok: false, code: 'INSUFFICIENT_STOCK', message: `Sin stock suficiente de ${product.name}` }
     }
     requestedByProduct.set(product.id, total)
 
-    lines.push({ product, quantity: item.quantity, lens, coating, prescription, prescriptionNote })
+    lines.push({
+      product,
+      quantity: item.quantity,
+      lens,
+      coating,
+      prescription,
+      rx,
+      prescriptionNote,
+      quote,
+    })
   }
 
   /**
-   * Lo que se COBRA por una opción. La fórmula médica va con `priceOnQuote`: su
-   * valor depende de la graduación, que el cliente manda después de comprar, así
-   * que no entra en este pago — se cotiza aparte. Cobrar su `extraPriceCop` (0)
-   * o cualquier otro número sería inventarse un precio que nadie le anunció.
+   * Precio unitario = montura + todo lo del lente.
+   *
+   * Ya no se suman opciones sueltas: el desglose (lente base, sobrecosto de la
+   * graduación y antirreflejo) lo resolvió `quoteLens()`, que es el único sitio
+   * donde vive la regla. Sumarlo aquí a mano era exactamente lo que hacía que
+   * cambiar un precio obligara a tocar tres archivos.
    */
-  const extraOf = (o: AxisLensOption | null) => (!o || o.priceOnQuote ? 0 : o.extraPriceCop)
-
-  /**
-   * Lo que se cobra por el antirreflejo de una línea: lo que diga el LENTE.
-   * `extraOf(l.coating)` daría 0 siempre — la fila del complemento no lleva
-   * precio propio justamente porque no vale lo mismo sobre cada lente.
-   */
-  const coatingExtraOf = (l: Line) => (l.coating ? (l.lens?.arExtraPriceCop ?? 0) : 0)
-
-  const unitPrice = (l: Line) =>
-    l.product.priceCop + extraOf(l.lens) + coatingExtraOf(l) + extraOf(l.prescription)
+  const unitPrice = (l: Line) => l.product.priceCop + l.quote.extraCop
   const amountCop = lines.reduce((sum, l) => sum + unitPrice(l) * l.quantity, 0)
 
   // Transacción: crea orden + líneas de forma atómica.
@@ -285,16 +338,24 @@ export async function createGuestOrder(
             quantity: l.quantity,
             lensOptionId: l.lens?.id ?? null,
             lensOptionName: l.lens?.nameEs ?? null,
-            lensExtraPriceCop: extraOf(l.lens),
+            // El lente SIN graduar. El sobrecosto de tallarlo va aparte, en la
+            // fila de la fórmula, para que el comprobante lo pueda desglosar.
+            lensExtraPriceCop: l.quote.lensBaseCop,
             coatingOptionId: l.coating?.id ?? null,
             coatingOptionName: l.coating?.nameEs ?? null,
-            coatingExtraPriceCop: coatingExtraOf(l),
+            coatingExtraPriceCop: l.quote.coatingCop,
             prescriptionOptionId: l.prescription?.id ?? null,
             prescriptionOptionName: l.prescription?.nameEs ?? null,
-            // 0 cuando la fórmula va por cotizar: el snapshot guarda lo cobrado,
-            // no lo que costará. El correo de fórmula explica el siguiente paso.
-            prescriptionExtraPriceCop: extraOf(l.prescription),
+            prescriptionExtraPriceCop: l.quote.rxDeltaCop,
             prescriptionNote: l.prescriptionNote,
+            // La fórmula estructurada, el índice aplicado y si el precio salió
+            // de la lista o de la estimación: los tres son parte de lo que se
+            // le prometió al cliente y no pueden depender de filas que se
+            // editen después.
+            prescriptionRx: l.rx ? (l.rx as unknown as Record<string, unknown>) : null,
+            prescriptionRxType: l.quote.rxType,
+            prescriptionIndex: l.quote.index,
+            prescriptionEstimated: l.quote.estimated,
           }),
         ),
       })

@@ -141,26 +141,6 @@ export function defaultLens(options: LensOptionDTO[]): LensOptionDTO | null {
 }
 
 /**
- * Precio final de una unidad: producto + lente + antirreflejo + fórmula.
- * Es solo para MOSTRAR — el cobro lo recalcula el servidor desde la DB.
- *
- * Lo que está "por confirmar" no suma: la fórmula se cotiza al recibirla y no
- * se cobra en esta compra. El total mostrado es entonces un mínimo, y quien lo
- * pinte tiene que decirlo (ver `t.store.lens.quoteNote`).
- */
-export function priceWithLens(
-  priceCop: number,
-  lens: LensOptionDTO | null,
-  prescription: LensOptionDTO | null = null,
-  withCoating = false,
-): number {
-  // El antirreflejo lo cobra el LENTE, no el complemento: `lensExtraCop` sobre
-  // la fila `coating` daría 0 siempre.
-  const coating = withCoating ? (coatingPriceFor(lens) ?? 0) : 0
-  return priceCop + lensExtraCop(lens) + coating + lensExtraCop(prescription)
-}
-
-/**
  * Fotos que corresponden al lente elegido: las de esa variante más las neutras
  * (estuche, accesorios), que sirven para cualquiera.
  *

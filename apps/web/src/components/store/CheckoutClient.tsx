@@ -12,13 +12,14 @@ import { useCart, markCartPendingOrder, lineId, type CartItem } from '../../lib/
 import {
   coatingAddon,
   coatingIncludedIn,
-  coatingPriceFor,
   defaultLens,
   lensName,
   prescriptionAddon,
-  priceWithLens,
   type LensOptionDTO,
 } from '../../lib/lenses'
+import { indexRxPrices, quoteLens, type RxPriceDTO } from '../../lib/lensPricing'
+import { describePrescription, type LensIndex, type Prescription } from '../../lib/prescription'
+import { readBuyNowRx } from '../../lib/buyNow'
 
 type PaymentParams = {
   checkoutUrl: string
@@ -48,6 +49,10 @@ type CheckoutLine = {
     extraPriceCop: number
     /** Su valor se confirma al recibir la fórmula: no entra en este pago. */
     priceOnQuote?: boolean
+    /** La graduación estructurada. Ausente = línea vieja, se pide a mano. */
+    rx?: Prescription | null
+    index?: LensIndex | null
+    estimated?: boolean
   } | null
 }
 
@@ -90,7 +95,13 @@ const inputCls =
  * El servidor recalcula precios desde la DB y responde los parámetros FIRMADOS
  * del Web Checkout; aquí solo se auto-envía el form GET a checkout.wompi.co.
  */
-export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionDTO[] }) {
+export function CheckoutClient({
+  lensOptions = [],
+  rxPrices = [],
+}: {
+  lensOptions?: LensOptionDTO[]
+  rxPrices?: RxPriceDTO[]
+}) {
   const { t, lang } = useDict()
   const c = t.checkout
   const params = useSearchParams()
@@ -159,29 +170,43 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
           const coatingOption = coatingAddon(lensOptions)
           const withCoating = buyNowAr || coatingIncludedIn(lens)
           const ar = withCoating ? (coatingOption ?? null) : null
+          // La graduación que quedó guardada al pulsar "Comprar ahora". No va
+          // en la URL a propósito (ver `buyNow.ts`), así que se recupera aquí.
+          const rxData = rx ? readBuyNowRx() : null
+          // Se recotiza con el MISMO árbol de decisión que la ficha y que el
+          // servidor: el precio de esta pantalla no se hereda de la anterior.
+          const quote = quoteLens({
+            lens,
+            withCoating: Boolean(ar),
+            rx: rxData,
+            prices: indexRxPrices(rxPrices),
+          })
           setBuyNowLine({
             productId: p.id,
             slug: p.slug,
             name: p.name,
-            priceCop: priceWithLens(p.priceCop, lens, rx, Boolean(ar)),
+            priceCop: p.priceCop + quote.extraCop,
             quantity: Math.min(buyNowQty, Math.max(1, p.stock)),
             image: { key: cover.key, url: cover.url },
             lens: lens
-              ? { id: lens.id, name: lensName(lens, lang), extraPriceCop: lens.extraPriceCop }
+              ? { id: lens.id, name: lensName(lens, lang), extraPriceCop: quote.lensBaseCop }
               : null,
             coating: ar
               ? {
                   id: ar.id,
                   name: lensName(ar, lang),
-                  extraPriceCop: coatingPriceFor(lens) ?? 0,
+                  extraPriceCop: quote.coatingCop,
                 }
               : null,
             prescription: rx
               ? {
                   id: rx.id,
                   name: lensName(rx, lang),
-                  extraPriceCop: rx.extraPriceCop,
+                  extraPriceCop: quote.rxDeltaCop,
                   priceOnQuote: rx.priceOnQuote,
+                  rx: rxData,
+                  index: quote.index,
+                  estimated: quote.estimated,
                 }
               : null,
           })
@@ -192,7 +217,7 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
     return () => {
       alive = false
     }
-  }, [buyNowSlug, buyNowQty, buyNowLensId, buyNowAr, buyNowRx, lensOptions, lang])
+  }, [buyNowSlug, buyNowQty, buyNowLensId, buyNowAr, buyNowRx, lensOptions, rxPrices, lang])
 
   const lines: CheckoutLine[] = useMemo(() => {
     if (buyNowSlug) return buyNowLine ? [buyNowLine] : []
@@ -239,7 +264,13 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
             lensOptionId: l.lens?.id,
             withCoating: Boolean(l.coating),
             withPrescription: Boolean(l.prescription),
-            prescriptionNote: prescriptions[lineId(l)]?.trim() || undefined,
+            // La fórmula estructurada manda: el servidor la revalida, la
+            // recotiza y escribe el texto él mismo. El `prescriptionNote` solo
+            // sobrevive para las líneas viejas, que no la traen.
+            prescription: l.prescription?.rx ?? undefined,
+            prescriptionNote: l.prescription?.rx
+              ? undefined
+              : prescriptions[lineId(l)]?.trim() || undefined,
           })),
         }),
       })
@@ -254,7 +285,9 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
               ? c.errorUnavailable
               : code === 'PRESCRIPTION_REQUIRED'
                 ? c.errorPrescription
-                : (data?.error?.message ?? c.errorGeneric),
+                : code === 'PRESCRIPTION_INVALID'
+                  ? c.errorPrescriptionInvalid
+                  : (data?.error?.message ?? c.errorGeneric),
         )
         sending.current = false
         setSubmitting(false)
@@ -351,22 +384,49 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
             {lines.some((l) => l.prescription) && (
               <>
                 <h2 className="eyebrow mt-8 text-gold">{c.prescriptionTitle}</h2>
-                <p className="mt-2 text-sm text-warm-gray/60">{c.prescriptionHelp}</p>
+                <p className="mt-2 text-sm text-warm-gray/60">
+                  {lines.every((l) => !l.prescription || l.prescription.rx)
+                    ? c.prescriptionConfirm
+                    : c.prescriptionHelp}
+                </p>
                 <div className="mt-4 space-y-4">
                   {lines
                     .filter((l) => l.prescription)
                     .map((l) => {
                       const id = lineId(l)
+                      const header = (
+                        <span className="mb-1.5 block">
+                          {l.name}
+                          {l.lens && (
+                            <span className="ml-2 font-mono text-[0.7rem] tracking-wide text-gold/75">
+                              {l.lens.name}
+                            </span>
+                          )}
+                        </span>
+                      )
+                      // Fórmula escrita en la ficha: aquí solo se REPASA. Volver
+                      // a pedirla en un textarea sería hacer teclear dos veces
+                      // los mismos diez números, y dos versiones de la misma
+                      // fórmula que no coinciden es un lente mal tallado.
+                      if (l.prescription?.rx) {
+                        return (
+                          <div key={id} className="text-sm text-warm-gray/80">
+                            {header}
+                            <pre className="overflow-x-auto rounded-md border border-line bg-carbon-850 px-3 py-2.5 font-mono text-xs leading-relaxed whitespace-pre-wrap text-warm-gray/75">
+                              {describePrescription(l.prescription.rx)}
+                            </pre>
+                            <Link
+                              href={`/tienda/${l.slug}`}
+                              className="mt-1.5 inline-block text-sm text-gold/85 underline underline-offset-4 transition-colors hover:text-gold"
+                            >
+                              {c.prescriptionEdit}
+                            </Link>
+                          </div>
+                        )
+                      }
                       return (
                         <label key={id} className="block text-sm text-warm-gray/80">
-                          <span className="mb-1.5 block">
-                            {l.name}
-                            {l.lens && (
-                              <span className="ml-2 font-mono text-[0.7rem] tracking-wide text-gold/75">
-                                {l.lens.name}
-                              </span>
-                            )}
-                          </span>
+                          {header}
                           <textarea
                             className={`${inputCls} min-h-20`}
                             required
@@ -428,9 +488,16 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
               {/* Es el último sitio donde el comprador ve una cifra antes de
                   pagar: aquí es donde tiene que quedar claro que el montaje de
                   la fórmula se cotiza aparte y no está en este cobro. */}
-              {lines.some((l) => l.prescription?.priceOnQuote) && (
+              {/* Dos avisos distintos: la línea vieja cuyo montaje se cotiza
+                  aparte, y la nueva cuyo precio salió de la estimación. */}
+              {lines.some((l) => l.prescription && !l.prescription.rx) && (
                 <p className="mt-2 text-xs leading-relaxed text-warm-gray/55">
                   {t.cart.prescriptionNote}
+                </p>
+              )}
+              {lines.some((l) => l.prescription?.estimated) && (
+                <p className="mt-2 text-xs leading-relaxed text-warm-gray/55">
+                  {t.store.rx.estimatedNote}
                 </p>
               )}
             </div>

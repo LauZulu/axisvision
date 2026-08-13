@@ -19,6 +19,7 @@ export function AdminShell({ email, children }: { email: string; children: React
     { href: '/admin/lentes', label: t.admin.nav.lenses },
     { href: '/admin/pedidos', label: t.admin.nav.orders },
     { href: '/admin/reservas', label: t.admin.nav.waitlist },
+    { href: '/admin/citas', label: t.admin.nav.appointments },
   ]
 
   async function logout() {

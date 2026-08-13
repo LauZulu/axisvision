@@ -82,10 +82,42 @@ export class AxisOrderItem {
   @Column({ type: 'integer', default: 0 })
   prescriptionExtraPriceCop!: number
 
-  // Datos de la fórmula médica cuando la línea la lleva (texto libre del
-  // cliente: OD/OI, esfera, cilindro, eje, adición…).
+  // Datos de la fórmula médica cuando la línea la lleva, en TEXTO: es lo que
+  // lee la persona que manda a tallar. Cuando la fórmula vino del formulario de
+  // la ficha, este campo lo escribe `describePrescription()`; en los pedidos
+  // anteriores es lo que el cliente tecleó a mano en el checkout.
   @Column({ type: 'text', nullable: true })
   prescriptionNote!: string | null
+
+  /**
+   * La fórmula ESTRUCTURADA (esfera, cilindro, eje, adición y DIP por ojo),
+   * tal como la capturó el formulario. El texto de arriba se lee; esto se
+   * calcula: es lo que permite recotizar un pedido o reclamarle al laboratorio
+   * sin volver a parsear un párrafo.
+   *
+   * `jsonb` y no columnas sueltas porque son diez campos que solo tienen
+   * sentido juntos y que nunca se filtran por separado. null = pedido sin
+   * fórmula, o de los anteriores al formulario.
+   */
+  @Column({ type: 'jsonb', nullable: true })
+  prescriptionRx!: Record<string, unknown> | null
+
+  /** 'single' | 'progressive'. Redundante con el jsonb, pero se lista mucho. */
+  @Column({ type: 'varchar', length: 16, nullable: true })
+  prescriptionRxType!: string | null
+
+  /** Índice aplicado ('1.60'). Es lo que el laboratorio necesita para tallar. */
+  @Column({ type: 'varchar', length: 8, nullable: true })
+  prescriptionIndex!: string | null
+
+  /**
+   * true = el precio de la fórmula salió de la fórmula genérica y no de la
+   * lista del laboratorio (ver `LensQuote.estimated`). Se guarda en el pedido
+   * porque es el aviso que se le dio al cliente al comprar: sin él, meses
+   * después nadie sabría si aquel número era firme o aproximado.
+   */
+  @Column({ type: 'boolean', default: false })
+  prescriptionEstimated!: boolean
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date

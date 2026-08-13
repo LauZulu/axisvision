@@ -30,6 +30,12 @@ export type OrderLine = {
   prescriptionOptionName?: string | null
   prescriptionExtraPriceCop?: number | null
   prescriptionNote?: string | null
+  /**
+   * true = el precio del lente graduado salió de la fórmula genérica y no de
+   * la lista del laboratorio. Va al correo porque es lo que se le dijo al
+   * comprar: sin repetirlo aquí, el ajuste posterior llega sin aviso.
+   */
+  prescriptionEstimated?: boolean | null
 }
 
 /** Datos comunes a todos los correos de un pedido. */
@@ -130,6 +136,23 @@ export type AdminOutOfStockData = {
   modelCode: string | null
   /** Cuánta gente está esperando ese modelo en la lista. */
   waitingCount: number
+  adminUrl: string
+}
+
+/**
+ * Cita para tomar la fórmula. El teléfono viaja YA formateado (`phoneDisplay`)
+ * y como enlace (`whatsappUrl`): la plantilla es pura y no puede importar
+ * `phone.ts` para decidir cómo se escribe un número colombiano.
+ */
+export type AdminAppointmentData = {
+  name: string
+  phoneDisplay: string
+  whatsappUrl: string
+  productName: string | null
+  lensName: string | null
+  city: string | null
+  preferredTime: string | null
+  note: string | null
   adminUrl: string
 }
 
