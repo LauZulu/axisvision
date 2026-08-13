@@ -87,6 +87,26 @@ export class AxisStockAlert {
   @Column({ type: 'varchar', length: 255, nullable: true })
   email!: string | null
 
+  /**
+   * Cómo quería las gafas: qué lente, con antirreflejo y con fórmula.
+   *
+   * Lo eligió en la ficha antes de llegar al formulario y antes se perdía. No
+   * compromete a nada —es una reserva, no un pedido—, pero es lo que convierte
+   * el aviso de "ya llegó" en un mensaje que se puede escribir sin volver a
+   * preguntar nada.
+   *
+   * La GRADUACIÓN no está aquí a propósito (migración `...013`): caduca, y
+   * entre la reserva y la reposición pueden pasar meses.
+   */
+  @Column({ type: 'uuid', nullable: true })
+  lensOptionId!: string | null
+
+  @Column({ type: 'boolean', default: false })
+  withCoating!: boolean
+
+  @Column({ type: 'boolean', default: false })
+  withPrescription!: boolean
+
   @Index()
   @Column({ type: 'varchar', length: 16, default: 'active' })
   status!: StockAlertStatus

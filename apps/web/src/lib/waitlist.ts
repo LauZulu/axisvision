@@ -22,4 +22,12 @@ export type StockAlertDTO = {
   stock: number
   createdAt: string
   notifiedAt: string | null
+  /**
+   * Cómo quería las gafas. Es lo que permite escribirle sin volver a
+   * preguntar nada ("ya llegó tu Origin, la que querías con transitions").
+   * `lensName` es null en las reservas de `/reservas`, que no lo preguntan.
+   */
+  lensName: string | null
+  withCoating: boolean
+  withPrescription: boolean
 }

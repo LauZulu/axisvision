@@ -26,6 +26,11 @@ const schema = z.object({
   // blanco, y `z.string().email()` lo rechazaría con un 400.
   email: z.union([z.string().email().max(255), z.literal('')]).optional(),
   source: z.enum(['sold_out', 'preview']).optional(),
+  // Cómo quería las gafas. Informativo, igual que `source`: no concede nada, y
+  // un id de lente que no exista se guarda como null en vez de dar un 400.
+  lensOptionId: z.string().uuid().optional(),
+  withCoating: z.boolean().optional(),
+  withPrescription: z.boolean().optional(),
   locale: z.enum(['es', 'en']).optional(),
   // Honeypot: invisible para las personas, irresistible para los bots. Acepta
   // cualquier texto a propósito — rechazarlo aquí devolvería un 400 que le
@@ -55,6 +60,9 @@ export async function POST(req: Request) {
       phone: parsed.data.phone,
       email: parsed.data.email,
       source: parsed.data.source ?? 'sold_out',
+      lensOptionId: parsed.data.lensOptionId,
+      withCoating: parsed.data.withCoating,
+      withPrescription: parsed.data.withPrescription,
       locale: parsed.data.locale,
     })
     if (!result.ok) {

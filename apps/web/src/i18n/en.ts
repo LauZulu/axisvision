@@ -250,6 +250,9 @@ export const en = {
       prescriptionQuoteNotice:
         "We'll confirm the fitting price when we receive your prescription. You're not charged for it today.",
       prescriptionForced: 'This lens is only fitted with a prescription.',
+      prescriptionReserveNotice:
+        'We noted you want them with a prescription. We will ask for the details once we can fit them.',
+      priceWithRx: 'Based on your prescription',
       prescriptionOpen: 'Enter my prescription',
       prescriptionEdit: 'Edit my prescription',
       prescriptionEstimated: 'Estimated price: we confirm it once we review your prescription.',
@@ -537,6 +540,9 @@ export const en = {
       markNotified: 'Mark as notified',
       marking: 'Saving…',
       noEmail: 'No email',
+      colConfig: 'How they want it',
+      withRx: 'with prescription',
+      withAr: 'with anti-reflective',
       colName: 'Name',
       colPhone: 'WhatsApp',
       colEmail: 'Email',
@@ -610,6 +616,7 @@ export const en = {
       colCustomer: 'Customer',
       colItems: 'Items',
       colTotal: 'Total',
+      rxEstimated: 'Estimated price — confirm before cutting',
       colStatus: 'Status',
       empty: 'No orders yet. They will appear here when someone completes checkout.',
     },

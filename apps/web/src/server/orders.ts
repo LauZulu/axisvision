@@ -8,6 +8,11 @@ function toDTO(o: AxisOrder): OrderDTO {
     productName: i.productName,
     unitPriceCop: i.unitPriceCop,
     quantity: i.quantity,
+    lensOptionName: i.lensOptionName,
+    coatingOptionName: i.coatingOptionName,
+    prescriptionNote: i.prescriptionNote,
+    prescriptionIndex: i.prescriptionIndex,
+    prescriptionEstimated: Boolean(i.prescriptionEstimated),
   }))
   return {
     id: o.id,

@@ -52,6 +52,45 @@ export function OrderTable({ orders }: { orders: OrderDTO[] }) {
 
   const itemsSummary = (o: OrderDTO) => o.items.map((it) => `${it.quantity}× ${it.productName}`).join(', ')
 
+  /**
+   * El detalle de montaje de cada línea: lente, antirreflejo y la fórmula tal
+   * cual hay que mandarla a tallar.
+   *
+   * Va en el panel y no solo en el correo del cliente porque quien manda a
+   * tallar es alguien de AXIS, no el comprador: antes esta información existía
+   * en la DB y en un correo, y en ningún sitio donde el equipo pudiera leerla.
+   *
+   * Solo se pinta cuando hay algo que decir — un pedido de gafas de sol sin
+   * graduación no gana nada con dos líneas vacías debajo.
+   */
+  const lensDetail = (o: OrderDTO) =>
+    o.items.filter((it) => it.lensOptionName || it.coatingOptionName || it.prescriptionNote)
+
+  const lensLine = (it: OrderDTO['items'][number]) =>
+    [it.lensOptionName, it.coatingOptionName].filter(Boolean).join(' · ')
+
+  const rxBlock = (it: OrderDTO['items'][number], key: string) => (
+    <div key={key} className="mt-2 border-l-2 border-gold/30 pl-3">
+      <div className="text-xs text-warm-white">
+        {it.quantity}× {it.productName}
+      </div>
+      {lensLine(it) && <div className="text-xs text-gold/75">{lensLine(it)}</div>}
+      {it.prescriptionNote && (
+        <>
+          {/* `whitespace-pre-wrap`: la fórmula viene en varias líneas
+              (`describePrescription`) y aplanarla la vuelve ilegible justo
+              para quien tiene que copiarla al laboratorio. */}
+          <pre className="mt-1 overflow-x-auto font-mono text-[0.68rem] leading-relaxed whitespace-pre-wrap text-warm-gray/70">
+            {it.prescriptionNote}
+          </pre>
+          {it.prescriptionEstimated && (
+            <div className="text-[0.68rem] text-warm-gray/45">{o2.rxEstimated}</div>
+          )}
+        </>
+      )}
+    </div>
+  )
+
   return (
     <>
       {/* Móvil: una ficha por pedido, con el estado editable a ancho completo */}
@@ -79,6 +118,8 @@ export function OrderTable({ orders }: { orders: OrderDTO[] }) {
             <div className="mt-3 text-xs text-warm-gray/55">
               <span className="font-mono text-warm-gray/70">{o.itemsCount}</span> · {itemsSummary(o)}
             </div>
+
+            {lensDetail(o).map((it, n) => rxBlock(it, `${o.id}-${n}`))}
 
             <label className="mt-4 block">
               <span className="mb-1.5 block font-mono text-[0.6rem] uppercase tracking-widest text-warm-gray/45">
@@ -119,6 +160,7 @@ export function OrderTable({ orders }: { orders: OrderDTO[] }) {
                 <td className="px-4 py-3 text-warm-gray/80">
                   <div className="font-mono">{o.itemsCount}</div>
                   <div className="mt-0.5 text-xs text-warm-gray/45">{itemsSummary(o)}</div>
+                  {lensDetail(o).map((it, n) => rxBlock(it, `${o.id}-${n}`))}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 font-head text-warm-white">
                   {formatCop(o.amountCop)}

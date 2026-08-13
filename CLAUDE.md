@@ -143,6 +143,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   (en la ficha el cliente está comparando y una foto que se mueve sola le estorba) y todas las
 >   fotos están a la vista en una tira de miniaturas. El alto manda sobre la proporción en `lg`
 >   (`lg:h-[min(64vh,38rem)]`) para que la columna entera quepa en pantalla de portátil.
+> - **El panel de pedidos enseña el montaje** (`OrderTable`): lente, antirreflejo y la fórmula tal
+>   cual hay que mandarla a tallar, más el aviso de "precio estimado" si lo fue. Quien manda a
+>   tallar es alguien de AXIS, no el comprador: hasta ahora ese dato existía en la DB y en el correo
+>   del cliente, y en ningún sitio donde el equipo pudiera leerlo — el panel solo decía
+>   "1× AXIS Origin".
 > - **Panel admin:** `/admin/productos` (nombre, modelo, talla, precio, descuento, visibilidad, orden
 >   y fotos), `/admin/inventario` (unidad por unidad: ubicación, vendible, nota; guarda al vuelo y
 >   resincroniza el stock) y `/admin/lentes` (CRUD de opciones, con el selector `kind` para decir si
@@ -181,6 +186,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   haber" y su aviso lo dispara el stock, que aquí no pinta nada) y el equipo la atiende en
 >   **`/admin/citas`**, donde nada cambia de estado solo porque ningún evento del sistema sabe que
 >   alguien fue a la óptica.
+> - **Los datos de la graduación SOLO se piden si se puede comprar** (`askPrescriptionDetails` en
+>   `LensPicker`, que la ficha ata a `canPurchase`). En preview o con el modelo agotado la casilla
+>   vuelve a ser un sí/no y el modal ni se monta: una fórmula médica **caduca**, y entre la reserva
+>   y el día que abras (o repongas) puede pasar cualquier cosa, así que pedir diez cifras clínicas
+>   para volver a pedirlas después es fricción sin contrapartida. Ahí el precio de la fila no dice
+>   "Incluido" —que es lo que saldría con `extraPriceCop: 0`, y es lo contrario de la verdad— sino
+>   `l.priceWithRx` ("Según tu graduación").
 > - **El árbol de decisión del precio (`src/lib/lensPricing.ts`, `quoteLens()`)** — un solo sitio, y
 >   lo recorren la ficha (para mostrar) y `createGuestOrder()` (para cobrar), con las MISMAS filas:
 >   1. **potencia → índice.** `requiredIndex()` sobre `INDEX_TIERS` (`src/lib/prescription.ts`). La
@@ -274,6 +286,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   (solo dígitos con indicativo, `573123727253`) con `normalizePhone()` (`src/lib/phone.ts`), que es
 >   la MISMA función que valida el formulario: si el navegador lo acepta, el servidor lo guarda.
 >   Guardar lo tecleado dejaría "312 372 7253" y "+573123727253" como dos personas.
+>   **La reserva guarda CÓMO las quiere** (migración `...013`): `lensOptionId`, `withCoating` y
+>   `withPrescription`, que la persona ya eligió en el configurador antes de llegar al formulario y
+>   antes se tiraban. Es lo que convierte el aviso en "ya llegó tu Origin, la que querías con
+>   transitions y fórmula" en vez de un mensaje que empieza de cero; se ven en `/admin/reservas`
+>   (columna "Cómo la quiere"). La **graduación no** se guarda aquí a propósito, por lo mismo que
+>   no se pide: caduca. El `lensOptionId` va con `ON DELETE SET NULL` —borrar una opción del
+>   catálogo no puede llevarse por delante la reserva de nadie— y un id que no exista se guarda
+>   como null en vez de tumbar el alta.
 >   Eso parte el aviso en dos caminos: **con correo** → automático por Brevo; **sin correo** → no hay
 >   nada que automatizar y `notifyProductAvailable()` las deja en `active` a propósito (marcarlas
 >   `notified` sería mentir y las escondería justo cuando toca escribirles), devolviendo

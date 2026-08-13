@@ -43,6 +43,7 @@ export function LensPicker({
   onEditPrescription,
   prescriptionPrice,
   prescriptionEstimated,
+  askPrescriptionDetails = true,
 }: {
   options: LensOptionDTO[]
   value: LensOptionDTO | null
@@ -64,6 +65,16 @@ export function LensPicker({
   prescriptionPrice: string | null
   /** true = ese precio salió de la estimación, no de la lista del laboratorio. */
   prescriptionEstimated?: boolean
+  /**
+   * ¿Se le piden los datos de la graduación, o basta con la casilla?
+   *
+   * Solo cuando se puede COMPRAR. Con la tienda en preview o el modelo
+   * agotado no hay nada que tallar ni que cobrar, y una fórmula médica caduca:
+   * pedir diez cifras para guardarlas hasta que abramos —y volver a pedirlas
+   * entonces, porque habrán envejecido— es fricción sin contrapartida. Ahí la
+   * casilla vuelve a ser lo que era, un sí/no que viaja con la reserva.
+   */
+  askPrescriptionDetails?: boolean
 }) {
   const { t, lang } = useDict()
   const l = t.store.lens
@@ -198,11 +209,12 @@ export function LensPicker({
               checked={withPrescription || forced}
               disabled={forced}
               onChange={(e) => {
-                // Marcarla no es solo un booleano: sin los datos de la fórmula
-                // no hay precio que mostrar ni lente que tallar, así que la
-                // casilla ABRE el configurador. Desmarcarla sí es un booleano.
-                if (e.target.checked) onEditPrescription()
-                else onPrescriptionChange(false)
+                // Con la compra abierta, marcarla no es solo un booleano: sin
+                // los datos de la fórmula no hay precio que mostrar ni lente
+                // que tallar, así que la casilla ABRE el configurador.
+                // Desmarcarla sí es un booleano, y en reserva lo son las dos.
+                if (e.target.checked && askPrescriptionDetails) onEditPrescription()
+                else onPrescriptionChange(e.target.checked)
               }}
               className="mt-0.5 h-4 w-4 shrink-0 accent-[#c8a96e]"
             />
@@ -219,7 +231,14 @@ export function LensPicker({
             </span>
           </label>
 
-          {(withPrescription || forced) && (
+          {(withPrescription || forced) && !askPrescriptionDetails && (
+            <p className="mt-2.5 flex items-start gap-2 pl-1 text-sm text-gold/90">
+              <Icon name="check" size={16} className="mt-0.5 shrink-0" />
+              {l.prescriptionReserveNotice}
+            </p>
+          )}
+
+          {(withPrescription || forced) && askPrescriptionDetails && (
             <div className="mt-2.5 space-y-1.5 pl-1">
               {prescription ? (
                 <>

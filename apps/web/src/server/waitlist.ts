@@ -3,6 +3,7 @@ import { getDb } from './db'
 import { normalizePhone } from '../lib/phone'
 import { AxisStockAlert, type StockAlertSource } from './db/entities/StockAlert'
 import { AxisProduct } from './db/entities/Product'
+import { AxisLensOption } from './db/entities/LensOption'
 import { AxisProductImage } from './db/entities/ProductImage'
 import { cdnUrl } from '../lib/cdn'
 import type { StockAlertDTO, StockAlertSourceDTO, StockAlertStatusDTO } from '../lib/waitlist'
@@ -82,6 +83,17 @@ export type SubscribeInput = {
   email?: string | null
   source: StockAlertSource
   locale?: string
+  /**
+   * Cómo quería las gafas, tal como lo dejó en la ficha: qué lente, si con
+   * antirreflejo y si con fórmula. Opcional porque el formulario de `/reservas`
+   * no pregunta nada de esto (allí se llega desde una historia y cada campo
+   * cuesta gente).
+   *
+   * La graduación NO viaja: caduca antes de que haya nada que venderle.
+   */
+  lensOptionId?: string | null
+  withCoating?: boolean
+  withPrescription?: boolean
 }
 
 export type SubscribeOutcome =
@@ -120,6 +132,16 @@ export async function subscribeToStockAlert(input: SubscribeInput): Promise<Subs
     return { ok: false, code: 'PRODUCT_NOT_FOUND', message: 'Ese modelo no existe.' }
   }
 
+  // El lente se comprueba contra el catálogo ACTIVO: un id que ya no existe
+  // (opción borrada, petición manipulada) se guarda como null en vez de tumbar
+  // el alta. El dato que importa de una reserva es el teléfono.
+  const lensOptionId =
+    (input.lensOptionId
+      ? await db.getRepository(AxisLensOption).findOne({
+          where: { id: input.lensOptionId, active: true },
+        })
+      : null)?.id ?? null
+
   const repo = db.getRepository(AxisStockAlert)
   // El teléfono manda, pero el correo también identifica: quien se apuntó con
   // correo y vuelve desde otro número es la misma persona, y sin este segundo
@@ -137,6 +159,11 @@ export async function subscribeToStockAlert(input: SubscribeInput): Promise<Subs
     existing.name = name ?? existing.name
     existing.phone = phone
     existing.email = email ?? existing.email
+    // La configuración también se refresca: si vuelve a apuntarse habiendo
+    // cambiado de idea sobre el lente, lo último que eligió es lo bueno.
+    existing.lensOptionId = lensOptionId
+    existing.withCoating = Boolean(input.withCoating)
+    existing.withPrescription = Boolean(input.withPrescription)
 
     // Ya avisado o dado de baja: se reabre. En espera: no se toca (ni se le
     // manda otro correo de confirmación por insistir con el formulario).
@@ -162,6 +189,9 @@ export async function subscribeToStockAlert(input: SubscribeInput): Promise<Subs
     email,
     status,
     source: input.source,
+    lensOptionId,
+    withCoating: Boolean(input.withCoating),
+    withPrescription: Boolean(input.withPrescription),
     locale: input.locale === 'en' ? 'en' : 'es',
     token: newToken(),
     verifiedAt: status === 'active' ? new Date() : null,
@@ -431,6 +461,9 @@ export async function listStockAlerts(): Promise<StockAlertDTO[]> {
     .getRepository(AxisStockAlert)
     .createQueryBuilder('a')
     .innerJoin(AxisProduct, 'p', 'p.id = a."productId"')
+    // LEFT join: la reserva vale igual sin lente elegido (las de `/reservas`
+    // no lo preguntan), y un INNER las escondería a todas.
+    .leftJoin(AxisLensOption, 'l', 'l.id = a."lensOptionId"')
     .select([
       'a.id AS id',
       'a.name AS name',
@@ -444,6 +477,9 @@ export async function listStockAlerts(): Promise<StockAlertDTO[]> {
       'p.stock AS stock',
       'a."createdAt" AS "createdAt"',
       'a."notifiedAt" AS "notifiedAt"',
+      'l."nameEs" AS "lensName"',
+      'a."withCoating" AS "withCoating"',
+      'a."withPrescription" AS "withPrescription"',
     ])
     .orderBy('a."createdAt"', 'DESC')
     .getRawMany<{
@@ -459,6 +495,9 @@ export async function listStockAlerts(): Promise<StockAlertDTO[]> {
       stock: number
       createdAt: Date
       notifiedAt: Date | null
+      lensName: string | null
+      withCoating: boolean
+      withPrescription: boolean
     }>()
 
   return rows.map((r) => ({

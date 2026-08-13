@@ -103,7 +103,13 @@ export function ProductDetail({
   // Con la fórmula marcada pero todavía sin escribir, el total de arriba NO
   // incluye el tallado: hay que decirlo, o se lee como el precio final de unas
   // gafas graduadas.
-  const rxPending = withPrescription && !prescription
+  //
+  // Los datos de la graduación solo se piden si se puede COMPRAR. En preview o
+  // con el modelo agotado la casilla vuelve a ser un sí/no que viaja con la
+  // reserva: una fórmula médica caduca, y pedir diez cifras para volver a
+  // pedirlas el día que abramos es fricción sin contrapartida.
+  const askRxDetails = canPurchase
+  const rxPending = askRxDetails && withPrescription && !prescription
   // El precio salió de la fórmula genérica y no de la lista del laboratorio.
   const rxEstimated = quote.estimated
 
@@ -250,20 +256,26 @@ export function ProductDetail({
                 prescription={prescription}
                 onEditPrescription={() => setRxModalOpen(true)}
                 prescriptionPrice={
-                  prescription
-                    ? quote.rxDeltaCop > 0
-                      ? `+ ${formatCop(quote.rxDeltaCop)}`
-                      : t.store.lens.included
-                    : null
+                  // Sin poder comprar no hay nada que cotizar, pero la fila de
+                  // la fórmula vale 0 en catálogo y se pintaría "Incluido", que
+                  // es justo lo contrario de lo que pasa.
+                  !askRxDetails
+                    ? t.store.lens.priceWithRx
+                    : prescription
+                      ? quote.rxDeltaCop > 0
+                        ? `+ ${formatCop(quote.rxDeltaCop)}`
+                        : t.store.lens.included
+                      : null
                 }
                 prescriptionEstimated={rxEstimated}
+                askPrescriptionDetails={askRxDetails}
               />
             )}
 
             {/* El configurador por pasos. Se monta solo cuando hace falta: es
                 un panel a pantalla completa y montarlo siempre metería su
                 bloqueo de scroll en cada ficha. */}
-            {rxOption && (
+            {rxOption && askRxDetails && (
               <PrescriptionModal
                 open={rxModalOpen}
                 onClose={() => {
@@ -309,7 +321,7 @@ export function ProductDetail({
                     {t.store.lens.quoteNote}
                   </p>
                 )}
-                {!rxPending && rxEstimated && (
+                {askRxDetails && !rxPending && rxEstimated && (
                   <p className="mt-2 text-xs leading-relaxed text-warm-gray/50">
                     {t.store.rx.estimatedNote}
                   </p>
@@ -384,10 +396,17 @@ export function ProductDetail({
                 <p className="mt-2 leading-relaxed text-warm-gray/75">
                   {storeOpen ? t.store.waitlist.bodySoldOut : t.store.preview.body}
                 </p>
+                {/* La configuración que eligió arriba viaja con la reserva.
+                    No compromete a nada —esto no es un pedido— pero es lo que
+                    hace que el día que llegue el stock se le pueda escribir sin
+                    volver a preguntarle qué quería. */}
                 <WaitlistForm
                   productId={product.id}
                   source={storeOpen ? 'sold_out' : 'preview'}
                   className="mt-5"
+                  lensOptionId={lens?.id ?? null}
+                  withCoating={withCoating}
+                  withPrescription={withPrescription}
                 />
               </div>
             )}

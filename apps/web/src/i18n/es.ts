@@ -264,6 +264,13 @@ export const es = {
       prescriptionQuoteNotice:
         'El valor del montaje lo confirmamos al recibir tu fórmula. Hoy no se te cobra.',
       prescriptionForced: 'Este lente solo se monta con fórmula médica.',
+      // En reserva NO se le piden los datos de la graduación: caduca antes de
+      // que haya nada que venderle. Solo queda anotado que la quiere graduada.
+      prescriptionReserveNotice:
+        'Anotamos que la quieres con fórmula. Te pedimos los datos cuando podamos montarlas.',
+      // Sin poder comprar no hay precio que calcular, pero decir "Incluido"
+      // sería mentir: el montaje se cobra, solo que todavía no se puede cotizar.
+      priceWithRx: 'Según tu graduación',
       prescriptionOpen: 'Escribir mi fórmula',
       prescriptionEdit: 'Editar mi fórmula',
       prescriptionEstimated: 'Precio estimado: lo confirmamos al revisar tu fórmula.',
@@ -565,6 +572,9 @@ export const es = {
       markNotified: 'Marcar avisado',
       marking: 'Guardando…',
       noEmail: 'Sin correo',
+      colConfig: 'Cómo la quiere',
+      withRx: 'con fórmula',
+      withAr: 'con antirreflejo',
       colName: 'Nombre',
       colPhone: 'WhatsApp',
       colEmail: 'Correo',
@@ -638,6 +648,7 @@ export const es = {
       colCustomer: 'Cliente',
       colItems: 'Ítems',
       colTotal: 'Total',
+      rxEstimated: 'Precio estimado — confirmar antes de tallar',
       colStatus: 'Estado',
       empty: 'Aún no hay pedidos. Aparecerán aquí cuando alguien complete el checkout.',
     },

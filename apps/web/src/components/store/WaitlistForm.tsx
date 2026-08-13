@@ -32,10 +32,25 @@ export function WaitlistForm({
   productId,
   source,
   className = '',
+  lensOptionId = null,
+  withCoating = false,
+  withPrescription = false,
 }: {
   productId: string
   source: 'sold_out' | 'preview'
   className?: string
+  /**
+   * Cómo quería las gafas, tal como lo dejó en el configurador de la ficha.
+   * No se le vuelve a preguntar aquí —el formulario tiene que seguir siendo
+   * corto— pero se guarda con la reserva: es lo que convierte el aviso de "ya
+   * llegó" en un mensaje que no obliga a empezar la conversación de cero.
+   *
+   * La GRADUACIÓN no viaja: caduca antes de que haya nada que venderle, así
+   * que en preview y en agotado el configurador ni siquiera la pide.
+   */
+  lensOptionId?: string | null
+  withCoating?: boolean
+  withPrescription?: boolean
 }) {
   const { t } = useDict()
   const w = t.store.waitlist
@@ -56,7 +71,16 @@ export function WaitlistForm({
     if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return fail('email')
 
     setField(null)
-    await submit({ productId, name, phone, email, website })
+    await submit({
+      productId,
+      name,
+      phone,
+      email,
+      website,
+      lensOptionId,
+      withCoating,
+      withPrescription,
+    })
   }
 
   function fail(which: Exclude<FieldError, null>) {

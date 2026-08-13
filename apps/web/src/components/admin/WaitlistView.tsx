@@ -24,6 +24,22 @@ import type { StockAlertDTO } from '../../lib/waitlist'
  * resultado del envío masivo dice también cuántas quedaron pendientes: sin ese
  * número, "12 avisos enviados" sobre 20 personas se lee como trabajo terminado.
  */
+/**
+ * Cómo quería las gafas, en una línea: "Transitions · con fórmula · antirreflejo".
+ *
+ * Es lo que convierte el aviso de "ya llegó" en un mensaje que no obliga a
+ * empezar la conversación de cero. Devuelve null cuando no eligió nada (las
+ * altas de `/reservas`, que solo preguntan modelo, nombre y WhatsApp).
+ */
+function lensSummary(
+  a: { lensName: string | null; withCoating: boolean; withPrescription: boolean },
+  labels: { withRx: string; withAr: string },
+): string | null {
+  const parts = [a.lensName, a.withPrescription ? labels.withRx : null, a.withCoating ? labels.withAr : null]
+  const shown = parts.filter(Boolean)
+  return shown.length ? shown.join(' · ') : null
+}
+
 export function WaitlistView({ alerts }: { alerts: StockAlertDTO[] }) {
   const { t } = useDict()
   const w = t.admin.waitlist
@@ -170,6 +186,9 @@ export function WaitlistView({ alerts }: { alerts: StockAlertDTO[] }) {
                     {a.email ?? <span className="text-warm-gray/40">{w.noEmail}</span>}
                   </div>
                   <div className="mt-1 text-sm text-warm-gray/70">{a.productName}</div>
+                  {lensSummary(a, w) && (
+                    <div className="mt-0.5 text-sm text-gold/75">{lensSummary(a, w)}</div>
+                  )}
                   <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-xs text-warm-gray/50">
                     <span className="text-warm-gray/75">{statusLabel[a.status] ?? a.status}</span>
                     <span>·</span>
@@ -207,6 +226,7 @@ export function WaitlistView({ alerts }: { alerts: StockAlertDTO[] }) {
                   <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{w.colPhone}</th>
                   <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{w.colEmail}</th>
                   <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{w.colProduct}</th>
+                  <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{w.colConfig}</th>
                   <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{w.colSource}</th>
                   <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{w.colStatus}</th>
                   <th className="px-4 py-3 font-mono text-xs uppercase tracking-widest">{w.colDate}</th>
@@ -231,6 +251,9 @@ export function WaitlistView({ alerts }: { alerts: StockAlertDTO[] }) {
                         {a.email ?? <span className="text-warm-gray/40">{w.noEmail}</span>}
                       </td>
                       <td className="px-4 py-3 text-warm-gray/80">{a.productName}</td>
+                      <td className="px-4 py-3 text-gold/75">
+                        {lensSummary(a, w) ?? <span className="text-warm-gray/40">—</span>}
+                      </td>
                       <td className="px-4 py-3 text-warm-gray/60">
                         {a.source === 'preview' ? w.sourcePreview : w.sourceSoldOut}
                       </td>

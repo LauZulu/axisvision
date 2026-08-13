@@ -258,6 +258,11 @@ solo hay que entrar al panel a verla.
 
 ## Resueltos
 
+- **12 ago 2026 — En reserva, la fórmula vuelve a ser una casilla.** Con la tienda en preview o el
+  modelo agotado no se piden los diez números (una fórmula caduca antes de que haya nada que
+  venderle): solo se anota qué lente, si con antirreflejo y si con fórmula, y eso ya se ve en
+  `/admin/reservas`. De paso, `/admin/pedidos` pasó a enseñar el montaje y la graduación de cada
+  línea — antes solo decía "1× AXIS Origin" y quien mandaba a tallar no tenía dónde leerla.
 - **12 ago 2026 — La fórmula médica se cotiza en la página.** Dejó de ser una
   casilla "por confirmar": el configurador la pregunta por pasos (¿la tienes? →
   monofocal/progresiva → esf/cil/eje/ADD/DIP → resumen) y el precio se recalcula

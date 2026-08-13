@@ -13,6 +13,13 @@ export type SignupInput = {
   email?: string
   /** Lo que haya escrito un bot en el campo trampa. Se manda tal cual. */
   website?: string
+  /**
+   * Cómo quería las gafas, tal como lo dejó en la ficha. Opcional: el
+   * formulario de `/reservas` no pregunta nada de esto.
+   */
+  lensOptionId?: string | null
+  withCoating?: boolean
+  withPrescription?: boolean
 }
 
 /**
@@ -45,6 +52,9 @@ export function useWaitlistSignup(source: 'sold_out' | 'preview') {
           phone: input.phone.trim(),
           email: input.email?.trim() ?? '',
           source,
+          lensOptionId: input.lensOptionId ?? undefined,
+          withCoating: input.withCoating ?? false,
+          withPrescription: input.withPrescription ?? false,
           locale: lang,
           website: input.website ?? '',
         }),

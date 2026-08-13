@@ -5,6 +5,19 @@ export type OrderItemDTO = {
   productName: string
   unitPriceCop: number
   quantity: number
+  /**
+   * Cómo se montan estas gafas. Sin esto el panel solo decía "1× AXIS Origin",
+   * y quien tiene que mandar a tallar no tenía dónde leer la graduación: vivía
+   * en la DB y en el correo del cliente, en ningún sitio del panel.
+   */
+  lensOptionName: string | null
+  coatingOptionName: string | null
+  /** La fórmula ya formateada (`describePrescription`). null = sin graduación. */
+  prescriptionNote: string | null
+  /** Índice del material que salió de esa fórmula ('1.60'). */
+  prescriptionIndex: string | null
+  /** true = el precio del lente graduado fue estimado, no de la lista. */
+  prescriptionEstimated: boolean
 }
 
 export type OrderDTO = {

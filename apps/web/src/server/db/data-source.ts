@@ -25,6 +25,7 @@ import { AntiReflectiveLens1720000000009 } from './migrations/1720000000009-Anti
 import { AntiReflectiveAddon1720000000010 } from './migrations/1720000000010-AntiReflectiveAddon'
 import { WaitlistNamePhone1720000000011 } from './migrations/1720000000011-WaitlistNamePhone'
 import { PrescriptionPricing1720000000012 } from './migrations/1720000000012-PrescriptionPricing'
+import { WaitlistLensChoice1720000000013 } from './migrations/1720000000013-WaitlistLensChoice'
 
 export const ENTITIES = [
   AxisUser,
@@ -108,6 +109,7 @@ export function buildDataSource(): DataSource {
       AntiReflectiveAddon1720000000010,
       WaitlistNamePhone1720000000011,
       PrescriptionPricing1720000000012,
+      WaitlistLensChoice1720000000013,
     ],
     migrationsTableName: 'axis_migrations',
     // Resiliencia del pool: keepAlive evita que conexiones ociosas mueran en
