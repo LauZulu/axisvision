@@ -5,8 +5,8 @@ import { Icon } from '../ui/Icon'
 import { useDict } from '../../i18n/useDict'
 import { fill } from '../../lib/format'
 import { normalizePhone } from '../../lib/phone'
+import { isDone, useWaitlistSignup } from './useWaitlistSignup'
 
-type Status = 'idle' | 'sending' | 'active' | 'already' | 'pending' | 'error'
 type FieldError = 'name' | 'phone' | 'email' | null
 
 /**
@@ -37,14 +37,14 @@ export function WaitlistForm({
   source: 'sold_out' | 'preview'
   className?: string
 }) {
-  const { t, lang } = useDict()
+  const { t } = useDict()
   const w = t.store.waitlist
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [website, setWebsite] = useState('')
-  const [status, setStatus] = useState<Status>('idle')
   const [field, setField] = useState<FieldError>(null)
+  const { status, setStatus, submit } = useWaitlistSignup(source)
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -56,28 +56,7 @@ export function WaitlistForm({
     if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return fail('email')
 
     setField(null)
-    setStatus('sending')
-    try {
-      const res = await fetch('/api/reservas', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          productId,
-          name: name.trim(),
-          phone: phone.trim(),
-          email: email.trim(),
-          source,
-          locale: lang,
-          website,
-        }),
-      })
-      if (!res.ok) throw new Error('request failed')
-      const data = (await res.json()) as { status?: Status }
-      setStatus(data.status === 'already' || data.status === 'pending' ? data.status : 'active')
-    } catch (err) {
-      console.error('[reservas] no se pudo enviar la reserva:', err)
-      setStatus('error')
-    }
+    await submit({ productId, name, phone, email, website })
   }
 
   function fail(which: Exclude<FieldError, null>) {
@@ -96,7 +75,7 @@ export function WaitlistForm({
     }
   }
 
-  if (status === 'active' || status === 'already' || status === 'pending') {
+  if (isDone(status)) {
     const title = status === 'already' ? w.alreadyTitle : status === 'pending' ? w.pendingTitle : w.okTitle
     // Sin correo el aviso llega por WhatsApp — prometer un correo que nunca va a
     // salir es la forma más rápida de que la persona lo dé por perdido.

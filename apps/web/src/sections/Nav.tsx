@@ -51,8 +51,10 @@ export function Nav() {
 
   // Dentro de la tienda el CTA "Comprar AXIS" (que lleva a /tienda) sobra: el
   // usuario ya está comprando. En la ficha de producto compite además con el
-  // botón de añadir al carrito, que es el que importa.
-  const inStore = pathname.startsWith('/tienda')
+  // botón de añadir al carrito, que es el que importa. En /reservas pasa lo
+  // mismo y peor: esa página es un embudo de una sola acción y el CTA del nav
+  // se lleva a la gente a otro sitio justo antes de dejar su contacto.
+  const inStore = pathname.startsWith('/tienda') || pathname.startsWith('/reservas')
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)

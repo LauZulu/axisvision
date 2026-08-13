@@ -373,6 +373,38 @@ export const en = {
     helpWhatsapp: 'WhatsApp help',
   },
 
+  reserve: {
+    eyebrow: 'Reserve',
+    title: 'Pick your AXIS and we’ll message you.',
+    intro:
+      'Tap the model you liked and leave us your WhatsApp. Lenses, prescription and the rest we sort out there.',
+    step1: '1 · The model',
+    step2: '2 · Your details',
+    chosen: 'Reserving: {model}',
+    chooseFirst: 'First tap the model you’re interested in.',
+    nameLabel: 'Your name',
+    namePlaceholder: 'First and last name',
+    phoneLabel: 'Your WhatsApp',
+    phonePlaceholder: '312 372 7253',
+    submit: 'Reserve mine',
+    sending: 'Sending…',
+    okTitle: 'Done, you’re on the list.',
+    okBody: 'We’ll message you on WhatsApp with the next steps for your {model}.',
+    alreadyTitle: 'You were already on the list.',
+    alreadyBody: 'That number was already down for the {model}. We’ll message you all the same.',
+    whatsappNow: 'Message us now',
+    whatsappMessage: 'Hi, I just reserved the AXIS {model}.',
+    seeStore: 'See every model',
+    orWhatsapp: 'Rather just message us? WhatsApp',
+    privacy: 'We only message you about this model. No marketing.',
+    errorModel: 'Tap the model you’re interested in first.',
+    errorName: 'Enter your name.',
+    errorPhone: 'Enter a valid WhatsApp number (10 digits).',
+    error: 'We could not save your details. Please try again.',
+    emptyTitle: 'No models published yet.',
+    emptyBody: 'Message us on WhatsApp and we’ll tell you what’s coming.',
+  },
+
   admin: {
     nav: { dashboard: 'Dashboard', products: 'Products', inventory: 'Inventory', lenses: 'Lenses', orders: 'Orders', waitlist: 'Waitlist', viewSite: 'View site', backToSite: 'Back to site', logout: 'Log out' },
     waitlist: {

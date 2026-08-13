@@ -389,6 +389,40 @@ export const es = {
     helpWhatsapp: 'Ayuda por WhatsApp',
   },
 
+  // Página /reservas: el embudo de la promoción. Copy corto a propósito —
+  // se llega desde una historia, con el pulgar y con prisa.
+  reserve: {
+    eyebrow: 'Reserva',
+    title: 'Elige tus AXIS y te escribimos.',
+    intro:
+      'Toca el modelo que te gustó y déjanos tu WhatsApp. El lente, la fórmula y lo demás lo hablamos por ahí.',
+    step1: '1 · El modelo',
+    step2: '2 · Tus datos',
+    chosen: 'Reservas: {model}',
+    chooseFirst: 'Primero toca el modelo que te interesa.',
+    nameLabel: 'Tu nombre',
+    namePlaceholder: 'Nombre y apellido',
+    phoneLabel: 'Tu WhatsApp',
+    phonePlaceholder: '312 372 7253',
+    submit: 'Quiero reservar',
+    sending: 'Enviando…',
+    okTitle: 'Listo, quedaste apuntado.',
+    okBody: 'Te escribimos por WhatsApp para contarte los siguientes pasos de tus {model}.',
+    alreadyTitle: 'Ya te teníamos en la lista.',
+    alreadyBody: 'Ese número ya estaba apuntado a las {model}. Tranquilo, te escribimos igual.',
+    whatsappNow: 'Escríbenos ahora',
+    whatsappMessage: 'Hola, acabo de reservar las AXIS {model}.',
+    seeStore: 'Ver todos los modelos',
+    orWhatsapp: '¿Prefieres escribirnos? WhatsApp',
+    privacy: 'Te escribimos solo por este modelo. Nada de publicidad.',
+    errorModel: 'Toca primero el modelo que te interesa.',
+    errorName: 'Escribe tu nombre.',
+    errorPhone: 'Escribe un número de WhatsApp válido (10 dígitos).',
+    error: 'No pudimos guardar tus datos. Inténtalo de nuevo.',
+    emptyTitle: 'Todavía no hay modelos publicados.',
+    emptyBody: 'Escríbenos por WhatsApp y te contamos qué viene en camino.',
+  },
+
   admin: {
     nav: { dashboard: 'Dashboard', products: 'Productos', inventory: 'Inventario', lenses: 'Lentes', orders: 'Pedidos', waitlist: 'Reservas', viewSite: 'Ver sitio', backToSite: 'Volver al sitio', logout: 'Salir' },
     waitlist: {
