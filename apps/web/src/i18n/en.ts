@@ -234,7 +234,13 @@ export const en = {
     lens: {
       title: 'Lens',
       included: 'Included',
+      onQuote: 'To be confirmed',
+      quoteNote:
+        "Fitting your prescription isn't included: we'll confirm that price once we receive it.",
+      coatingIncluded: 'This lens already comes with it.',
       prescriptionNotice: "We'll ask for your prescription details at checkout.",
+      prescriptionQuoteNotice:
+        "We'll confirm the fitting price when we receive your prescription. You're not charged for it today.",
       prescriptionForced: 'This lens is only fitted with a prescription.',
       total: 'Total',
     },
@@ -307,6 +313,8 @@ export const en = {
     remove: 'Remove',
     continueShopping: 'Continue shopping',
     note: 'Shipping arranged after payment · Secure payment with Wompi',
+    prescriptionNote:
+      "Fitting your prescription isn't part of this total: we'll confirm that price once we receive it.",
   },
 
   checkout: {
@@ -514,6 +522,16 @@ export const en = {
       descriptionEs: 'Description (ES)',
       descriptionEn: 'Description (EN)',
       extraPrice: 'Extra cost (COP)',
+      priceOnQuote: 'Price to be confirmed',
+      arExtraPrice: 'Anti-reflective on this lens (COP)',
+      arExtraPriceHint:
+        'What it costs to add it to THIS lens. Empty = it already comes with it (offered as included).',
+      arIncluded: 'Already included',
+      arIncludedShort: 'AR included',
+      kindCoating: 'Anti-reflective add-on',
+      priceOnQuoteHint:
+        "Not charged at checkout and no price shown in the store: the amount is agreed later (that's the prescription, which depends on the customer's script).",
+      onQuote: 'To be confirmed',
       requiresPrescription: 'Requires prescription',
       isDefault: 'Is the stock lens',
       active: 'Visible in store',

@@ -18,6 +18,9 @@ import { StockAlerts1720000000004 } from './migrations/1720000000004-StockAlerts
 import { LensPrescriptionAddon1720000000005 } from './migrations/1720000000005-LensPrescriptionAddon'
 import { OrderIdempotency1720000000006 } from './migrations/1720000000006-OrderIdempotency'
 import { ProductLensOptions1720000000007 } from './migrations/1720000000007-ProductLensOptions'
+import { LensPricesOnQuote1720000000008 } from './migrations/1720000000008-LensPricesOnQuote'
+import { AntiReflectiveLens1720000000009 } from './migrations/1720000000009-AntiReflectiveLens'
+import { AntiReflectiveAddon1720000000010 } from './migrations/1720000000010-AntiReflectiveAddon'
 
 export const ENTITIES = [
   AxisUser,
@@ -94,6 +97,9 @@ export function buildDataSource(): DataSource {
       LensPrescriptionAddon1720000000005,
       OrderIdempotency1720000000006,
       ProductLensOptions1720000000007,
+      LensPricesOnQuote1720000000008,
+      AntiReflectiveLens1720000000009,
+      AntiReflectiveAddon1720000000010,
     ],
     migrationsTableName: 'axis_migrations',
     // Resiliencia del pool: keepAlive evita que conexiones ociosas mueran en

@@ -18,6 +18,9 @@ import {
 } from '../../lib/products'
 import { addToCart } from '../../lib/cart'
 import {
+  coatingAddon,
+  coatingIncludedIn,
+  coatingPriceFor,
   defaultLens,
   imagesForLens,
   lensName,
@@ -62,9 +65,23 @@ export function ProductDetail({
   const withPrescription = Boolean(rxOption) && (wantsRx || Boolean(lens?.requiresPrescription))
   const rx = withPrescription ? rxOption : null
 
-  // Precio mostrado = producto + lente + fórmula. El cobro lo recalcula el servidor.
-  const unitPrice = priceWithLens(product.priceCop, lens, rx)
+  // El antirreflejo es otra pregunta independiente: se monta sobre cualquier
+  // lente. Lo que cuesta lo dice el LENTE elegido, y los que ya lo traen lo
+  // imponen (`arExtraPriceCop === null`) sin cobrar nada.
+  const [wantsAr, setWantsAr] = useState(false)
+  const arOption = coatingAddon(options)
+  const arIncluded = coatingIncludedIn(lens)
+  const withCoating = Boolean(arOption) && (wantsAr || arIncluded)
+  const ar = withCoating ? arOption : null
+
+  // Precio mostrado = producto + lente + antirreflejo + fórmula. El cobro lo
+  // recalcula el servidor.
+  const unitPrice = priceWithLens(product.priceCop, lens, rx, withCoating)
   const extras = unitPrice - product.priceCop
+  // La fórmula no suma aquí: su valor depende de la graduación y se confirma
+  // al recibirla. Hay que DECIRLO donde se pinta el total, o el número de
+  // arriba se lee como el precio final de unas gafas graduadas.
+  const rxOnQuote = Boolean(rx?.priceOnQuote)
 
   // La galería sigue al TIPO de lente: con lente de sol se ven las fotos de sol,
   // con transparente las de lente claro. Las neutras (estuche) siempre.
@@ -87,8 +104,17 @@ export function ProductDetail({
       lens: lens
         ? { id: lens.id, name: lensName(lens, lang), extraPriceCop: lens.extraPriceCop }
         : null,
+      // El sobrecosto del antirreflejo sale del lente, no de su propia fila.
+      coating: ar
+        ? { id: ar.id, name: lensName(ar, lang), extraPriceCop: coatingPriceFor(lens) ?? 0 }
+        : null,
       prescription: rx
-        ? { id: rx.id, name: lensName(rx, lang), extraPriceCop: rx.extraPriceCop }
+        ? {
+            id: rx.id,
+            name: lensName(rx, lang),
+            extraPriceCop: rx.extraPriceCop,
+            priceOnQuote: rx.priceOnQuote,
+          }
         : null,
     }
   }
@@ -96,6 +122,7 @@ export function ProductDetail({
   function onBuyNow() {
     const params = new URLSearchParams({ item: product.slug, qty: String(qty) })
     if (lens) params.set('lens', lens.id)
+    if (ar) params.set('ar', '1')
     if (rx) params.set('rx', '1')
     router.push(`/tienda/checkout?${params}`)
   }
@@ -177,6 +204,8 @@ export function ProductDetail({
                 options={options}
                 value={lens}
                 onChange={setLens}
+                withCoating={withCoating}
+                onCoatingChange={setWantsAr}
                 withPrescription={withPrescription}
                 onPrescriptionChange={setWantsRx}
               />
@@ -184,15 +213,24 @@ export function ProductDetail({
 
             {/* El precio de arriba es el del armazón; aquí se cierra la cuenta
                 con lo que el cliente acaba de añadir, desglosado. */}
-            {!soldOut && extras > 0 && (
-              <div className="mt-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line pt-4">
-                <span className="text-sm text-warm-gray/70">
-                  {t.store.lens.total}
-                  <span className="ml-2 font-mono text-xs text-warm-gray/45">
-                    {formatCop(product.priceCop)} + {formatCop(extras)}
+            {!soldOut && (extras > 0 || rxOnQuote) && (
+              <div className="mt-6 border-t border-line pt-4">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <span className="text-sm text-warm-gray/70">
+                    {t.store.lens.total}
+                    {extras > 0 && (
+                      <span className="ml-2 font-mono text-xs text-warm-gray/45">
+                        {formatCop(product.priceCop)} + {formatCop(extras)}
+                      </span>
+                    )}
                   </span>
-                </span>
-                <span className="font-head text-xl text-warm-white">{formatCop(unitPrice)}</span>
+                  <span className="font-head text-xl text-warm-white">{formatCop(unitPrice)}</span>
+                </div>
+                {rxOnQuote && (
+                  <p className="mt-2 text-xs leading-relaxed text-warm-gray/50">
+                    {t.store.lens.quoteNote}
+                  </p>
+                )}
               </div>
             )}
 

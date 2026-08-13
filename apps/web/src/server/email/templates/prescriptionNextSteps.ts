@@ -44,6 +44,12 @@ export function renderPrescriptionNextSteps(data: PrescriptionData): EmailDoc {
       'Respóndenos por WhatsApp con una <strong style="color:#f5f3ee;">foto de tu fórmula vigente</strong> (o confirma que los datos de arriba están correctos). Con eso mandamos a tallar los lentes y te avisamos cuando las monturas estén listas para salir.',
     ),
     button(data.uploadUrl || wa, 'Enviar mi fórmula'),
+    // El pago que acaba de hacer NO incluye el montaje: su valor depende de la
+    // graduación y por eso no se anunció en la tienda. Que se entere aquí, y no
+    // cuando le pasemos la cuenta.
+    p(
+      'El montaje de tu fórmula se cotiza aparte y no está incluido en lo que pagaste: al revisar tu fórmula te confirmamos el valor y cómo pagarlo, antes de mandar a tallar nada.',
+    ),
     note(
       'La fórmula debe tener menos de un año y venir de un optómetra u oftalmólogo. Si la tuya está vencida, te ayudamos a agendar el examen con la óptica aliada.',
     ),
@@ -61,6 +67,8 @@ export function renderPrescriptionNextSteps(data: PrescriptionData): EmailDoc {
       ]),
       'Envíanos una foto de tu fórmula vigente (o confirma que los datos de arriba están correctos):',
       data.uploadUrl || wa,
+      '',
+      'El montaje de tu fórmula se cotiza aparte y no está incluido en lo que pagaste: al revisarla te confirmamos el valor antes de mandar a tallar.',
       '',
       'La fórmula debe tener menos de un año y venir de un optómetra u oftalmólogo.',
     ],

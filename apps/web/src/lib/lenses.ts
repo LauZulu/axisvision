@@ -1,9 +1,12 @@
 // DTO de opción de lente, compartido entre servidor y cliente (sin imports de
 // servidor → seguro en componentes cliente).
-import type { ImageLensVariant, Lang } from './products'
+import { formatCop, type ImageLensVariant, type Lang } from './products'
 
-/** `lens` = tipo de lente (excluyentes). `prescription` = complemento de fórmula. */
-export type LensOptionKind = 'lens' | 'prescription'
+/**
+ * `lens` = tipo de lente (excluyentes). `prescription` = complemento de fórmula.
+ * `coating` = antirreflejo, que se monta sobre cualquiera de los lentes.
+ */
+export type LensOptionKind = 'lens' | 'prescription' | 'coating'
 
 export type LensOptionDTO = {
   id: string
@@ -16,8 +19,21 @@ export type LensOptionDTO = {
   descriptionEn: string
   /** Sobrecosto en COP sobre el precio del producto. 0 = incluido. */
   extraPriceCop: number
+  /**
+   * El precio se confirma después de la compra y NO se cobra en el checkout
+   * (la fórmula médica: el valor depende de la graduación, que llega después).
+   * Distinto de `extraPriceCop === 0`, que significa "incluido, sin costo".
+   */
+  priceOnQuote: boolean
   /** Obliga a llevar fórmula médica (y a escribirla en el checkout). */
   requiresPrescription: boolean
+  /**
+   * Solo en las filas `lens`: qué cuesta añadirle el ANTIRREFLEJO a este lente.
+   * `null` = ya lo trae puesto. Vive en el lente y no en la fila del
+   * complemento porque el AR no cuesta lo mismo sobre cada uno (ver la
+   * migración 010).
+   */
+  arExtraPriceCop: number | null
   /** El lente con el que vienen las gafas de fábrica. */
   isDefault: boolean
   active: boolean
@@ -34,16 +50,59 @@ export function lensDescription(o: LensOptionDTO, lang: Lang): string {
   return lang === 'en' ? o.descriptionEn : o.descriptionEs
 }
 
+/** Lo que se cobra por esta opción. Las de precio por confirmar cobran 0. */
+export function lensExtraCop(o: LensOptionDTO | null | undefined): number {
+  if (!o || o.priceOnQuote) return 0
+  return o.extraPriceCop
+}
+
 /**
- * El configurador son DOS preguntas independientes, no una lista de excluyentes:
- * qué lente lleva la montura, y si va con la fórmula del cliente. Estas dos
- * funciones parten el catálogo en esas dos preguntas.
+ * Qué se escribe donde va el precio de una opción. Son TRES estados, no dos, y
+ * confundirlos cuesta caro: "incluido" (sin costo), un sobrecosto concreto, y
+ * "por confirmar" — la fórmula médica, cuyo valor depende de la graduación que
+ * el cliente manda después de comprar. Sin este tercer estado el cero se leería
+ * como gratis.
+ */
+export function lensPriceLabel(
+  o: LensOptionDTO,
+  labels: { included: string; onQuote: string },
+): string {
+  if (o.priceOnQuote) return labels.onQuote
+  return o.extraPriceCop > 0 ? `+ ${formatCop(o.extraPriceCop)}` : labels.included
+}
+
+/**
+ * El configurador son TRES preguntas independientes, no una lista de
+ * excluyentes: qué lente lleva la montura, si le va el antirreflejo, y si va
+ * con la fórmula del cliente. Estas funciones parten el catálogo en esas tres.
  *
  * Nota de compatibilidad: las filas anteriores a la migración 5 no traen `kind`.
  * Se asume `lens`, que es lo que eran.
  */
 export function lensTypes(options: LensOptionDTO[]): LensOptionDTO[] {
-  return options.filter((o) => o.kind !== 'prescription')
+  return options.filter((o) => o.kind !== 'prescription' && o.kind !== 'coating')
+}
+
+/** El complemento de antirreflejo (una sola fila activa). */
+export function coatingAddon(options: LensOptionDTO[]): LensOptionDTO | null {
+  return options.find((o) => o.kind === 'coating') ?? null
+}
+
+/**
+ * Qué cuesta añadirle el antirreflejo al lente elegido. `null` = ese lente ya
+ * lo trae, así que va incluido y sin costo (y la casilla se muestra fija).
+ *
+ * Es una función y no un campo del complemento a propósito: el precio depende
+ * del LENTE (+20.000 sobre el transparente, +70.000 sobre el fotocromático,
+ * incluido en el filtro azul), no del complemento.
+ */
+export function coatingPriceFor(lens: LensOptionDTO | null): number | null {
+  return lens?.arExtraPriceCop ?? null
+}
+
+/** true si el lente elegido ya trae el antirreflejo puesto. */
+export function coatingIncludedIn(lens: LensOptionDTO | null): boolean {
+  return Boolean(lens && lens.arExtraPriceCop === null)
 }
 
 /**
@@ -54,7 +113,8 @@ export function lensTypes(options: LensOptionDTO[]): LensOptionDTO[] {
  * todos, no sin ninguno. La lista solo existe para las excepciones (Apex, la
  * deportiva, que tiene un único lente y la ficha le ofrecía transitions).
  *
- * Filtra lentes Y complemento de fórmula: un modelo puede no admitir fórmula.
+ * Filtra los tres tipos de fila: un modelo puede no admitir fórmula, o no
+ * ofrecer el antirreflejo.
  */
 export function optionsForProduct(
   options: LensOptionDTO[],
@@ -81,15 +141,23 @@ export function defaultLens(options: LensOptionDTO[]): LensOptionDTO | null {
 }
 
 /**
- * Precio final de una unidad: producto + lente + fórmula (si la pidió).
+ * Precio final de una unidad: producto + lente + antirreflejo + fórmula.
  * Es solo para MOSTRAR — el cobro lo recalcula el servidor desde la DB.
+ *
+ * Lo que está "por confirmar" no suma: la fórmula se cotiza al recibirla y no
+ * se cobra en esta compra. El total mostrado es entonces un mínimo, y quien lo
+ * pinte tiene que decirlo (ver `t.store.lens.quoteNote`).
  */
 export function priceWithLens(
   priceCop: number,
   lens: LensOptionDTO | null,
   prescription: LensOptionDTO | null = null,
+  withCoating = false,
 ): number {
-  return priceCop + (lens?.extraPriceCop ?? 0) + (prescription?.extraPriceCop ?? 0)
+  // El antirreflejo lo cobra el LENTE, no el complemento: `lensExtraCop` sobre
+  // la fila `coating` daría 0 siempre.
+  const coating = withCoating ? (coatingPriceFor(lens) ?? 0) : 0
+  return priceCop + lensExtraCop(lens) + coating + lensExtraCop(prescription)
 }
 
 /**

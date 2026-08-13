@@ -8,8 +8,12 @@ import {
 } from 'typeorm'
 import type { ImageLensVariant } from './ProductImage'
 
-/** `lens` = un tipo de lente (excluyentes). `prescription` = el complemento de fórmula. */
-export type LensOptionKind = 'lens' | 'prescription'
+/**
+ * `lens` = un tipo de lente (excluyentes entre sí).
+ * `prescription` = el complemento de fórmula médica.
+ * `coating` = el antirreflejo, que se puede montar sobre cualquier lente.
+ */
+export type LensOptionKind = 'lens' | 'prescription' | 'coating'
 
 /**
  * Opción del configurador de lente. Son DOS preguntas independientes, no una
@@ -55,6 +59,31 @@ export class AxisLensOption {
   // Sobrecosto en COP sobre el precio del producto. 0 = incluido.
   @Column({ type: 'integer', default: 0 })
   extraPriceCop!: number
+
+  /**
+   * El precio no se puede anunciar: se confirma después (es el caso de la
+   * fórmula médica, donde el valor depende de la graduación del cliente, que
+   * llega DESPUÉS de la compra). Con esto en true no se cobra nada en el
+   * checkout y la tienda muestra "por confirmar" en vez de un precio.
+   *
+   * No basta con dejar `extraPriceCop` en 0: la tienda entera pinta el cero
+   * como "Incluido", o sea gratis, que es justo lo contrario de lo que pasa.
+   */
+  @Column({ type: 'boolean', default: false })
+  priceOnQuote!: boolean
+
+  /**
+   * Solo en las filas `kind: 'lens'`: qué cuesta añadirle el ANTIRREFLEJO a
+   * ESTE lente. `null` = ya lo trae puesto (se muestra incluido y no se cobra).
+   *
+   * El precio vive aquí y no en la fila del complemento porque no es el mismo
+   * sobre cada lente: en la lista 2026 el AR sube 20.000 sobre el transparente
+   * (BLANCO→AR) pero 70.000 sobre el fotocromático (PHOTOCROMATICO→PHOTO AR),
+   * y el filtro azul (AR BLUE) ya lo lleva incluido. Un precio único habría
+   * cobrado de menos en uno y dos veces en el otro.
+   */
+  @Column({ type: 'integer', nullable: true })
+  arExtraPriceCop!: number | null
 
   // Pide fórmula médica en el checkout (se monta con la óptica aliada). Siempre
   // true en la fila `prescription`; un tipo de lente puede marcarlo si solo

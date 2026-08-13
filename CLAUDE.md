@@ -94,25 +94,49 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   de `.xlsx` es propio y sin dependencias (`scripts/lib/xlsx.ts`). **Ojo:** la columna "Tipo Lente"
 >   del Excel dice `Sunglass` en todas las filas incluso en las oftálmicas — el dato real es el
 >   sufijo `/O` del nombre; las oftálmicas se cargan con `sellable:false` (son muestra).
->   **Personalización de lente — DOS preguntas, no una lista:** el configurador de la ficha pregunta
+>   **Personalización de lente — TRES preguntas, no una lista:** el configurador de la ficha pregunta
 >   (1) **qué lente** lleva la montura —excluyentes: sol polarizado (incluido), transitions,
->   transparente, filtro azul, filtro amarillo— y (2) **si va con la fórmula** del cliente, que es un
->   **complemento** que se suma a *cualquiera* de ellos. Ambas viven en **`axis_lens_option`**
->   separadas por la columna **`kind`** (`'lens'` \| `'prescription'`; helpers `lensTypes()` y
->   `prescriptionAddon()` en `src/lib/lenses.ts`). Antes eran 6 opciones excluyentes y el modelo se
+>   transparente, filtro azul, filtro amarillo—, (2) **si lleva antirreflejo** y (3) **si va con la
+>   fórmula** del cliente. Las dos últimas son **complementos** que se suman a *cualquiera* de los
+>   lentes (el antirreflejo no está reñido con ninguno). Las tres viven en **`axis_lens_option`**
+>   separadas por la columna **`kind`** (`'lens'` \| `'coating'` \| `'prescription'`; helpers
+>   `lensTypes()`, `coatingAddon()` y `prescriptionAddon()` en `src/lib/lenses.ts`). Antes eran 6 opciones excluyentes y el modelo se
 >   contradecía solo —"Transitions: disponible con o sin fórmula", pero elegirlo dejaba la fórmula
 >   fuera de alcance— además de convertir la ficha en un muro de 6 barras más alto que la foto
 >   (migración `1720000000005-LensPrescriptionAddon`). Snapshot en `axis_order_item`:
->   `lensOptionId/Name` + `lensExtraPriceCop` para el lente y `prescriptionOptionId/Name` +
+>   `lensOptionId/Name` + `lensExtraPriceCop` para el lente, `coatingOptionId/Name` +
+>   `coatingExtraPriceCop` para el antirreflejo y `prescriptionOptionId/Name` +
 >   `prescriptionExtraPriceCop` + `prescriptionNote` para la fórmula — los correos del pedido
->   desglosan los dos. El usuario final NO ve "sol vs oftálmico" como productos distintos.
->   El selector es `LensPicker` (fichas compactas + casilla) y el carrito indexa por
->   **producto + lente + fórmula** (`lineId()` en `src/lib/cart.ts`): el mismo modelo con dos
->   configuraciones son dos líneas. El sobrecosto y la validación de la fórmula los aplica SIEMPRE el
+>   desglosan los tres. El usuario final NO ve "sol vs oftálmico" como productos distintos.
+>   El selector es `LensPicker` (fichas compactas + dos casillas) y el carrito indexa por
+>   **producto + lente + antirreflejo + fórmula** (`lineId()` en `src/lib/cart.ts`): el mismo modelo
+>   con dos configuraciones son dos líneas. Los sobrecostos y las validaciones los aplica SIEMPRE el
 >   servidor (`src/server/checkout.ts`), nunca el cliente; el precio final es
->   `producto + lente + fórmula`. Un tipo de lente con `requiresPrescription` impone la casilla
+>   `producto + lente + antirreflejo + fórmula`. Un tipo de lente con `requiresPrescription` impone la casilla
 >   (queda marcada y bloqueada). Al confirmar el pago, el webhook marca **unidades reales** como
 >   `sold` (`sellUnits`/`releaseUnits`) y deriva el stock — nunca `stock - n`.
+>   **Precio del lente: TRES estados, no dos** (migración `...008`). Los sobrecostos salen de la
+>   lista del laboratorio 2026 y son los del lente **plano y sin antirreflejo**: transparente
+>   90.000 (1,5 BLANCO), transitions 220.000 (PHOTOCROMATICO), filtro azul 150.000 (AR BLUE),
+>   amarillo 150.000 (COLOR), sol polarizado incluido.
+>   **El antirreflejo es un COMPLEMENTO (`kind: 'coating'`), pero su precio vive en cada LENTE**
+>   (`arExtraPriceCop`, migración `...010`) — y ese reparto raro es justo lo que evita cobrar mal:
+>   en la lista el AR sube **+20.000** sobre el blanco (BLANCO→AR) pero **+70.000** sobre el
+>   fotocromático (PHOTOCROMATICO→PHOTO AR), y el AR BLUE **ya lo trae**. Con un precio único en la
+>   fila del complemento, el fotocromático con AR se habría vendido a 240.000 costando 290.000, y
+>   al filtro azul se le habría cobrado dos veces el mismo tratamiento. `arExtraPriceCop = null`
+>   significa "este lente ya lo trae": la casilla sale marcada, bloqueada y sin costo. La
+>   **fórmula médica no tiene precio**: con graduación esos precios son la
+>   BASE y el valor real depende del índice, que sale de una fórmula que el cliente manda DESPUÉS
+>   de comprar — así que la fila `prescription` va con **`priceOnQuote: true`**, no se cobra en el
+>   checkout y se cotiza al recibirla. La bandera existe porque `extraPriceCop === 0` ya significaba
+>   **"incluido"** en toda la tienda: sin ella la ficha habría prometido el montaje gratis, que es
+>   peor que un precio equivocado. Lo cobrado lo decide SIEMPRE el servidor (`extraOf()` en
+>   `checkout.ts` devuelve 0 para lo que va por cotizar) y el snapshot del pedido guarda ese 0;
+>   `lensPriceLabel()` (`src/lib/lenses.ts`) es el único sitio que traduce los tres estados a texto
+>   —úsalo, no repitas el ternario— y `priceWithLens()` no suma lo que está por confirmar. Donde
+>   se pinte un total con fórmula hay que decir que no la incluye (ficha, carrito, checkout,
+>   comprobante y el correo de fórmula ya lo hacen).
 > - **Ficha de producto (`ProductDetail`):** dos columnas con la galería **`sticky`** — la columna
 >   derecha siempre es más larga que la foto, y sin eso se elegía el lente mirando una franja vacía.
 >   La galería es **`ProductGallery`** (store), NO el `ImageCarousel` de la landing: **no auto-rota**
@@ -122,7 +146,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > - **Panel admin:** `/admin/productos` (nombre, modelo, talla, precio, descuento, visibilidad, orden
 >   y fotos), `/admin/inventario` (unidad por unidad: ubicación, vendible, nota; guarda al vuelo y
 >   resincroniza el stock) y `/admin/lentes` (CRUD de opciones, con el selector `kind` para decir si
->   la fila es un tipo de lente o el complemento de fórmula). El campo `stock` sale de solo
+>   la fila es un tipo de lente o el complemento de fórmula, y la casilla **"precio por confirmar"**
+>   que apaga el campo de precio y lo guarda en 0). El campo `stock` sale de solo
 >   lectura cuando el producto tiene unidades — se gestiona moviendo unidades, no tecleando.
 >   **El panel se usa desde el teléfono, así que ninguna tabla hace scroll horizontal en móvil:**
 >   el patrón es lista de **fichas** hasta `md` (`lg` en inventario, que trae 7 columnas) y `<table>`

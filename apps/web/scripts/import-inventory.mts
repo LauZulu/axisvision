@@ -144,17 +144,27 @@ const CATALOG = [
 
 /**
  * Opciones de lente. Las gafas salen de fábrica con sol polarizado (incluido);
- * el resto son personalizaciones que se montan con la óptica aliada y cuestan
- * +$10.000 cada una (precio provisional, se ajusta desde el panel admin).
+ * el resto son personalizaciones que se montan con la óptica aliada.
  *
- * En un reimport NO se pisan `extraPriceCop` ni `active` de las opciones que ya
- * existen (para respetar lo que el admin haya configurado); usa `--reset-lenses`
- * si quieres forzar los valores de este archivo.
+ * Los precios son los de la lista del laboratorio 2026 para el lente PLANO y
+ * SIN antirreflejo (1,5 BLANCO / PHOTOCROMATICO / COLOR / AR BLUE). El
+ * antirreflejo es un COMPLEMENTO que se monta sobre cualquiera, y su precio
+ * vive en cada lente (`arExtraPriceCop`) porque no cuesta lo mismo sobre todos:
+ * +20.000 sobre el blanco, +70.000 sobre el fotocromático, y ya incluido en el
+ * AR BLUE (`null`). Ver la migración 010. Con fórmula médica esos precios son la
+ * BASE: el valor sube según la graduación, y esa graduación llega DESPUÉS de la
+ * compra — por eso la fila de fórmula va con `priceOnQuote: true`, no se cobra
+ * al pagar y se cotiza al recibirla. Ver la migración 008.
+ *
+ * En un reimport NO se pisan `extraPriceCop`, `priceOnQuote` ni `active` de las
+ * opciones que ya existen (para respetar lo que el admin haya configurado); usa
+ * `--reset-lenses` si quieres forzar los valores de este archivo.
  */
-// Configurador de lente: DOS preguntas independientes, no una lista de
+// Configurador de lente: TRES preguntas independientes, no una lista de
 // excluyentes. `kind: 'lens'` son los tipos de lente (se elige uno);
-// `kind: 'prescription'` es el complemento de fórmula, que se suma a cualquiera
-// de ellos. Antes estaban aplanados y se contradecían (ver migración 5).
+// `kind: 'coating'` es el antirreflejo y `kind: 'prescription'` la fórmula, y
+// ambos se suman a cualquiera de los lentes. Antes estaban aplanados y se
+// contradecían (ver migraciones 5 y 10).
 const LENS_OPTIONS = [
   {
     slug: 'sol-polarizado',
@@ -164,10 +174,13 @@ const LENS_OPTIONS = [
     descriptionEs: 'El lente con el que vienen tus AXIS. Corta el reflejo y protege del sol.',
     descriptionEn: 'The lens your AXIS ships with. Cuts glare and protects from the sun.',
     extraPriceCop: 0,
+    priceOnQuote: false,
+    arExtraPriceCop: 20_000,
     requiresPrescription: false,
     isDefault: true,
     active: true,
     position: 1,
+    imageVariant: 'sunglass' as const,
   },
   {
     slug: 'transitions',
@@ -176,37 +189,52 @@ const LENS_OPTIONS = [
     nameEn: 'Transitions (photochromic)',
     descriptionEs: 'Se oscurece con el sol y se aclara en interiores.',
     descriptionEn: 'Darkens in the sun, clears indoors.',
-    extraPriceCop: 10_000,
+    // 1,5 PHOTOCROMATICO de la lista 2026; con AR sube a 290.000 (PHOTO AR).
+    extraPriceCop: 220_000,
+    priceOnQuote: false,
+    arExtraPriceCop: 70_000,
     requiresPrescription: false,
     isDefault: false,
     active: true,
     position: 2,
+    imageVariant: 'ophthalmic' as const,
   },
   {
     slug: 'transparente',
     kind: 'lens' as const,
     nameEs: 'Lente transparente',
     nameEn: 'Clear lens',
-    descriptionEs: 'Sin filtro de sol, para llevar AXIS todo el día.',
-    descriptionEn: 'No sun filter, to wear AXIS all day.',
-    extraPriceCop: 10_000,
+    descriptionEs:
+      'Sin filtro de sol, para llevar AXIS todo el día. Sin tratamiento antirreflejo.',
+    descriptionEn: 'No sun filter, to wear AXIS all day. Without anti-reflective coating.',
+    // 1,5 BLANCO de la lista 2026; con AR sube a 110.000 (1,5 AR).
+    extraPriceCop: 90_000,
+    priceOnQuote: false,
+    arExtraPriceCop: 20_000,
     requiresPrescription: false,
     isDefault: false,
     active: true,
     position: 3,
+    imageVariant: 'ophthalmic' as const,
   },
   {
     slug: 'filtro-azul',
     kind: 'lens' as const,
     nameEs: 'Filtro de luz azul',
     nameEn: 'Blue light filter',
-    descriptionEs: 'Lente transparente con filtro para pantallas. Para uso en interiores.',
-    descriptionEn: 'Clear lens with a screen filter. For indoor use.',
-    extraPriceCop: 10_000,
+    descriptionEs:
+      'Lente transparente con filtro para pantallas. Para uso en interiores. Ya viene con antirreflejo.',
+    descriptionEn:
+      'Clear lens with a screen filter. For indoor use. Anti-reflective coating included.',
+    // 1,5 AR BLUE de la lista 2026: ya trae el antirreflejo puesto.
+    extraPriceCop: 150_000,
+    priceOnQuote: false,
+    arExtraPriceCop: null,
     requiresPrescription: false,
     isDefault: false,
     active: true,
     position: 4,
+    imageVariant: 'ophthalmic' as const,
   },
   {
     slug: 'filtro-amarillo',
@@ -215,11 +243,35 @@ const LENS_OPTIONS = [
     nameEn: 'Yellow filter',
     descriptionEs: 'Mejora el contraste con poca luz: conducción nocturna y días nublados.',
     descriptionEn: 'Boosts contrast in low light: night driving and overcast days.',
-    extraPriceCop: 10_000,
+    // 1,5 COLOR (tinte) de la lista 2026.
+    extraPriceCop: 150_000,
+    priceOnQuote: false,
+    arExtraPriceCop: 20_000,
     requiresPrescription: false,
     isDefault: false,
     active: true,
     position: 5,
+    imageVariant: 'yellow' as const,
+  },
+  {
+    // Complemento, no lente: se monta sobre cualquiera de ellos. NO lleva
+    // precio propio — lo pone el lente elegido, en `arExtraPriceCop`.
+    slug: 'antirreflejo',
+    kind: 'coating' as const,
+    nameEs: 'Antirreflejo',
+    nameEn: 'Anti-reflective coating',
+    descriptionEs:
+      'Menos brillos de pantallas, faros y luz artificial. Se puede montar sobre cualquiera de los lentes, y la mirada se te ve.',
+    descriptionEn:
+      'Fewer reflections from screens, headlights and artificial light. It can go on any of the lenses, and your eyes stay visible.',
+    extraPriceCop: 0,
+    priceOnQuote: false,
+    arExtraPriceCop: null,
+    requiresPrescription: false,
+    isDefault: false,
+    active: true,
+    position: 9,
+    imageVariant: null,
   },
   {
     slug: 'formula-medica',
@@ -227,14 +279,18 @@ const LENS_OPTIONS = [
     nameEs: 'Con tu fórmula médica',
     nameEn: 'With your prescription',
     descriptionEs:
-      'Montamos tu fórmula con nuestra óptica aliada, sobre el lente que elijas. Nos la envías después de comprar.',
+      'Montamos tu fórmula con nuestra óptica aliada, sobre el lente que elijas. Nos la envías después de comprar y te confirmamos el valor.',
     descriptionEn:
-      'We fit your prescription on the lens you picked, with our partner optician. You send it after purchase.',
-    extraPriceCop: 10_000,
+      'We fit your prescription on the lens you picked, with our partner optician. You send it after purchase and we confirm the price.',
+    // No se cobra al pagar: depende de la graduación, que llega después.
+    extraPriceCop: 0,
+    priceOnQuote: true,
+    arExtraPriceCop: null,
     requiresPrescription: true,
     isDefault: false,
     active: true,
     position: 10,
+    imageVariant: null,
   },
 ]
 
@@ -437,7 +493,14 @@ async function main() {
           requiresPrescription: opt.requiresPrescription,
           isDefault: opt.isDefault,
           position: opt.position,
-          ...(RESET_LENSES ? { extraPriceCop: opt.extraPriceCop, active: opt.active } : {}),
+          ...(RESET_LENSES
+            ? {
+                extraPriceCop: opt.extraPriceCop,
+                priceOnQuote: opt.priceOnQuote,
+                arExtraPriceCop: opt.arExtraPriceCop,
+                active: opt.active,
+              }
+            : {}),
         })
         await m.save(found)
       } else {

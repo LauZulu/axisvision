@@ -242,7 +242,17 @@ export const es = {
     lens: {
       title: 'Lente',
       included: 'Incluido',
+      // El precio de la fórmula depende de la graduación, que llega después de
+      // la compra: no se puede anunciar ni cobrar aquí.
+      onQuote: 'Por confirmar',
+      quoteNote:
+        'No incluye el montaje de tu fórmula: te confirmamos ese valor cuando la recibamos.',
+      // El antirreflejo se monta sobre cualquier lente, pero hay lentes que ya
+      // lo traen puesto: ahí la casilla queda fija y sin costo.
+      coatingIncluded: 'Este lente ya lo trae puesto.',
       prescriptionNotice: 'Te pediremos los datos de tu fórmula al finalizar la compra.',
+      prescriptionQuoteNotice:
+        'El valor del montaje lo confirmamos al recibir tu fórmula. Hoy no se te cobra.',
       prescriptionForced: 'Este lente solo se monta con fórmula médica.',
       total: 'Total',
     },
@@ -315,6 +325,10 @@ export const es = {
     remove: 'Quitar',
     continueShopping: 'Seguir comprando',
     note: 'Envío coordinado tras el pago · Pago seguro con Wompi',
+    // Se muestra solo si alguna línea lleva fórmula médica: su montaje se
+    // cotiza aparte y este total no lo incluye.
+    prescriptionNote:
+      'El montaje de tu fórmula no está incluido en este total: te confirmamos ese valor cuando la recibamos.',
   },
 
   checkout: {
@@ -522,6 +536,16 @@ export const es = {
       descriptionEs: 'Descripción (ES)',
       descriptionEn: 'Descripción (EN)',
       extraPrice: 'Sobrecosto (COP)',
+      priceOnQuote: 'Precio por confirmar',
+      arExtraPrice: 'Antirreflejo sobre este lente (COP)',
+      arExtraPriceHint:
+        'Lo que cuesta añadírselo a ESTE lente. Vacío = ya lo trae puesto (se ofrece incluido).',
+      arIncluded: 'Ya lo trae',
+      arIncludedShort: 'AR incluido',
+      kindCoating: 'Complemento de antirreflejo',
+      priceOnQuoteHint:
+        'No se cobra al pagar y la tienda no muestra precio: el valor se acuerda después (es el caso de la fórmula, que depende de la graduación).',
+      onQuote: 'Por confirmar',
       requiresPrescription: 'Pide fórmula médica',
       isDefault: 'Es el lente de fábrica',
       active: 'Visible en la tienda',

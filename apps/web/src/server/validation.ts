@@ -60,13 +60,19 @@ export const lensOptionSchema = z.object({
     .min(1)
     .max(80)
     .regex(/^[a-z0-9-]+$/, 'Solo minúsculas, números y guiones'),
-  // 'lens' = un tipo de lente; 'prescription' = el complemento de fórmula.
-  kind: z.enum(['lens', 'prescription']).default('lens'),
+  // 'lens' = un tipo de lente; 'prescription' = el complemento de fórmula;
+  // 'coating' = el antirreflejo, que se monta sobre cualquier lente.
+  kind: z.enum(['lens', 'prescription', 'coating']).default('lens'),
   nameEs: z.string().min(1).max(120),
   nameEn: z.string().min(1).max(120),
   descriptionEs: z.string().max(300).default(''),
   descriptionEn: z.string().max(300).default(''),
   extraPriceCop: z.number().int().min(0),
+  // true = el precio se confirma después y no se cobra al pagar (fórmula
+  // médica). Ausente = false, que es el comportamiento de siempre.
+  priceOnQuote: z.boolean().default(false),
+  // Precio del antirreflejo SOBRE ESTE LENTE. null = ya lo trae puesto.
+  arExtraPriceCop: z.number().int().min(0).nullable().optional(),
   requiresPrescription: z.boolean(),
   isDefault: z.boolean(),
   active: z.boolean(),

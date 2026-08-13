@@ -127,11 +127,24 @@ export function itemsTable(lines: OrderLine[], totalCop: number): string {
               l.lensExtraPriceCop ? ` (+ ${esc(formatCop(l.lensExtraPriceCop))})` : ' (incluido)'
             }`
           : null,
+        // El antirreflejo sin sobrecosto sí es incluido de verdad: son los
+        // lentes que ya lo traen puesto de fábrica (AR BLUE y compañía).
+        l.coatingOptionName
+          ? `${esc(l.coatingOptionName)}${
+              l.coatingExtraPriceCop
+                ? ` (+ ${esc(formatCop(l.coatingExtraPriceCop))})`
+                : ' (incluido)'
+            }`
+          : null,
+        // La fórmula sin sobrecosto NO es "incluida": es la que se cotiza al
+        // recibirla (`priceOnQuote`), y el pedido se cobró sin ella. Decirlo
+        // aquí es lo que evita que el total del comprobante se lea como el
+        // precio final de unas gafas graduadas.
         l.prescriptionOptionName
           ? `${esc(l.prescriptionOptionName)}${
               l.prescriptionExtraPriceCop
                 ? ` (+ ${esc(formatCop(l.prescriptionExtraPriceCop))})`
-                : ''
+                : ' (valor por confirmar)'
             }`
           : null,
       ].filter(Boolean)

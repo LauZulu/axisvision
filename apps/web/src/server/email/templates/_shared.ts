@@ -53,8 +53,12 @@ export function linesAsText(lines: OrderLine[]): string[] {
       l.lensOptionName
         ? `lente: ${l.lensOptionName}${l.lensExtraPriceCop ? ` +${formatCop(l.lensExtraPriceCop)}` : ''}`
         : null,
+      l.coatingOptionName
+        ? `${l.coatingOptionName}${l.coatingExtraPriceCop ? ` +${formatCop(l.coatingExtraPriceCop)}` : ' (incluido)'}`
+        : null,
+      // Sin sobrecosto = fórmula por cotizar, no fórmula gratis (ver itemsTable).
       l.prescriptionOptionName
-        ? `${l.prescriptionOptionName}${l.prescriptionExtraPriceCop ? ` +${formatCop(l.prescriptionExtraPriceCop)}` : ''}`
+        ? `${l.prescriptionOptionName}${l.prescriptionExtraPriceCop ? ` +${formatCop(l.prescriptionExtraPriceCop)}` : ' (valor por confirmar)'}`
         : null,
     ].filter(Boolean)
     const lens = detail.length ? ` [${detail.join(' · ')}]` : ''

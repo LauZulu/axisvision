@@ -22,6 +22,9 @@ const schema = z.object({
         quantity: z.number().int().min(1).max(20),
         // El lente elegido: solo el id. El sobrecosto lo pone el servidor.
         lensOptionId: z.string().uuid().optional(),
+        // El antirreflejo también es un complemento: el cliente dice si lo
+        // quiere y el servidor mira qué cuesta sobre el lente que eligió.
+        withCoating: z.boolean().optional(),
         // La fórmula es un complemento aparte: el cliente solo dice si la quiere.
         withPrescription: z.boolean().optional(),
         prescriptionNote: z.string().max(1000).optional(),

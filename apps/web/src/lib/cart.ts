@@ -6,23 +6,37 @@ import { useSyncExternalStore } from 'react'
 // cantidad + datos de presentación; los PRECIOS reales los calcula el servidor
 // desde la DB al crear la orden (lo del carrito es informativo).
 //
-// La línea se identifica por producto + LENTE + FÓRMULA: el mismo modelo con
-// dos configuraciones distintas son dos líneas separadas (`lineId`).
+// La línea se identifica por producto + LENTE + ANTIRREFLEJO + FÓRMULA: el
+// mismo modelo con dos configuraciones distintas son dos líneas (`lineId`).
 export type CartItem = {
   productId: string
   slug: string
   name: string
-  /** Precio unitario mostrado = producto + extra del lente + extra de fórmula. */
+  /** Precio unitario mostrado = producto + lente + antirreflejo + fórmula. */
   priceCop: number
   quantity: number
   image: { key: string; url: string | null }
   /** Tipo de lente elegido. null = el de fábrica (o catálogo no disponible). */
   lens: { id: string; name: string; extraPriceCop: number } | null
   /**
+   * Antirreflejo, independiente del tipo de lente. `extraPriceCop` es lo que
+   * costó SOBRE EL LENTE de esta línea (0 si ese lente ya lo traía).
+   */
+  coating?: { id: string; name: string; extraPriceCop: number } | null
+  /**
    * Complemento de fórmula médica, independiente del tipo de lente.
    * null = el cliente NO pidió graduación.
+   *
+   * `priceOnQuote` viaja con la línea para poder avisar en el carrito y en el
+   * checkout de que el total NO incluye el montaje de la fórmula. Es opcional
+   * porque los carritos guardados antes de esto no lo traen.
    */
-  prescription?: { id: string; name: string; extraPriceCop: number } | null
+  prescription?: {
+    id: string
+    name: string
+    extraPriceCop: number
+    priceOnQuote?: boolean
+  } | null
   /** Datos de la fórmula (se piden en el checkout, no en la ficha). */
   prescriptionNote?: string | null
 }
@@ -30,9 +44,16 @@ export type CartItem = {
 const STORAGE_KEY = 'axis-cart'
 const MAX_QTY = 20
 
-/** Identidad de una línea del carrito: producto + lente + fórmula. */
-export function lineId(item: Pick<CartItem, 'productId' | 'lens' | 'prescription'>): string {
-  return `${item.productId}::${item.lens?.id ?? 'default'}::${item.prescription?.id ?? 'norx'}`
+/** Identidad de una línea: producto + lente + antirreflejo + fórmula. */
+export function lineId(
+  item: Pick<CartItem, 'productId' | 'lens' | 'coating' | 'prescription'>,
+): string {
+  return [
+    item.productId,
+    item.lens?.id ?? 'default',
+    item.coating ? 'ar' : 'noar',
+    item.prescription?.id ?? 'norx',
+  ].join('::')
 }
 
 let items: CartItem[] = []
@@ -46,11 +67,16 @@ function load() {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     const parsed = raw ? (JSON.parse(raw) as CartItem[]) : []
     if (Array.isArray(parsed)) {
-      // `lens` y `prescription` no existían en versiones anteriores del carrito:
+      // `lens`, `coating` y `prescription` no existían en versiones anteriores:
       // se normalizan a null para no romper a quien tenga uno viejo guardado.
       items = parsed
         .filter((i) => i && i.productId && i.quantity > 0)
-        .map((i) => ({ ...i, lens: i.lens ?? null, prescription: i.prescription ?? null }))
+        .map((i) => ({
+          ...i,
+          lens: i.lens ?? null,
+          coating: i.coating ?? null,
+          prescription: i.prescription ?? null,
+        }))
     }
   } catch {
     items = []

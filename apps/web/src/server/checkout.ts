@@ -13,6 +13,8 @@ export type CheckoutItemInput = {
   quantity: number
   /** Tipo de lente elegido. Si falta, se usa el de fábrica. */
   lensOptionId?: string
+  /** El cliente pidió el antirreflejo (complemento; lo cobra el lente elegido). */
+  withCoating?: boolean
   /** El cliente pidió montar su fórmula médica (complemento, se suma al lente). */
   withPrescription?: boolean
   /** Datos de la fórmula (obligatorios si la línea la lleva). */
@@ -109,12 +111,14 @@ export async function createGuestOrder(
   const byId = new Map(products.map((p) => [p.id, p]))
 
   // Opciones de lente ACTIVAS desde la DB: el sobrecosto nunca se toma del
-  // cliente (igual que el precio del producto). El catálogo son dos preguntas
-  // distintas: el TIPO de lente (excluyentes) y el COMPLEMENTO de fórmula.
+  // cliente (igual que el precio del producto). El catálogo son TRES preguntas
+  // distintas: el TIPO de lente (excluyentes), el ANTIRREFLEJO y el COMPLEMENTO
+  // de fórmula.
   const lensOptions = await db.getRepository(AxisLensOption).findBy({ active: true })
-  const lensTypes = lensOptions.filter((o) => o.kind !== 'prescription')
+  const lensTypes = lensOptions.filter((o) => o.kind !== 'prescription' && o.kind !== 'coating')
   const lensById = new Map(lensTypes.map((o) => [o.id, o]))
   const prescriptionAddon = lensOptions.find((o) => o.kind === 'prescription') ?? null
+  const coatingAddon = lensOptions.find((o) => o.kind === 'coating') ?? null
 
   // No todos los modelos ofrecen todos los lentes (Apex, la deportiva, tiene
   // uno solo). **Sin filas = los ofrece todos.** Se comprueba AQUÍ y no solo en
@@ -147,6 +151,8 @@ export async function createGuestOrder(
     product: AxisProduct
     quantity: number
     lens: AxisLensOption | null
+    /** Fila del antirreflejo aplicada. Su PRECIO sale del lente, no de ella. */
+    coating: AxisLensOption | null
     prescription: AxisLensOption | null
     prescriptionNote: string | null
   }
@@ -171,6 +177,34 @@ export async function createGuestOrder(
         message: `${product.name} no se ofrece con ese lente.`,
       }
     }
+
+    // Antirreflejo: se monta sobre cualquier lente, así que es un complemento y
+    // no un lente más. Lo que cuesta lo dice el LENTE elegido
+    // (`arExtraPriceCop`), porque no vale lo mismo sobre cada uno; `null` en esa
+    // columna significa que ese lente ya lo trae puesto — entonces va en la
+    // línea (para que el comprobante lo diga) pero suma 0.
+    const coatingIncluded = lens !== null && lens.arExtraPriceCop === null
+    const askedCoating = Boolean(item.withCoating)
+    if (askedCoating && !coatingAddon) {
+      return {
+        ok: false,
+        code: 'COATING_UNAVAILABLE',
+        message: 'El antirreflejo no está disponible en este momento.',
+      }
+    }
+    if (askedCoating && coatingAddon && !offers(product.id, coatingAddon.id)) {
+      return {
+        ok: false,
+        code: 'COATING_NOT_OFFERED',
+        message: `${product.name} no se ofrece con antirreflejo.`,
+      }
+    }
+    // Con el lente que ya lo trae, la falta del complemento en el catálogo no
+    // puede tumbar la compra: simplemente no se menciona.
+    const coating =
+      coatingAddon && (askedCoating || coatingIncluded) && offers(product.id, coatingAddon.id)
+        ? coatingAddon
+        : null
 
     // Complemento de fórmula: lo pide el cliente por su cuenta, o lo impone el
     // tipo de lente si solo existe graduado. El precio sale SIEMPRE de la DB.
@@ -206,11 +240,26 @@ export async function createGuestOrder(
     }
     requestedByProduct.set(product.id, total)
 
-    lines.push({ product, quantity: item.quantity, lens, prescription, prescriptionNote })
+    lines.push({ product, quantity: item.quantity, lens, coating, prescription, prescriptionNote })
   }
 
+  /**
+   * Lo que se COBRA por una opción. La fórmula médica va con `priceOnQuote`: su
+   * valor depende de la graduación, que el cliente manda después de comprar, así
+   * que no entra en este pago — se cotiza aparte. Cobrar su `extraPriceCop` (0)
+   * o cualquier otro número sería inventarse un precio que nadie le anunció.
+   */
+  const extraOf = (o: AxisLensOption | null) => (!o || o.priceOnQuote ? 0 : o.extraPriceCop)
+
+  /**
+   * Lo que se cobra por el antirreflejo de una línea: lo que diga el LENTE.
+   * `extraOf(l.coating)` daría 0 siempre — la fila del complemento no lleva
+   * precio propio justamente porque no vale lo mismo sobre cada lente.
+   */
+  const coatingExtraOf = (l: Line) => (l.coating ? (l.lens?.arExtraPriceCop ?? 0) : 0)
+
   const unitPrice = (l: Line) =>
-    l.product.priceCop + (l.lens?.extraPriceCop ?? 0) + (l.prescription?.extraPriceCop ?? 0)
+    l.product.priceCop + extraOf(l.lens) + coatingExtraOf(l) + extraOf(l.prescription)
   const amountCop = lines.reduce((sum, l) => sum + unitPrice(l) * l.quantity, 0)
 
   // Transacción: crea orden + líneas de forma atómica.
@@ -236,10 +285,15 @@ export async function createGuestOrder(
             quantity: l.quantity,
             lensOptionId: l.lens?.id ?? null,
             lensOptionName: l.lens?.nameEs ?? null,
-            lensExtraPriceCop: l.lens?.extraPriceCop ?? 0,
+            lensExtraPriceCop: extraOf(l.lens),
+            coatingOptionId: l.coating?.id ?? null,
+            coatingOptionName: l.coating?.nameEs ?? null,
+            coatingExtraPriceCop: coatingExtraOf(l),
             prescriptionOptionId: l.prescription?.id ?? null,
             prescriptionOptionName: l.prescription?.nameEs ?? null,
-            prescriptionExtraPriceCop: l.prescription?.extraPriceCop ?? 0,
+            // 0 cuando la fórmula va por cotizar: el snapshot guarda lo cobrado,
+            // no lo que costará. El correo de fórmula explica el siguiente paso.
+            prescriptionExtraPriceCop: extraOf(l.prescription),
             prescriptionNote: l.prescriptionNote,
           }),
         ),

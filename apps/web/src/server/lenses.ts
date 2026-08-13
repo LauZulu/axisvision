@@ -12,6 +12,8 @@ function toDTO(o: AxisLensOption): LensOptionDTO {
     descriptionEs: o.descriptionEs,
     descriptionEn: o.descriptionEn,
     extraPriceCop: o.extraPriceCop,
+    priceOnQuote: o.priceOnQuote ?? false,
+    arExtraPriceCop: o.arExtraPriceCop ?? null,
     requiresPrescription: o.requiresPrescription,
     isDefault: o.isDefault,
     active: o.active,
@@ -46,6 +48,9 @@ export type LensOptionInput = {
   descriptionEs: string
   descriptionEn: string
   extraPriceCop: number
+  priceOnQuote?: boolean
+  /** Solo en los `lens`: precio de añadirles el antirreflejo. null = ya lo traen. */
+  arExtraPriceCop?: number | null
   requiresPrescription: boolean
   isDefault: boolean
   active: boolean

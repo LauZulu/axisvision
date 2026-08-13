@@ -54,6 +54,20 @@ export class AxisOrderItem {
   @Column({ type: 'integer', default: 0 })
   lensExtraPriceCop!: number
 
+  // --- Complemento de antirreflejo (se monta sobre cualquier lente) ---
+
+  // Opción `kind: 'coating'` aplicada. null = se compró sin antirreflejo.
+  @Column({ type: 'uuid', nullable: true })
+  coatingOptionId!: string | null
+
+  @Column({ type: 'varchar', length: 120, nullable: true })
+  coatingOptionName!: string | null
+
+  // Parte de `unitPriceCop` que corresponde al antirreflejo. 0 cuando el lente
+  // elegido ya lo traía incluido.
+  @Column({ type: 'integer', default: 0 })
+  coatingExtraPriceCop!: number
+
   // --- Complemento de fórmula médica (independiente del tipo de lente) ---
 
   // Opción `kind: 'prescription'` aplicada. null = se compró sin fórmula.

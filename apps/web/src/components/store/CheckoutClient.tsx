@@ -10,6 +10,9 @@ import { formatCop, type ProductDTO } from '../../lib/products'
 import { resolveProductSrc } from '../../lib/productImages'
 import { useCart, markCartPendingOrder, lineId, type CartItem } from '../../lib/cart'
 import {
+  coatingAddon,
+  coatingIncludedIn,
+  coatingPriceFor,
   defaultLens,
   lensName,
   prescriptionAddon,
@@ -36,8 +39,16 @@ type CheckoutLine = {
   quantity: number
   image: { key: string; url: string | null }
   lens: { id: string; name: string; extraPriceCop: number } | null
+  /** Antirreflejo elegido en la ficha. Su precio es el del lente de la línea. */
+  coating?: { id: string; name: string; extraPriceCop: number } | null
   /** Complemento de fórmula elegido en la ficha. null = sin graduación. */
-  prescription?: { id: string; name: string; extraPriceCop: number } | null
+  prescription?: {
+    id: string
+    name: string
+    extraPriceCop: number
+    /** Su valor se confirma al recibir la fórmula: no entra en este pago. */
+    priceOnQuote?: boolean
+  } | null
 }
 
 /**
@@ -89,6 +100,7 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
   const buyNowSlug = params.get('item')
   const buyNowQty = Math.max(1, Math.min(Number(params.get('qty')) || 1, 20))
   const buyNowLensId = params.get('lens')
+  const buyNowAr = params.get('ar') === '1'
   const buyNowRx = params.get('rx') === '1'
 
   // Fórmulas médicas por línea (clave = lineId).
@@ -143,18 +155,34 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
           // graduado. El sobrecosto real lo recalcula el servidor igual.
           const addon = prescriptionAddon(lensOptions)
           const rx = buyNowRx || lens?.requiresPrescription ? (addon ?? null) : null
+          // El antirreflejo lo impone el lente cuando ya lo trae puesto.
+          const coatingOption = coatingAddon(lensOptions)
+          const withCoating = buyNowAr || coatingIncludedIn(lens)
+          const ar = withCoating ? (coatingOption ?? null) : null
           setBuyNowLine({
             productId: p.id,
             slug: p.slug,
             name: p.name,
-            priceCop: priceWithLens(p.priceCop, lens, rx),
+            priceCop: priceWithLens(p.priceCop, lens, rx, Boolean(ar)),
             quantity: Math.min(buyNowQty, Math.max(1, p.stock)),
             image: { key: cover.key, url: cover.url },
             lens: lens
               ? { id: lens.id, name: lensName(lens, lang), extraPriceCop: lens.extraPriceCop }
               : null,
+            coating: ar
+              ? {
+                  id: ar.id,
+                  name: lensName(ar, lang),
+                  extraPriceCop: coatingPriceFor(lens) ?? 0,
+                }
+              : null,
             prescription: rx
-              ? { id: rx.id, name: lensName(rx, lang), extraPriceCop: rx.extraPriceCop }
+              ? {
+                  id: rx.id,
+                  name: lensName(rx, lang),
+                  extraPriceCop: rx.extraPriceCop,
+                  priceOnQuote: rx.priceOnQuote,
+                }
               : null,
           })
         }
@@ -164,11 +192,15 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
     return () => {
       alive = false
     }
-  }, [buyNowSlug, buyNowQty, buyNowLensId, buyNowRx, lensOptions, lang])
+  }, [buyNowSlug, buyNowQty, buyNowLensId, buyNowAr, buyNowRx, lensOptions, lang])
 
   const lines: CheckoutLine[] = useMemo(() => {
     if (buyNowSlug) return buyNowLine ? [buyNowLine] : []
-    return cart.map((i: CartItem) => ({ ...i, prescription: i.prescription ?? null }))
+    return cart.map((i: CartItem) => ({
+      ...i,
+      coating: i.coating ?? null,
+      prescription: i.prescription ?? null,
+    }))
   }, [buyNowSlug, buyNowLine, cart])
 
   const total = lines.reduce((sum, l) => sum + l.priceCop * l.quantity, 0)
@@ -205,6 +237,7 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
             productId: l.productId,
             quantity: l.quantity,
             lensOptionId: l.lens?.id,
+            withCoating: Boolean(l.coating),
             withPrescription: Boolean(l.prescription),
             prescriptionNote: prescriptions[lineId(l)]?.trim() || undefined,
           })),
@@ -374,9 +407,11 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm text-warm-white">{l.name}</div>
-                    {(l.lens || l.prescription) && (
+                    {(l.lens || l.coating || l.prescription) && (
                       <div className="truncate font-mono text-[0.7rem] tracking-wide text-gold/75">
-                        {[l.lens?.name, l.prescription?.name].filter(Boolean).join(' · ')}
+                        {[l.lens?.name, l.coating?.name, l.prescription?.name]
+                          .filter(Boolean)
+                          .join(' · ')}
                       </div>
                     )}
                     <div className="font-mono text-xs text-warm-gray/50">× {l.quantity}</div>
@@ -385,9 +420,19 @@ export function CheckoutClient({ lensOptions = [] }: { lensOptions?: LensOptionD
                 </li>
               ))}
             </ul>
-            <div className="mt-5 flex items-baseline justify-between border-t border-line pt-4">
-              <span className="text-sm text-warm-gray/60">{t.cart.total}</span>
-              <span className="font-head text-xl text-warm-white">{formatCop(total)}</span>
+            <div className="mt-5 border-t border-line pt-4">
+              <div className="flex items-baseline justify-between">
+                <span className="text-sm text-warm-gray/60">{t.cart.total}</span>
+                <span className="font-head text-xl text-warm-white">{formatCop(total)}</span>
+              </div>
+              {/* Es el último sitio donde el comprador ve una cifra antes de
+                  pagar: aquí es donde tiene que quedar claro que el montaje de
+                  la fórmula se cotiza aparte y no está en este cobro. */}
+              {lines.some((l) => l.prescription?.priceOnQuote) && (
+                <p className="mt-2 text-xs leading-relaxed text-warm-gray/55">
+                  {t.cart.prescriptionNote}
+                </p>
+              )}
             </div>
           </aside>
         </div>

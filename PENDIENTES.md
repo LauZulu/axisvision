@@ -175,6 +175,54 @@ lente, hay que moverlas al grupo "Sirven para cualquier lente" desde el panel.
 
 ---
 
+## Precios de los lentes
+
+### 🔑 Confirmar los precios que hoy están en la tienda
+
+Los sobrecostos de lente salen de la **lista del laboratorio 2026** (foto que
+mandaste el 12 de agosto), cargados **tal cual, sin margen**, porque no
+alcanzamos a definirlo. Están en la DB y se editan en `/admin/lentes`:
+
+| Opción | Renglón de la lista | Precio | + antirreflejo |
+|---|---|---|---|
+| Lente de sol polarizado | — (viene montado con la gafa) | incluido | +20.000 ⚠ |
+| Lente transparente | 1,5 BLANCO | 90.000 | +20.000 (→ 1,5 AR) |
+| Transitions | 1,5 PHOTOCROMATICO | 220.000 | +70.000 (→ PHOTO AR) |
+| Filtro de luz azul | 1,5 AR BLUE | 150.000 | ya lo trae |
+| Filtro amarillo | 1,5 COLOR | 150.000 | +20.000 ⚠ |
+| Antirreflejo | — | lo pone cada lente | — |
+| Con tu fórmula médica | — | por confirmar (no se cobra) | — |
+
+⚠ = suposición: la lista no trae renglón "con AR" para el polarizado ni para el
+tinte de color, así que se les puso el mismo delta del blanco.
+
+Cuatro cosas que hay que revisar:
+
+1. **¿La lista es costo o precio de venta?** Si es lo que te cobra el
+   laboratorio, estos números venden a costo: hay que subirlos por el margen.
+2. **¿Los precios son por par?** Si fueran por lente suelto, hay que doblarlos.
+3. **Filtro amarillo → "1,5 COLOR"** es una suposición (que el amarillo se hace
+   con tinte). Si es otro producto de la lista, cámbialo.
+4. **Cuánto cuesta el antirreflejo sobre el polarizado y sobre el amarillo.**
+   La lista no tiene esos dos renglones; hoy están a +20.000 (el delta del
+   blanco). Es lo único inventado de toda la tabla.
+
+### 🔑 Falta el precio del polarizado graduado
+
+El default de AXIS es sol polarizado y el caso más común va a ser **ese lente
+con fórmula**, que es tallado y no aparece en la lista de "terminados". Hoy eso
+no rompe nada —la fórmula se cotiza al recibirla— pero seguimos sin saber cuánto
+cuesta. Si tienes la lista de tallados, con ella se puede dar un "desde".
+
+### 🔑 Quién cotiza y cobra la fórmula
+
+El checkout cobra montura + lente, y el correo de fórmula le dice al cliente que
+el montaje se cotiza aparte, antes de mandar a tallar. Ese cobro **no pasa por
+la plataforma**: hoy lo tiene que hacer una persona por WhatsApp. Falta definir
+cómo (¿link de pago de Wompi? ¿en la óptica?) y quién responde.
+
+---
+
 ## Resueltos
 
 - **8 ago 2026 — CORS del bucket S3.** Ya está puesta la política (PUT/DELETE
@@ -186,3 +234,12 @@ lente, hay que moverlas al grupo "Sirven para cualquier lente" desde el panel.
   Arreglado con `experimental.serverMinification: false`.
 - **8 ago 2026 — Lentes por modelo.** Apex ya no ofrece lentes que no existen
   para su armazón, y el servidor rechaza la compra aunque se salte la ficha.
+- **12 ago 2026 — Precios de lente reales.** Se acabaron los 10.000 de
+  placeholder: los cinco lentes valen lo de la lista 2026 y la fórmula pasó a
+  "por confirmar" (`priceOnQuote`), que no se cobra al pagar y se cotiza al
+  recibirla. Queda 🔑 confirmar margen y suposiciones, arriba.
+- **12 ago 2026 — Antirreflejo como complemento.** Tercera pregunta del
+  configurador, marcable sobre cualquier lente (`kind: 'coating'`). Su precio
+  vive en cada LENTE (`arExtraPriceCop`) porque en la lista no cuesta lo mismo
+  sobre todos: +20.000 sobre el blanco, +70.000 sobre el fotocromático, e
+  incluido en el AR BLUE. Apex también lo ofrece.

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDict } from '../../i18n/useDict'
 import { formatCop } from '../../lib/products'
-import type { LensOptionDTO } from '../../lib/lenses'
+import { lensPriceLabel, type LensOptionDTO } from '../../lib/lenses'
 
 // `text-base` en móvil (16px) para que Safari de iOS no haga zoom al enfocar;
 // a partir de `sm` vuelve al cuerpo compacto de la tabla.
@@ -13,12 +13,15 @@ const inputCls =
 
 type Draft = {
   slug: string
-  kind: 'lens' | 'prescription'
+  kind: 'lens' | 'prescription' | 'coating'
   nameEs: string
   nameEn: string
   descriptionEs: string
   descriptionEn: string
   extraPriceCop: string
+  priceOnQuote: boolean
+  /** Vacío = este lente ya trae el antirreflejo puesto (se guarda como null). */
+  arExtraPriceCop: string
   requiresPrescription: boolean
   isDefault: boolean
   active: boolean
@@ -35,6 +38,10 @@ function toDraft(o?: LensOptionDTO): Draft {
     descriptionEs: o?.descriptionEs ?? '',
     descriptionEn: o?.descriptionEn ?? '',
     extraPriceCop: String(o?.extraPriceCop ?? 0),
+    priceOnQuote: o?.priceOnQuote ?? false,
+    arExtraPriceCop: o?.arExtraPriceCop === null || o?.arExtraPriceCop === undefined
+      ? ''
+      : String(o.arExtraPriceCop),
     requiresPrescription: o?.requiresPrescription ?? false,
     isDefault: o?.isDefault ?? false,
     active: o?.active ?? true,
@@ -79,7 +86,15 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
     setError(null)
     const payload = {
       ...draft,
-      extraPriceCop: Number(draft.extraPriceCop) || 0,
+      // Por confirmar = no se cobra nada al pagar. Se guarda en 0 para que el
+      // número que quedó en el input no reviva si alguien desmarca la casilla.
+      extraPriceCop: draft.priceOnQuote ? 0 : Number(draft.extraPriceCop) || 0,
+      // Vacío = null = "este lente ya lo trae". Solo aplica a los tipos de
+      // lente: en los complementos la columna no significa nada.
+      arExtraPriceCop:
+        draft.kind === 'lens' && draft.arExtraPriceCop.trim() !== ''
+          ? Number(draft.arExtraPriceCop) || 0
+          : null,
       position: Number(draft.position) || 0,
       imageVariant: draft.imageVariant || null,
     }
@@ -152,10 +167,53 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
               <span className="mb-1.5 block">{l.descriptionEn}</span>
               <textarea className={`${inputCls} min-h-16`} value={draft.descriptionEn} onChange={(e) => set('descriptionEn', e.target.value)} />
             </label>
-            <label className="block text-sm text-warm-gray/80">
-              <span className="mb-1.5 block">{l.extraPrice}</span>
-              <input className={inputCls} type="number" min={0} value={draft.extraPriceCop} onChange={(e) => set('extraPriceCop', e.target.value)} />
-            </label>
+            {/* Precio y "por confirmar" son la misma decisión, así que van
+                juntos — pero en dos <label> hermanos: anidarlos haría que un
+                clic en la casilla enfocara también el campo de precio. */}
+            <div className="text-sm text-warm-gray/80">
+              <label className="block">
+                <span className="mb-1.5 block">{l.extraPrice}</span>
+                {/* Con "por confirmar" el precio no existe: se deshabilita el
+                    campo en vez de dejar un número que no se va a cobrar. */}
+                <input
+                  className={`${inputCls} disabled:opacity-45`}
+                  type="number"
+                  min={0}
+                  disabled={draft.priceOnQuote}
+                  value={draft.priceOnQuote ? '' : draft.extraPriceCop}
+                  placeholder={draft.priceOnQuote ? l.onQuote : undefined}
+                  onChange={(e) => set('extraPriceCop', e.target.value)}
+                />
+              </label>
+              <label className="mt-2 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={draft.priceOnQuote}
+                  onChange={(e) => set('priceOnQuote', e.target.checked)}
+                  className="h-4 w-4 accent-[#c8a96e]"
+                />
+                {l.priceOnQuote}
+              </label>
+              <span className="mt-1 block text-xs text-warm-gray/45">{l.priceOnQuoteHint}</span>
+            </div>
+
+            {/* El antirreflejo es un complemento, pero su precio vive en cada
+                LENTE: no cuesta lo mismo sobre un transparente que sobre un
+                fotocromático, y hay lentes que ya lo traen. */}
+            {draft.kind === 'lens' && (
+              <label className="block text-sm text-warm-gray/80">
+                <span className="mb-1.5 block">{l.arExtraPrice}</span>
+                <input
+                  className={inputCls}
+                  type="number"
+                  min={0}
+                  value={draft.arExtraPriceCop}
+                  placeholder={l.arIncluded}
+                  onChange={(e) => set('arExtraPriceCop', e.target.value)}
+                />
+                <span className="mt-1 block text-xs text-warm-gray/45">{l.arExtraPriceHint}</span>
+              </label>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <label className="block text-sm text-warm-gray/80">
                 <span className="mb-1.5 block">{l.slug}</span>
@@ -174,6 +232,7 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
                 onChange={(e) => set('kind', e.target.value as Draft['kind'])}
               >
                 <option value="lens">{l.kindLens}</option>
+                <option value="coating">{l.kindCoating}</option>
                 <option value="prescription">{l.kindPrescription}</option>
               </select>
               <span className="mt-1 block text-xs text-warm-gray/45">{l.kindHint}</span>
@@ -249,9 +308,13 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
                       {t.admin.products.hidden}
                     </span>
                   )}
-                  {(o.kind === 'prescription' || o.requiresPrescription) && (
+                  {(o.kind === 'prescription' || o.kind === 'coating' || o.requiresPrescription) && (
                     <span className="font-mono text-[0.65rem] tracking-wide text-gold/70">
-                      {o.kind === 'prescription' ? l.kindPrescription : 'Rx'}
+                      {o.kind === 'prescription'
+                        ? l.kindPrescription
+                        : o.kind === 'coating'
+                          ? l.kindCoating
+                          : 'Rx'}
                     </span>
                   )}
                 </div>
@@ -264,7 +327,14 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
                   dos enlaces de 12px pegados al borde. */}
               <div className="flex w-full items-center justify-between gap-4 sm:w-auto">
                 <span className="font-mono text-sm text-warm-gray/80">
-                  {o.extraPriceCop > 0 ? `+ ${formatCop(o.extraPriceCop)}` : l.included}
+                  {lensPriceLabel(o, l)}
+                  {o.kind === 'lens' && (
+                    <span className="ml-2 text-xs text-warm-gray/45">
+                      {o.arExtraPriceCop === null
+                        ? l.arIncludedShort
+                        : `AR + ${formatCop(o.arExtraPriceCop)}`}
+                    </span>
+                  )}
                 </span>
                 <div className="flex items-center gap-2">
                   <button

@@ -58,9 +58,11 @@ export function CartView() {
                 </Link>
                 {/* Lente y fórmula son dos decisiones: se listan las dos, porque
                     son lo que diferencia dos líneas del mismo modelo. */}
-                {(item.lens || item.prescription) && (
+                {(item.lens || item.coating || item.prescription) && (
                   <div className="mt-0.5 font-mono text-[0.7rem] tracking-wide text-gold/75">
-                    {[item.lens?.name, item.prescription?.name].filter(Boolean).join(' · ')}
+                    {[item.lens?.name, item.coating?.name, item.prescription?.name]
+                      .filter(Boolean)
+                      .join(' · ')}
                   </div>
                 )}
                 <div className="mt-1 text-sm text-warm-gray/60">{formatCop(item.priceCop)}</div>
@@ -110,6 +112,13 @@ export function CartView() {
               <span className="font-head text-2xl text-warm-white">{formatCop(total)}</span>
             </div>
             <p className="mt-1 text-xs text-warm-gray/45">{t.cart.note}</p>
+            {/* El montaje de la fórmula se cotiza al recibirla: este total no
+                lo incluye y callarlo lo convierte en una promesa de precio. */}
+            {items.some((i) => i.prescription?.priceOnQuote) && (
+              <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-warm-gray/55">
+                {t.cart.prescriptionNote}
+              </p>
+            )}
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link
