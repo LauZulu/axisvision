@@ -9,7 +9,7 @@ import { Magnetic } from '../components/ui/Magnetic'
 import { MorphoSheen } from '../components/ui/MorphoSheen'
 import { gafasDeFrente as cierreImg } from '../lib/siteImages'
 import { useDict } from '../i18n/useDict'
-import { whatsappLink } from '../config/brand'
+import { whatsappLink, ADDRESS, MAPS_URL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../config/brand'
 
 export function ContactCommercial() {
   const { t } = useDict()
@@ -84,6 +84,37 @@ export function ContactCommercial() {
           <p className="mt-7 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-warm-gray/45">
             {t.contact.note}
           </p>
+        </Reveal>
+
+        {/* Dónde estamos y dónde seguirnos: ambos enlaces salen del sitio, así
+            que van después del CTA de compra, no compitiendo con él. */}
+        <Reveal delay={0.3}>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 text-sm text-warm-gray/70 sm:flex-row sm:gap-8">
+            <a
+              href={MAPS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 transition-colors hover:text-gold"
+            >
+              <Icon name="pin" size={16} />
+              <span>
+                <span className="text-warm-gray/45">{t.contact.visitUs} · </span>
+                {ADDRESS}
+              </span>
+            </a>
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 transition-colors hover:text-gold"
+            >
+              <Icon name="instagram" size={16} />
+              <span>
+                <span className="text-warm-gray/45">{t.contact.followUs} · </span>
+                {INSTAGRAM_HANDLE}
+              </span>
+            </a>
+          </div>
         </Reveal>
       </div>
     </section>

@@ -50,7 +50,7 @@ export const es = {
       'Vídeo, foto y traducción en vivo, en unas gafas con tu fórmula. Compra en línea y recíbelas en casa.',
     ctaPrimary: 'Comprar AXIS',
     ctaSecondary: 'Descubre AXIS',
-    trust: ['Pago seguro con Wompi', '6 meses de garantía', 'Envío a domicilio'],
+    trust: ['Compra segura', '6 meses de garantía', 'Envío a domicilio'],
   },
 
 
@@ -165,7 +165,7 @@ export const es = {
       'Compatibilidad con monturas ópticas',
       'Aval de profesionales de la visión',
     ],
-    cta: 'Reservar AXIS',
+    cta: 'Quiero mis AXIS',
   },
 
   trust: {
@@ -189,8 +189,8 @@ export const es = {
     from: 'Desde',
     viewDetail: 'Ver detalle',
     buy: 'Comprar',
-    soon: 'Pago próximamente',
-    reserve: 'Reservar por WhatsApp',
+    soon: 'Compra en línea próximamente',
+    reserve: 'Comprar por WhatsApp',
     back: 'Volver a la tienda',
     gallery: 'Galería',
     includesTitle: 'Cada AXIS incluye',
@@ -206,20 +206,27 @@ export const es = {
     unavailableTitle: 'Tienda no disponible por ahora',
     unavailableBody: 'No pudimos cargar el catálogo en este momento. Vuelve a intentarlo en unos minutos.',
     soldOut: 'Agotado',
-    reserveMessage: 'Hola AXIS. Quiero reservar las {model}. ¿Me ayudan con graduación y envío?',
+    reserveMessage: 'Hola AXIS. Quiero comprar las {model}. ¿Me ayudan con graduación y envío?',
     quantity: 'Cantidad',
     buyNow: 'Comprar ahora',
     addToCart: 'Añadir al carrito',
     addedToCart: 'Añadido ✓',
     discountBadge: '−{pct}%',
-    // Tienda cerrada (NEXT_PUBLIC_STORE_MODE != 'live'): el catálogo se ve, la
-    // compra no está disponible y el correo de reserva ocupa su lugar.
+    // Tienda sin pagos en línea (NEXT_PUBLIC_STORE_MODE != 'live'): las gafas YA
+    // existen y se venden; lo que falta es la pasarela. El formulario recoge el
+    // contacto y el equipo cierra la venta por WhatsApp. Nunca se nombra la
+    // herramienta de pago: al cliente no le importa con qué se cobra.
     preview: {
-      badge: 'Próximamente',
-      title: 'La tienda abre muy pronto.',
-      body: 'Estamos terminando de conectar los pagos en línea. Déjanos tu WhatsApp y te escribimos por ahí el día que abramos, antes que a nadie.',
-      cartTitle: 'Todavía no podemos cobrarte.',
-      cartBody: 'Guardamos tu selección. Déjanos tu WhatsApp en cualquier modelo y te avisamos apenas se abran los pagos.',
+      badge: 'Ya disponibles',
+      title: 'Ya puedes tener las tuyas.',
+      body: 'Muy pronto podrás comprarlas en línea. Mientras tanto, déjanos tu contacto: te escribimos por WhatsApp y completamos la compra contigo.',
+      submit: 'Quiero comprarlas',
+      okTitle: 'Listo, te escribimos.',
+      okBody: 'Te escribimos por WhatsApp y a {email} para completar tu compra.',
+      okBodyWhatsapp: 'Te escribimos por WhatsApp para completar tu compra.',
+      privacy: 'Usamos tu contacto solo para ayudarte con tu compra. Nada de publicidad.',
+      cartTitle: 'La compra en línea llega muy pronto.',
+      cartBody: 'Guardamos tu selección. Déjanos tu contacto en cualquier modelo y te escribimos por WhatsApp para completar tu compra.',
     },
     waitlist: {
       titleSoldOut: 'Agotado por ahora.',
@@ -392,7 +399,7 @@ export const es = {
     eyebrow: 'Preguntas frecuentes',
     title: 'Lo que quizá te estás preguntando.',
     items: [
-      { q: '¿Cómo compro AXIS?', a: 'Directo en nuestra tienda en línea: eliges tu modelo y pagas con tarjeta, PSE o Nequi vía Wompi. Si prefieres, también te asesoramos por WhatsApp.' },
+      { q: '¿Cómo compro AXIS?', a: 'Elige tu modelo y déjanos tu contacto, o escríbenos por WhatsApp: te contactamos y completamos la compra contigo. Muy pronto también podrás pagar en línea.' },
       { q: '¿Los lentes se gradúan a mi fórmula?', a: 'Sí. AXIS admite lentes con tu fórmula, validados con ópticas profesionales aliadas.' },
       { q: '¿Cómo es la garantía?', a: 'Garantía de 6 meses, con soporte y reemplazo dedicados.' },
       { q: '¿Cuánto dura la batería?', a: 'Todo el día de uso, con estuche de carga incluido que también carga tu teléfono.' },
@@ -408,7 +415,9 @@ export const es = {
       'Elige tu modelo y págalo en línea en minutos. ¿Dudas con tu fórmula? Te asesoramos por WhatsApp.',
     ctaStore: 'Comprar ahora',
     ctaWhatsapp: 'Asesoría por WhatsApp',
-    note: 'Pago seguro con Wompi · Garantía 6 meses · Envío a domicilio',
+    note: 'Compra segura · Garantía 6 meses · Envío a domicilio',
+    visitUs: 'Visítanos',
+    followUs: 'Síguenos',
   },
 
   footer: {
@@ -416,6 +425,7 @@ export const es = {
     colProduct: 'Producto',
     colSupport: 'Ayuda',
     colContact: 'Contacto',
+    visitUs: 'Visítanos',
     linksProduct: ['Capacidades', 'Diseño'],
     linksSupport: ['Garantía', 'Preguntas', 'Contacto'],
     rights: 'AXIS. Todos los derechos reservados.',
@@ -432,7 +442,7 @@ export const es = {
     checkout: 'Ir a pagar',
     remove: 'Quitar',
     continueShopping: 'Seguir comprando',
-    note: 'Envío coordinado tras el pago · Pago seguro con Wompi',
+    note: 'Envío coordinado tras el pago · Pago seguro',
     // Se muestra solo si alguna línea lleva fórmula médica: su montaje se
     // cotiza aparte y este total no lo incluye.
     prescriptionNote:
@@ -452,10 +462,10 @@ export const es = {
     region: 'Departamento',
     notes: 'Notas para la entrega (opcional)',
     summaryTitle: 'Tu pedido',
-    payNow: 'Pagar con Wompi',
+    payNow: 'Pagar ahora',
     paying: 'Creando tu orden…',
     redirecting: 'Llevándote al pago seguro…',
-    secureNote: 'Pago procesado por Wompi (Bancolombia). Aceptamos tarjetas, PSE, Nequi y más.',
+    secureNote: 'Pago seguro en línea. Aceptamos tarjetas, PSE, Nequi y más.',
     errorStock: 'No hay stock suficiente de uno de los productos. Ajusta la cantidad.',
     errorUnavailable: 'Uno de los productos ya no está disponible.',
     errorGeneric: 'No pudimos crear tu orden. Inténtalo de nuevo.',
@@ -493,25 +503,25 @@ export const es = {
   // Página /reservas: el embudo de la promoción. Copy corto a propósito —
   // se llega desde una historia, con el pulgar y con prisa.
   reserve: {
-    eyebrow: 'Reserva',
-    title: 'Elige tus AXIS y te escribimos.',
-    intro: 'Toca el modelo que te gustó y déjanos tu WhatsApp. La fórmula y el lente los vemos por ahí.',
+    eyebrow: 'Compra',
+    title: 'Elige tus AXIS y te escribimos para comprarlas.',
+    intro: 'Toca el modelo que te gustó y déjanos tu WhatsApp. Te escribimos, vemos fórmula y lente, y completamos la compra por ahí.',
     step1: '1 · El modelo',
     step2: '2 · Tus datos',
-    chosen: 'Reservas: {model}',
+    chosen: 'Tu elección: {model}',
     chooseFirst: 'Primero toca el modelo que te interesa.',
     nameLabel: 'Tu nombre',
     namePlaceholder: 'Nombre y apellido',
     phoneLabel: 'Tu WhatsApp',
     phonePlaceholder: '312 372 7253',
-    submit: 'Quiero reservar',
+    submit: 'Quiero comprarlas',
     sending: 'Enviando…',
-    okTitle: 'Listo, quedaste apuntado.',
-    okBody: 'Te escribimos por WhatsApp para contarte los siguientes pasos de tus {model}.',
+    okTitle: 'Listo, te escribimos.',
+    okBody: 'Te escribimos por WhatsApp para completar la compra de tus {model}.',
     alreadyTitle: 'Ya te teníamos en la lista.',
     alreadyBody: 'Ese número ya estaba apuntado a las {model}. Tranquilo, te escribimos igual.',
     whatsappNow: 'Escríbenos ahora',
-    whatsappMessage: 'Hola, acabo de reservar las AXIS {model}.',
+    whatsappMessage: 'Hola, acabo de dejar mis datos para comprar las AXIS {model}.',
     seeStore: 'Ver todos los modelos',
     orWhatsapp: '¿Prefieres escribirnos? WhatsApp',
     privacy: 'Te escribimos solo por este modelo. Nada de publicidad.',

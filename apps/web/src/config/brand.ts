@@ -14,13 +14,23 @@ export const WHATSAPP_NUMBER = '573123727253'
 export const CATALOG_URL = '/catalogo-axis.pdf'
 
 export const SALES_EMAIL = 'contacto@axisvision.co'
+
+// Punto físico. La ciudad va en el enlace de Maps para que la búsqueda no sea
+// ambigua; el texto que ve el cliente es solo la dirección.
+export const ADDRESS = 'Carrera 38 #8a - 24'
+export const MAPS_URL =
+  'https://www.google.com/maps/search/?api=1&query=' +
+  encodeURIComponent('Carrera 38 #8A-24, Medellín, Colombia')
+
+export const INSTAGRAM_HANDLE = '@axisvisionai'
+export const INSTAGRAM_URL = 'https://www.instagram.com/axisvisionai'
 export const CALENDLY_URL = '' // opcional: link de Calendly/Cal.com
 
 export type BuyerType = 'general'
 
 const WA_MESSAGES: Record<BuyerType, string> = {
   general:
-    'Hola AXIS. Quiero reservar mis gafas AXIS. ¿Me ayudan a elegir modelo, graduación y envío?',
+    'Hola AXIS. Quiero comprar mis gafas AXIS. ¿Me ayudan a elegir modelo, graduación y envío?',
 }
 
 /** Construye un enlace wa.me con el mensaje prerellenado según el tipo de comprador. */

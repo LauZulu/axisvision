@@ -2,7 +2,15 @@ import Link from 'next/link'
 import { TreeLogo } from '../components/ui/TreeLogo'
 import { useDict } from '../i18n/useDict'
 import { useScrollTo } from '../lib/scrollContext'
-import { whatsappLink, SALES_EMAIL } from '../config/brand'
+import {
+  whatsappLink,
+  SALES_EMAIL,
+  ADDRESS,
+  MAPS_URL,
+  INSTAGRAM_HANDLE,
+  INSTAGRAM_URL,
+} from '../config/brand'
+import { Icon } from '../components/ui/Icon'
 
 export function Footer() {
   const { t, lang, setLang } = useDict()
@@ -74,7 +82,31 @@ export function Footer() {
                   {SALES_EMAIL}
                 </a>
               </li>
+              <li>
+                <a
+                  href={INSTAGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-warm-gray/75 transition-colors hover:text-gold"
+                >
+                  <Icon name="instagram" size={15} />
+                  {INSTAGRAM_HANDLE}
+                </a>
+              </li>
             </ul>
+
+            <h4 className="mt-8 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-gold">
+              {t.footer.visitUs}
+            </h4>
+            <a
+              href={MAPS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-start gap-2 text-sm text-warm-gray/75 transition-colors hover:text-gold"
+            >
+              <Icon name="pin" size={16} className="mt-0.5 shrink-0" />
+              {ADDRESS}
+            </a>
           </div>
         </div>
 

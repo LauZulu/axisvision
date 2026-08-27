@@ -32,13 +32,13 @@ function CheckoutClosed() {
   return (
     <section className="py-24 md:py-32">
       <div className="container-axis max-w-xl">
-        <span className="eyebrow text-gold">Próximamente</span>
+        <span className="eyebrow text-gold">Compra en línea próximamente</span>
         <h1 className="mt-4 font-head text-3xl leading-tight font-medium text-warm-white md:text-4xl">
-          Todavía no podemos cobrarte.
+          Ya puedes tener tus AXIS.
         </h1>
         <p className="mt-4 leading-relaxed text-warm-gray/80">
-          Estamos terminando de conectar los pagos en línea. Entra a cualquier modelo y déjanos tu
-          correo: te escribimos el día que abramos, antes que a nadie.
+          Muy pronto podrás pagar aquí mismo. Mientras tanto, entra a cualquier modelo y déjanos tu
+          contacto: te escribimos por WhatsApp y completamos la compra contigo.
         </p>
         <Link href="/tienda" className="btn-axis mt-8 inline-flex">
           Ver los modelos

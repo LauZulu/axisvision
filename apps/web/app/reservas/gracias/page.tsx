@@ -9,9 +9,9 @@ export const dynamic = 'force-dynamic'
  */
 const MENSAJES = {
   confirmada: {
-    eyebrow: 'Reserva confirmada',
-    title: 'Listo, quedaste en la lista.',
-    body: 'Te escribimos a este correo apenas haya unidades disponibles, antes de anunciarlo en cualquier otro lado.',
+    eyebrow: 'Contacto confirmado',
+    title: 'Listo, te escribimos.',
+    body: 'Ya tenemos tu contacto: te escribimos por WhatsApp y a este correo para completar tu compra.',
   },
   baja: {
     eyebrow: 'Baja confirmada',

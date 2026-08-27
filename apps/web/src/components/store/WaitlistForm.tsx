@@ -54,6 +54,9 @@ export function WaitlistForm({
 }) {
   const { t } = useDict()
   const w = t.store.waitlist
+  // Con la tienda sin pagos el formulario no es "avísame cuando haya": es
+  // "quiero comprarlas, escríbanme". Mismos campos, otra promesa.
+  const p = source === 'preview' ? t.store.preview : null
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
@@ -100,7 +103,7 @@ export function WaitlistForm({
   }
 
   if (isDone(status)) {
-    const title = status === 'already' ? w.alreadyTitle : status === 'pending' ? w.pendingTitle : w.okTitle
+    const title = status === 'already' ? w.alreadyTitle : status === 'pending' ? w.pendingTitle : (p?.okTitle ?? w.okTitle)
     // Sin correo el aviso llega por WhatsApp — prometer un correo que nunca va a
     // salir es la forma más rápida de que la persona lo dé por perdido.
     const body =
@@ -109,8 +112,8 @@ export function WaitlistForm({
         : status === 'pending'
           ? fill(w.pendingBody, { email: email.trim() })
           : email.trim()
-            ? fill(w.okBody, { email: email.trim() })
-            : w.okBodyWhatsapp
+            ? fill(p?.okBody ?? w.okBody, { email: email.trim() })
+            : (p?.okBodyWhatsapp ?? w.okBodyWhatsapp)
     return (
       <div className={`rounded-xl border border-gold/40 bg-carbon-800/60 p-5 ${className}`}>
         <p className="flex items-center gap-2 font-head text-warm-white">
@@ -179,7 +182,7 @@ export function WaitlistForm({
             className={inputCls}
           />
           <button type="submit" disabled={status === 'sending'} className="btn-axis shrink-0 disabled:opacity-60">
-            {status === 'sending' ? w.sending : w.submit}
+            {status === 'sending' ? w.sending : (p?.submit ?? w.submit)}
           </button>
         </div>
       </div>
@@ -197,7 +200,7 @@ export function WaitlistForm({
       />
 
       <p className="mt-3 text-xs leading-relaxed text-warm-gray/55">
-        {status === 'error' ? <span className="text-gold">{errorMsg}</span> : w.privacy}
+        {status === 'error' ? <span className="text-gold">{errorMsg}</span> : (p?.privacy ?? w.privacy)}
       </p>
     </form>
   )

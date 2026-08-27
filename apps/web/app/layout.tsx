@@ -16,13 +16,13 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://axisvision.co'),
   title: 'AXIS Vision — Gafas con inteligencia artificial',
   description:
-    'AXIS Vision: gafas con inteligencia artificial. Vídeo, foto, traducción en vivo y lentes con tu fórmula. Reserva las tuyas por WhatsApp.',
+    'AXIS Vision: gafas con inteligencia artificial. Vídeo, foto, traducción en vivo y lentes con tu fórmula. Déjanos tu contacto y te escribimos para comprarlas.',
   icons: { icon: '/favicon.svg' },
   openGraph: {
     type: 'website',
     title: 'AXIS Vision — Una nueva forma de ver el mundo',
     description:
-      'Gafas con inteligencia artificial, hechas para llevarse puestas todo el día. Reserva las tuyas.',
+      'Gafas con inteligencia artificial, hechas para llevarse puestas todo el día. Déjanos tu contacto y te escribimos para comprarlas.',
     images: ['/og-image.jpg'],
     locale: 'es_ES',
     alternateLocale: ['en_US'],

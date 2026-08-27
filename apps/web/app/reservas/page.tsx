@@ -18,12 +18,12 @@ export const dynamic = 'force-dynamic'
  * publicación, y el genérico sin parámetro para el perfil.
  */
 export const metadata: Metadata = {
-  title: 'Reserva tus AXIS — gafas con inteligencia artificial',
+  title: 'Compra tus AXIS — gafas con inteligencia artificial',
   description:
     'Elige el modelo que te gustó y déjanos tu WhatsApp. Te escribimos con los siguientes pasos.',
   openGraph: {
     type: 'website',
-    title: 'Reserva tus AXIS',
+    title: 'Compra tus AXIS',
     description: 'Elige tu modelo y déjanos tu WhatsApp. Te escribimos con los siguientes pasos.',
   },
 }
