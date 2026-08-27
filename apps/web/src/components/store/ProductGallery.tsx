@@ -4,8 +4,14 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Icon } from '../ui/Icon'
+import { lensTintBackground } from '../../lib/lenses'
 
-export type GallerySlide = { src: string; alt: string }
+export type GallerySlide = {
+  src: string
+  alt: string
+  /** Silueta del lente (`data:` URI). Sin ella la foto no se tiñe. */
+  mask?: string | null
+}
 
 /**
  * Galería de la ficha de producto. A diferencia del `<ImageCarousel>` de la
@@ -35,9 +41,16 @@ export type GallerySlide = { src: string; alt: string }
  */
 export function ProductGallery({
   slides,
+  tint,
   className,
 }: {
   slides: GallerySlide[]
+  /**
+   * Color con el que se simula el lente elegido cuando no hay foto real de él
+   * (`galleryForLens`). Se pinta como una capa `multiply` recortada por la
+   * máscara de cada foto, así que las que no la traen salen intactas.
+   */
+  tint?: string | null
   className?: string
 }) {
   const reduce = useReducedMotion()
@@ -75,6 +88,7 @@ export function ProductGallery({
               priority={i === 0}
               className="object-cover object-center"
             />
+            <LensTint tint={tint} mask={slide.mask} />
           </motion.div>
         ))}
 
@@ -126,10 +140,48 @@ export function ProductGallery({
                 sizes="72px"
                 className={`object-cover transition-opacity ${i === index ? 'opacity-100' : 'opacity-65 hover:opacity-100'}`}
               />
+              <LensTint tint={tint} mask={slide.mask} />
             </button>
           ))}
         </div>
       )}
     </div>
+  )
+}
+
+/**
+ * La capa de color que convierte la foto del lente transparente en la del lente
+ * elegido. Va encima de la foto, en `mix-blend-mode: multiply` para que el logo
+ * grabado, el borde interior del aro y el reflejo del cristal sigan viéndose a
+ * través del color en vez de quedar tapados por un relleno liso.
+ *
+ * `mask-size: cover` NO es intercambiable con `100% 100%`: la foto se pinta con
+ * `object-cover`, o sea recortada al alto del contenedor, y una máscara
+ * estirada al 100% se desalinea con ella —medio lente sin teñir y una franja de
+ * color sobre el armazón—. `cover` + `center` reproduce exactamente el recuadro
+ * que hace `object-cover object-center`.
+ *
+ * `isolation: isolate` en el padre no vale aquí: la capa tiene que mezclarse
+ * con la foto, que es su hermana en el mismo contexto de apilado.
+ */
+function LensTint({ tint, mask }: { tint?: string | null; mask?: string | null }) {
+  if (!tint || !mask) return null
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0"
+      style={{
+        background: lensTintBackground(tint),
+        mixBlendMode: 'multiply',
+        WebkitMaskImage: `url(${mask})`,
+        maskImage: `url(${mask})`,
+        WebkitMaskSize: 'cover',
+        maskSize: 'cover',
+        WebkitMaskPosition: 'center',
+        maskPosition: 'center',
+        WebkitMaskRepeat: 'no-repeat',
+        maskRepeat: 'no-repeat',
+      }}
+    />
   )
 }

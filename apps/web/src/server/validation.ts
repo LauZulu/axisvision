@@ -17,7 +17,7 @@ const productImageSchema = z
     z.string().min(1).max(512),
     z.object({
       key: z.string().min(1).max(512),
-      lensVariant: z.enum(['sunglass', 'ophthalmic', 'yellow']).nullable().optional(),
+      lensVariant: z.enum(['sunglass', 'ophthalmic', 'yellow', 'transitions', 'blue']).nullable().optional(),
     }),
   ])
   .transform((v) => (typeof v === 'string' ? { key: v } : v))
@@ -77,7 +77,15 @@ export const lensOptionSchema = z.object({
   isDefault: z.boolean(),
   active: z.boolean(),
   position: z.number().int().min(0),
-  imageVariant: z.enum(['sunglass', 'ophthalmic', 'yellow']).nullable().optional(),
+  imageVariant: z.enum(['sunglass', 'ophthalmic', 'yellow', 'transitions', 'blue']).nullable().optional(),
+  // Color con el que se simula el lente cuando no hay fotos de él. Se valida la
+  // forma (#rrggbb) porque acaba metido en un `background` de CSS: sin esto, un
+  // valor cualquiera entraría en la hoja de estilo del navegador del cliente.
+  tintColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .nullable()
+    .optional(),
 })
 
 export const lensOptionPatchSchema = lensOptionSchema.partial()

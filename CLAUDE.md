@@ -240,9 +240,47 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 >   parte de TODAS menos esa, y quedarse sin ningún lente vuelve a significar "todos". Con un solo
 >   tipo de lente el `LensPicker` no pinta un radiogroup de una tarjeta: lo enseña como dato
 >   ("Lente de sol polarizado · incluido") y solo pregunta por la fórmula.
+> - **Un lente que no está fotografiado se TIÑE, no se sustituye por otro** (migración `...014`).
+>   Cinco lentes × seis modelos × cinco ángulos son 150 fotos y hay 34, así que la variante que
+>   falta es el caso normal, no la excepción: elegir "filtro amarillo" en Crystal caía a las fotos
+>   del lente claro y le enseñaba al cliente un lente que no es el que compra. Ahora, sobre la foto
+>   del lente **transparente**, el navegador pinta una capa de color en `mix-blend-mode: multiply`
+>   recortada por la silueta del lente. **No se genera ninguna imagen**: cambiar de lente es cambiar
+>   un color en CSS, sin red y sin recarga — una foto en vez de cinco.
+>   La silueta vive en **`axis_product_image.lensMask`** como `data:` URI de un WebP alfa de 160px
+>   (~1,2 KB) y la extrae `pnpm images:masks` **sola**: en una foto de estudio el lente transparente
+>   es una isla clara encerrada por el aro, así que sale con umbral Otsu + relleno del fondo desde
+>   las 4 esquinas + componentes conexas (`--files <carpeta>` corre las mismas comprobaciones sobre
+>   archivos locales, sin base, para saber si una foto sirve ANTES de subirla). Va incrustada en la
+>   fila y **no** como objeto en S3 porque `mask-image` pasa por CORS y CloudFront no manda
+>   `Access-Control-Allow-Origin` en GET (comprobado): servida desde el CDN, la capa se bloquea y
+>   desaparece entera. De paso ahorra una petición por foto y no obliga a tocar AWS.
+>   **La regla de oro es que teñir solo OSCURECE** (`multiply`): de un lente transparente salen
+>   todos los colores, de uno oscuro no sale ninguno. Por eso el script exige brillo alto dentro de
+>   la máscara, y por eso **tener máscara es el permiso para simular** — una foto sin ella no se
+>   tiñe nunca. Cobertura real (26-ago-2026, 12 de 48 fotos): Crystal 5/5, Origin 4/15,
+>   Eclypse 3/10; Shadow, Ocean y Apex 0 — están fotografiados con lente oscuro (detalle y
+>   pasos para ampliarla en `PENDIENTES.md`). Para cubrirlos hay que **fotografiar cada modelo con lente transparente** (fondo liso más claro
+>   que el armazón, luz difusa sin reflejo duro en el cristal, sombra que no toque el aro); los
+>   ángulos valen todos —frente, 3/4, trasera y perfil plegado funcionan—, y lo que no va a
+>   funcionar nunca es el espejado de Apex (es un reflejo, no un tinte) ni las lifestyle.
+>   El color de cada lente está en **`axis_lens_option.tintColor`** (editable en `/admin/lentes`,
+>   `null` = no se simula: el transparente ES la foto base, y el antirreflejo y la fórmula no cambian
+>   el color de nada). Decide `galleryForLens()` (`src/lib/lenses.ts`), con este orden: **1.** hay
+>   foto real de esa variante → manda la foto, siempre; **2.** no la hay y el lente tiene color →
+>   se tiñen las fotos con máscara; **3.** ni una cosa ni otra → el reparto de siempre. El `tint`
+>   viaja suelto y cada foto decide con SU máscara si le toca capa, así las neutras (estuche,
+>   empaque) van en la misma lista sin mancharse. En el CSS, **`mask-size: cover` no es
+>   intercambiable con `100% 100%`**: la foto va con `object-cover`, o sea recortada, y una máscara
+>   estirada se desalinea —medio lente sin teñir y una franja de color sobre el armazón—.
+>   `transitions` y `filtro-azul` estrenan `imageVariant` propia (`transitions`, `blue`, **sin una
+>   sola foto**) porque compartiendo `ophthalmic` con el transparente ganaban la regla 1 y nunca
+>   llegaban a teñirse. **Ojo al desplegar:** ese cambio de variante es de DATOS, así que si la
+>   migración corre antes que el despliegue, el código viejo ve una variante que no conoce y cae a
+>   las fotos de sol.
 > - **Galería por variante de lente:** `axis_lens_option.imageVariant` dice qué fotos mostrar al
->   elegir cada opción (sol→`sunglass`; fórmula/transitions/filtro azul/transparente→`ophthalmic`;
->   filtro amarillo→`yellow`). La ficha usa `imagesForLens()` (`src/lib/lenses.ts`): devuelve las de
+>   elegir cada opción (sol→`sunglass`; transitions→`transitions`; filtro azul→`blue`;
+>   fórmula/transparente→`ophthalmic`; filtro amarillo→`yellow`). La ficha usa `imagesForLens()` (`src/lib/lenses.ts`): devuelve las de
 >   esa variante + las neutras y, si el modelo no tiene esa variante, cae a **una sola** alternativa
 >   (sol primero) — **nunca mezcla variantes** en la misma galería. El `<ImageCarousel>` se remonta
 >   con `key` al cambiar de lente. Realidad del catálogo: Origin y Eclypse tienen sol + oftálmica;

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDict } from '../../i18n/useDict'
-import { formatCop } from '../../lib/products'
+import { formatCop, type ImageLensVariant } from '../../lib/products'
 import { lensPriceLabel, type LensOptionDTO } from '../../lib/lenses'
 
 // `text-base` en móvil (16px) para que Safari de iOS no haga zoom al enfocar;
@@ -26,7 +26,9 @@ type Draft = {
   isDefault: boolean
   active: boolean
   position: string
-  imageVariant: '' | 'sunglass' | 'ophthalmic' | 'yellow'
+  imageVariant: '' | ImageLensVariant
+  /** Hex del color simulado. Vacío = esta opción no se tiñe. */
+  tintColor: string
 }
 
 function toDraft(o?: LensOptionDTO): Draft {
@@ -47,6 +49,7 @@ function toDraft(o?: LensOptionDTO): Draft {
     active: o?.active ?? true,
     position: String(o?.position ?? 0),
     imageVariant: o?.imageVariant ?? '',
+    tintColor: o?.tintColor ?? '',
   }
 }
 
@@ -97,6 +100,9 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
           : null,
       position: Number(draft.position) || 0,
       imageVariant: draft.imageVariant || null,
+      // Vacío = no se simula. Lo llevan así el transparente (que ES la foto
+      // base), el antirreflejo y la fórmula: ninguno cambia el color del lente.
+      tintColor: draft.tintColor.trim() || null,
     }
     const isNew = editing === 'new'
     try {
@@ -248,9 +254,35 @@ export function LensOptionsView({ options }: { options: LensOptionDTO[] }) {
                 <option value="sunglass">{l.variantSun}</option>
                 <option value="ophthalmic">{l.variantOphthalmic}</option>
                 <option value="yellow">{l.variantYellow}</option>
+                <option value="transitions">{l.variantTransitions}</option>
+                <option value="blue">{l.variantBlue}</option>
               </select>
               <span className="mt-1 block text-xs text-warm-gray/45">{l.imageVariantHint}</span>
             </label>
+            {/* Solo en los tipos de lente: el antirreflejo y la fórmula no
+                cambian el color de nada. El campo de texto va al lado del
+                selector de color para poder pegar un hex del catálogo. */}
+            {draft.kind === 'lens' && (
+              <label className="block text-sm text-warm-gray/80">
+                <span className="mb-1.5 block">{l.tintColor}</span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    aria-label={l.tintColor}
+                    value={/^#[0-9a-fA-F]{6}$/.test(draft.tintColor) ? draft.tintColor : '#808080'}
+                    onChange={(e) => set('tintColor', e.target.value)}
+                    className="h-10 w-12 shrink-0 cursor-pointer rounded border border-line bg-transparent"
+                  />
+                  <input
+                    className={inputCls}
+                    value={draft.tintColor}
+                    placeholder="#3b3833"
+                    onChange={(e) => set('tintColor', e.target.value)}
+                  />
+                </div>
+                <span className="mt-1 block text-xs text-warm-gray/45">{l.tintColorHint}</span>
+              </label>
+            )}
           </div>
 
           <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2.5 text-sm text-warm-gray/80">

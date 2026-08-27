@@ -22,7 +22,7 @@ import {
   coatingAddon,
   coatingIncludedIn,
   defaultLens,
-  imagesForLens,
+  galleryForLens,
   lensName,
   optionsForProduct,
   prescriptionAddon,
@@ -115,10 +115,13 @@ export function ProductDetail({
 
   // La galería sigue al TIPO de lente: con lente de sol se ven las fotos de sol,
   // con transparente las de lente claro. Las neutras (estuche) siempre.
-  const gallery = imagesForLens(product.images, lens)
+  // Y si no hay foto real de ese lente pero sí se puede simular, `tint` trae el
+  // color con el que la galería lo pinta sobre la foto del lente transparente.
+  const { images: gallery, tint } = galleryForLens(product.images, lens)
   const slides: GallerySlide[] = gallery.map((img) => ({
     src: resolveProductSrc(img),
     alt: product.name,
+    mask: img.mask,
   }))
   const reserveMsg = t.store.reserveMessage.replace('{model}', product.name)
 
@@ -198,9 +201,15 @@ export function ProductDetail({
             `grid-cols-1` la vuelve `minmax(0,1fr)` y el mínimo pasa a ser 0. */}
         <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:items-start lg:gap-14">
           <ProductGallery
-            // Cambiar de lente reinicia la galería en su portada.
-            key={lens?.imageVariant ?? 'all'}
+            // La `key` va por el JUEGO de fotos y NO por el lente elegido: entre
+            // dos lentes que se simulan sobre las mismas fotos (transitions y
+            // filtro azul, por ejemplo) lo único que cambia es el color, y
+            // remontar ahí tiraría la foto que el cliente tenía abierta para
+            // devolverlo a la portada — justo cuando lo que quiere es comparar.
+            // Cuando el juego SÍ cambia, la propia galería reinicia el índice.
+            key={gallery[0]?.key ?? 'all'}
             slides={slides}
+            tint={tint}
             className="lg:sticky lg:top-24"
           />
 

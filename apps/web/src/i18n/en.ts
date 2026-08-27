@@ -722,6 +722,11 @@ export const en = {
       variantSun: 'Sun lens',
       variantOphthalmic: 'Clear lens',
       variantYellow: 'Yellow filter',
+      variantTransitions: 'Transitions (no photos: tinted)',
+      variantBlue: 'Blue filter (no photos: tinted)',
+      tintColor: 'Simulated lens colour',
+      tintColorHint:
+        'With no photos of this lens, the page tints the clear-lens ones with this colour. Empty = not simulated.',
       defaultHint: 'Only one option can be the stock lens.',
     },
     images: {
@@ -751,6 +756,7 @@ export const en = {
       previewFallback: 'no own photos → {group}',
       previewEmpty: 'no photos',
       previewNeutral: '+{n} shared',
+      previewTinted: 'no own photos → tinted over the clear lens',
     },
     orderStatus: {
       pending: 'Pending',

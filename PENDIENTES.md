@@ -161,6 +161,36 @@ Plantillas ya escritas, sin nada que las dispare:
 
 ## Catálogo y fotos (decisiones de contenido)
 
+### 🔑 Fotografiar los demás modelos con lente transparente (para el tintado)
+
+La ficha **tiñe el lente en el navegador** (capa `multiply` recortada por
+`axis_product_image.lensMask`, migración `014`) en vez de necesitar una foto por cada
+tipo de lente. Pero la máscara solo se puede extraer de una foto con lente
+**transparente** (teñir solo oscurece). Cobertura a 26-ago-2026, 12 máscaras de 48 fotos:
+
+| Modelo | Fotos con máscara | Qué pasa al elegir un lente sin foto propia |
+|---|---|---|
+| Crystal | 5/5 | se tiñe (todos los ángulos) |
+| Origin | 4/15 | se tiñe (frontal, 3/4, trasera, infografía) |
+| Eclypse | 3/10 | se tiñe (3/4, plegada con funda, frontal) |
+| Shadow, Ocean, Apex | 0 | cae a las fotos de sol, como siempre |
+
+Cuando existan las fotos de lente transparente de Shadow, Ocean y Apex (y las que
+falten de Origin/Eclypse): fondo liso más claro que el armazón, luz difusa sin
+reflejo duro en el cristal, sombra que no toque el aro. Vale cualquier ángulo;
+no valen lifestyle ni el espejado de Apex.
+
+### 🤖 …y regenerar las máscaras cuando lleguen (bloqueado por lo anterior)
+
+1. Antes de subir: `pnpm images:masks --files <carpeta> --debug <salida>` (desde
+   `apps/web`) dice cuáles sirven; una rechazada se arregla en el estudio.
+2. Subirlas por `/admin` con variante **Lente transparente**.
+3. `pnpm images:masks --dry --debug <salida>`, revisar las previsualizaciones, y
+   luego `pnpm images:masks` (o `--only <slug>`). Es lento —varias llamadas a
+   ImageMagick por foto, minutos por modelo—: lanzarlo en segundo plano.
+4. En `/admin/productos/<slug>` el preview de galería debe decir "se tiñe" para
+   cada lente sin fotos propias.
+
 ### 🔑 Dos fotos de Apex son de un lente que no se vende
 
 Apex ofrece **un solo lente** (sol polarizado) + fórmula opcional, pero entre sus

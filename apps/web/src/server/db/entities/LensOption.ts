@@ -108,6 +108,19 @@ export class AxisLensOption {
   @Column({ type: 'varchar', length: 24, nullable: true })
   imageVariant!: ImageLensVariant | null
 
+  /**
+   * Color con el que se SIMULA este lente sobre una foto de lente transparente
+   * (capa `mix-blend-mode: multiply` recortada por `lensMask`). Es el color del
+   * lente plano sobre fondo claro; `multiply` lo oscurece al mezclarlo.
+   *
+   * `null` = no se simula. Lo llevan el transparente (que es la foto base), el
+   * antirreflejo y la fórmula: ninguno de los tres cambia el color del lente.
+   *
+   * Solo se usa cuando NO hay foto real de esta variante. La foto siempre gana.
+   */
+  @Column({ type: 'varchar', length: 9, nullable: true })
+  tintColor!: string | null
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date
 

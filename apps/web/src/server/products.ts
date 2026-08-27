@@ -32,6 +32,7 @@ function toDTO(p: AxisProduct, unitsTotal?: number, lensOptionIds: string[] = []
       url: isRemoteImage(img.imageKey) ? cdnUrl(img.imageKey) : null,
       position: img.position,
       lensVariant: img.lensVariant ?? null,
+      mask: img.lensMask ?? null,
     }))
   return {
     id: p.id,

@@ -754,6 +754,11 @@ export const es = {
       variantSun: 'Lente de sol',
       variantOphthalmic: 'Lente transparente',
       variantYellow: 'Filtro amarillo',
+      variantTransitions: 'Transitions (sin fotos: se tiñe)',
+      variantBlue: 'Filtro azul (sin fotos: se tiñe)',
+      tintColor: 'Color simulado del lente',
+      tintColorHint:
+        'Si no hay fotos de este lente, la ficha tiñe las del transparente con este color. Vacío = no se simula.',
       defaultHint: 'Solo una opción puede ser la de fábrica.',
     },
     images: {
@@ -783,6 +788,7 @@ export const es = {
       previewFallback: 'sin fotos propias → {group}',
       previewEmpty: 'sin fotos',
       previewNeutral: '+{n} comunes',
+      previewTinted: 'sin fotos propias → teñidas sobre el lente transparente',
     },
     orderStatus: {
       pending: 'Pendiente',

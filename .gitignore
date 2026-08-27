@@ -36,3 +36,6 @@ fotos-para-subir/*/*
 
 # Salida de `pnpm email:preview` (HTML generado de las plantillas de correo)
 .email-preview/
+
+# Pruebas locales de tintado de lente (imágenes pesadas, no son fuente de nada)
+pruebas-tintado/

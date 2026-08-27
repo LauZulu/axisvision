@@ -4,7 +4,11 @@ export type Lang = 'es' | 'en'
 
 // `url` = ruta pública de CloudFront cuando la imagen vive en S3; `null` para las
 // imágenes locales de prueba (el frontend las resuelve con el asset del repo).
-export type ImageLensVariant = 'sunglass' | 'ophthalmic' | 'yellow'
+/**
+ * `transitions` y `blue` no tienen fotos: existen para que esas opciones no
+ * compartan variante con el lente transparente y puedan caer en el tinte.
+ */
+export type ImageLensVariant = 'sunglass' | 'ophthalmic' | 'yellow' | 'transitions' | 'blue'
 
 export type ProductImageDTO = {
   key: string
@@ -12,6 +16,13 @@ export type ProductImageDTO = {
   position: number
   /** Con qué lente se tomó. null = sirve para cualquiera (estuche, accesorios). */
   lensVariant: ImageLensVariant | null
+  /**
+   * Silueta del lente como `data:` URI (WebP alfa, ~1,2 KB). Con ella la ficha
+   * puede TEÑIR esta foto y ahorrarse una variante por cada tipo de lente.
+   * `null` = no se puede teñir (es lo normal: solo las fotos de lente
+   * transparente la tienen).
+   */
+  mask: string | null
 }
 
 /** Talla del armazón (define la banda de precio). */

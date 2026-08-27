@@ -40,6 +40,11 @@ export type LensOptionDTO = {
   position: number
   /** Qué fotos del producto mostrar al elegir esta opción. */
   imageVariant: ImageLensVariant | null
+  /**
+   * Color con el que se simula este lente cuando no hay foto real de él.
+   * `null` = no se simula (el transparente, el antirreflejo y la fórmula).
+   */
+  tintColor: string | null
 }
 
 export function lensName(o: LensOptionDTO, lang: Lang): string {
@@ -169,4 +174,71 @@ export function imagesForLens<T extends { lensVariant: ImageLensVariant | null }
   }
   // Producto sin variantes marcadas (fotos antiguas): se muestran todas.
   return images
+}
+
+/**
+ * Fotos que se enseñan al elegir un lente, **y de qué color hay que teñirlas**.
+ *
+ * Es la versión completa de `imagesForLens()`: además de repartir por variante,
+ * decide cuándo se SIMULA el lente en vez de tener foto propia de él. Sobre la
+ * foto del lente transparente la ficha pinta una capa de color recortada por la
+ * silueta que trae cada foto (`mask`), así que un solo juego de fotos cubre
+ * todos los tipos de lente sin generar ni descargar variantes.
+ *
+ * Existe porque el catálogo nunca va a estar completo: cinco lentes × seis
+ * modelos × cinco ángulos son 150 fotos, y hay 34. Sin esto, elegir "filtro
+ * amarillo" en Crystal caía a las fotos del lente claro — enseñándole al
+ * cliente un lente que no es el que está comprando.
+ *
+ * El orden de preferencia importa y es el que se puede defender:
+ *
+ *  1. **Hay foto real de esta variante → manda la foto.** Siempre. Una foto de
+ *     verdad trae el reflejo, el espesor y el color reales; el tinte es plano.
+ *  2. **No la hay pero el lente tiene color → se simula** sobre las fotos que
+ *     traigan máscara (que son, por construcción, las de lente transparente:
+ *     teñir es `multiply` y solo sabe oscurecer, así que de un lente oscuro no
+ *     sale ningún color).
+ *  3. **Ni una cosa ni la otra → el reparto de siempre.**
+ *
+ * El `tint` va suelto y no aplicado: cada foto decide con SU máscara si le toca
+ * capa. Por eso las neutras (estuche, empaque) pueden ir en la misma lista sin
+ * mancharse — no tienen máscara y salen tal cual.
+ */
+export type LensGallery<T> = {
+  images: T[]
+  /** Color de la capa. `null` = las fotos van tal cual. */
+  tint: string | null
+}
+
+export function galleryForLens<
+  T extends { lensVariant: ImageLensVariant | null; mask?: string | null },
+>(images: T[], lens: LensOptionDTO | null): LensGallery<T> {
+  const wanted = lens?.imageVariant ?? null
+  const neutral = images.filter((i) => i.lensVariant === null)
+
+  // 1. Foto real de la variante pedida.
+  if (wanted) {
+    const real = images.filter((i) => i.lensVariant === wanted)
+    if (real.length > 0) return { images: [...real, ...neutral], tint: null }
+  }
+
+  // 2. Simulación sobre las fotos que se pueden teñir.
+  if (lens?.tintColor) {
+    const tintable = images.filter((i) => i.mask)
+    if (tintable.length > 0) return { images: [...tintable, ...neutral], tint: lens.tintColor }
+  }
+
+  // 3. Sin foto propia ni forma de simularla.
+  return { images: imagesForLens(images, lens), tint: null }
+}
+
+/**
+ * El `background` de la capa de tinte. No es un color plano a propósito: un
+ * relleno liso se lee como calcomanía pegada sobre la foto, y lo que separa un
+ * lente de una pegatina es el brillo. El degradado aclara la esquina superior
+ * izquierda —de donde viene la luz en todas las fotos del catálogo— y deja el
+ * resto en el color del lente.
+ */
+export function lensTintBackground(tint: string): string {
+  return `linear-gradient(158deg, color-mix(in srgb, ${tint} 55%, #fff) 0%, ${tint} 55%)`
 }

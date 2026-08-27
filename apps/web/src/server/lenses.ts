@@ -1,6 +1,7 @@
 import { getDb } from './db'
 import { AxisLensOption } from './db/entities/LensOption'
 import type { LensOptionDTO, LensOptionKind } from '../lib/lenses'
+import type { ImageLensVariant } from '../lib/products'
 
 function toDTO(o: AxisLensOption): LensOptionDTO {
   return {
@@ -19,6 +20,7 @@ function toDTO(o: AxisLensOption): LensOptionDTO {
     active: o.active,
     position: o.position,
     imageVariant: o.imageVariant ?? null,
+    tintColor: o.tintColor ?? null,
   }
 }
 
@@ -40,7 +42,9 @@ export async function getAllLensOptions(): Promise<LensOptionDTO[]> {
 }
 
 export type LensOptionInput = {
-  imageVariant?: 'sunglass' | 'ophthalmic' | 'yellow' | null
+  imageVariant?: ImageLensVariant | null
+  /** Color de simulación del lente. null = no se simula. */
+  tintColor?: string | null
   slug: string
   kind?: LensOptionKind
   nameEs: string

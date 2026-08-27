@@ -1,21 +1,27 @@
 'use client'
 
-import { imagesForLens, lensName, lensTypes, type LensOptionDTO } from '../../lib/lenses'
+import { galleryForLens, lensName, lensTypes, type LensOptionDTO } from '../../lib/lenses'
 import { useDict } from '../../i18n/useDict'
 import type { ImageLensVariant } from '../../lib/products'
 
-export type PreviewImage = { key: string; lensVariant: ImageLensVariant | null }
+export type PreviewImage = {
+  key: string
+  lensVariant: ImageLensVariant | null
+  /** Silueta del lente: con ella, esta foto se puede teñir para otros lentes. */
+  mask?: string | null
+}
 
 /**
  * Resumen de qué galería verá el cliente al elegir cada opción de lente,
- * calculado con la MISMA función que la ficha (`imagesForLens`).
+ * calculado con la MISMA función que la ficha (`galleryForLens`).
  *
  * Los grupos de arriba dicen qué fotos HAY; esto dice qué se VE, que no es lo
- * mismo: las opciones son cinco y los grupos cuatro (transitions, transparente y
- * filtro azul comparten fotos), y cuando un grupo está vacío la ficha cae a otro
- * —nunca mezcla dos variantes—. Esa regla de respaldo es imposible de deducir
- * mirando las fotos, y antes solo se comprobaba entrando a la tienda modelo por
- * modelo. Va sin miniaturas a propósito: las fotos ya están justo encima.
+ * mismo: hay más opciones de lente que grupos de fotos, un grupo vacío cae a
+ * otro —nunca se mezclan dos variantes— y, si las fotos del lente transparente
+ * traen máscara, la opción sin fotos propias se TIÑE en vez de caer. Esas tres
+ * reglas son imposibles de deducir mirando las fotos, y antes solo se
+ * comprobaban entrando a la tienda modelo por modelo. Va sin miniaturas a
+ * propósito: las fotos ya están justo encima.
  */
 export function LensGalleryPreview({
   images,
@@ -29,7 +35,9 @@ export function LensGalleryPreview({
   const types = lensTypes(options)
   if (types.length === 0) return null
 
-  const groupLabel: Record<ImageLensVariant, string> = {
+  // Parcial: `transitions` y `blue` son variantes sin grupo de fotos — existen
+  // para que esas opciones no compartan fotos con el lente transparente.
+  const groupLabel: Partial<Record<ImageLensVariant, string>> = {
     sunglass: im.groupSun,
     ophthalmic: im.groupOphthalmic,
     yellow: im.groupYellow,
@@ -45,16 +53,21 @@ export function LensGalleryPreview({
 
       <ul className="mt-3 space-y-2">
         {types.map((lens) => {
-          const shown = imagesForLens(images, lens)
+          const { images: shown, tint } = galleryForLens(images, lens)
           const wanted = lens.imageVariant
           // Grupo que acabó mandando (el de la primera foto no común).
           const used = shown.find((i) => i.lensVariant !== null)?.lensVariant ?? null
 
           let note: string
           if (shown.length === 0) note = im.previewEmpty
+          else if (tint) note = im.previewTinted
           else if (sinClasificar || wanted === null) note = im.previewAll
-          else if (used === wanted) note = groupLabel[wanted]
-          else note = im.previewFallback.replace('{group}', used ? groupLabel[used] : im.groupNeutral)
+          else if (used === wanted) note = groupLabel[wanted] ?? im.previewAll
+          else
+            note = im.previewFallback.replace(
+              '{group}',
+              (used && groupLabel[used]) || im.groupNeutral,
+            )
 
           return (
             <li
